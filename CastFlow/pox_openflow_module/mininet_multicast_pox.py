@@ -32,7 +32,7 @@ class MulticastTestTopo( Topo ):
 		self.addLink(s1, s2)
 		self.addLink(s1, s3)
 		self.addLink(s2, s4)
-		self.addLink(s3, s4) # Disable when using default controller
+		# self.addLink(s3, s4) # Disable when using default controller
 		self.addLink(s4, s5)
 		
 		self.addLink(s2, h1)
@@ -55,7 +55,7 @@ def mcastTest():
 	topo = MulticastTestTopo()
 
 	# External controller
-	# ./pox.py samples.pretty_log forwarding.l2_learning openflow.discovery openflow.spanning_tree
+	# ./pox.py samples.pretty_log forwarding.l2_learning openflow.discovery openflow.castflow
 	net = Mininet(topo, controller=RemoteController, build=False)
 	pox = RemoteController('pox', '127.0.0.1', 6633)
 	net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
