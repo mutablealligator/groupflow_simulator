@@ -91,8 +91,7 @@ class CastflowManager(object):
         self.mac_map = {}
 
         # Setup listeners
-        core.call_when_ready(startup, ('openflow', 'openflow_discovery'
-                             ))
+        core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
 
     def _handle_LinkEvent(self, event):
 
@@ -117,12 +116,17 @@ class CastflowManager(object):
                 del self.adjacency[sw1][sw2]
             if sw1 in self.adjacency[sw2]:
                 del self.adjacency[sw2][sw1]
+                
+            log.info('Removed adjacency: ' + str(sw1) + '.'
+                 + str(l.port1) + ' <-> ' + str(sw2) + '.'
+                 + str(l.port2))
 
             # But maybe there's another way to connect these...
             for ll in core.openflow_discovery.adjacency:
                 if ll.dpid1 == l.dpid1 and ll.dpid2 == l.dpid2:
                     if flip(ll) in core.openflow_discovery.adjacency:
                         # Yup, link goes both ways
+                        log.info('Found parallel adjacency');
                         self.adjacency[sw1][sw2] = ll.port1
                         self.adjacency[sw2][sw1] = ll.port2
                         # Fixed -- new link chosen to connect these
@@ -142,21 +146,21 @@ class CastflowManager(object):
                              + str(l.port1) + ' <-> ' + str(sw2) + '.'
                              + str(l.port2))
 
-        # If we have learned a MAC on this port which we now know to
-        # be connected to a switch, unlearn it.
-        bad_macs = set()
-        for (mac, (sw, port)) in self.mac_map.iteritems():
-            # print sw,sw1,port,l.port1
-            if sw is sw1 and port == l.port1:
-                if mac not in bad_macs:
-                    log.debug('Unlearned %s', mac)
-                    bad_macs.add(mac)
-            if sw is sw2 and port == l.port2:
-                if mac not in bad_macs:
-                    log.debug('Unlearned %s', mac)
-                    bad_macs.add(mac)
-            for mac in bad_macs:
-                del self.mac_map[mac]
+            # If we have learned a MAC on this port which we now know to
+            # be connected to a switch, unlearn it.
+            bad_macs = set()
+            for (mac, (sw, port)) in self.mac_map.iteritems():
+                # print sw,sw1,port,l.port1
+                if sw is sw1 and port == l.port1:
+                    if mac not in bad_macs:
+                        log.debug('Unlearned %s', mac)
+                        bad_macs.add(mac)
+                if sw is sw2 and port == l.port2:
+                    if mac not in bad_macs:
+                        log.debug('Unlearned %s', mac)
+                        bad_macs.add(mac)
+                for mac in bad_macs:
+                    del self.mac_map[mac]
 
     def _handle_ConnectionUp(self, event):
         sw = self.switches.get(event.dpid)
@@ -169,6 +173,14 @@ class CastflowManager(object):
             # sw.connect(event.connection)
         # else:
             # sw.connect(event.connection)
+            
+    def _handle_ConnectionDown (self, event):
+        sw = self.switches.get(event.dpid)
+        if sw is None:
+            log.info('Warning: Got ConnectionDown for unrecognized switch')
+        else:
+            log.info('Switch down: ' + str(self.switches[event.dpid]))
+            del self.switches[event.dpid]
 
 def launch():
     core.registerNew(CastflowManager)
