@@ -59,18 +59,16 @@ def mcastTest():
 	net = Mininet(topo, controller=RemoteController, build=False)
 	pox = RemoteController('pox', '127.0.0.1', 6633)
 	net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
-	net.buildFromTopo(topo)
-	
 	
 	net.start()
 	mcastConfig(net)
-	net.get('h2').cmd('python ~/pythontest/multicast_receiver.py &');
-	net.get('h3').cmd('python ~/pythontest/multicast_receiver.py &');
-	net.get('h4').cmd('python ~/pythontest/multicast_receiver.py &');
-	net.get('h5').cmd('python ~/pythontest/multicast_receiver.py &');
+	# net.get('h2').cmd('python ~/pythontest/multicast_receiver.py &');
+	# net.get('h3').cmd('python ~/pythontest/multicast_receiver.py &');
+	# net.get('h4').cmd('python ~/pythontest/multicast_receiver.py &');
+	# net.get('h5').cmd('python ~/pythontest/multicast_receiver.py &');
 	net.get('h6').cmd('python ~/pythontest/multicast_receiver.py &');
-	CLI(net)
 	# net.get('h1').cmd('python ~/pythontest/multicast_sender.py');
+	CLI(net)
 	net.stop()
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
