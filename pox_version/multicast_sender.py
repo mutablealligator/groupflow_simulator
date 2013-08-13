@@ -20,10 +20,11 @@ echo_packet_times = {}
 
 def send_multicast_packet():
 	global send_packet_index, send_packet_times
-	send_string = str(send_packet_index).zfill(512)
+	send_string = str(send_packet_index).zfill(128)
+	print 'Send String: ' + str(send_string)
 	send_packet_times[send_packet_index] = time.time()
 	bytes = send_socket.sendto(send_string, (multicast_group, multicast_port))
-	# print 'Sent multicast packet ' + str(send_packet_index) + ' at: ' + str(send_packet_times[send_packet_index]) + ' (' + str(bytes) + ' bytes)'
+	print 'Sent multicast packet ' + str(send_packet_index) + ' at: ' + str(send_packet_times[send_packet_index]) + ' (' + str(bytes) + ' bytes)'
 	send_packet_index += 1
 	if not quit_flag:
 		threading.Timer(1, send_multicast_packet).start()
@@ -49,7 +50,7 @@ def main():
 	
 	last_echo_index = 1
 	while True:
-		data, addr = echo_socket.recvfrom(512)
+		data, addr = echo_socket.recvfrom(128)
 		echo_time = time.time() - send_packet_times[int(data)]
 		echo_index = str(int(data))
 		if echo_index != last_echo_index:

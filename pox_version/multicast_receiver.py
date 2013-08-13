@@ -36,7 +36,7 @@ def main():
 	recv_packets = 0
 	while True:
 		try:
-			data, addr = multicast_socket.recvfrom(512)
+			data, addr = multicast_socket.recvfrom(128)
 			echo_socket.sendto(data, (addr[0], echo_port))
 			print 'Echo packet ' + str(int(data)) + ' to ' + str(addr[0]) + ':' + str(echo_port)
 			recv_packets += 1

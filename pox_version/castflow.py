@@ -20,6 +20,8 @@ from pox.openflow.discovery import Discovery
 from pox.core import core
 from pox.lib.revent import *
 from pox.lib.util import dpid_to_str
+import pox.lib.packet as pkt
+from pox.lib.addresses import IPAddr, EthAddr
 
 log = core.getLogger()
 
@@ -181,7 +183,14 @@ class CastflowManager(object):
         else:
             log.info('Switch down: ' + str(self.switches[event.dpid]))
             del self.switches[event.dpid]
-
+    
+    def _handle_PacketIn(self, event):
+        igmpPkt = event.parsed.find(pkt.igmp)
+        if not igmpPkt is None:
+            log.info('Got IGMP packet from switch: ' + str(self.switches[event.connection.dpid]))
+            log.info(str(igmpPkt))
+        
+        
 def launch():
     core.registerNew(CastflowManager)
 
