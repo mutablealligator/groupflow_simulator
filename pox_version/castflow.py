@@ -26,7 +26,7 @@ from pox.lib.addresses import IPAddr, EthAddr
 log = core.getLogger()
 
 
-class Switch(EventMixin):
+class Router(EventMixin):
 
     def __init__(self):
         self.connection = None
@@ -78,18 +78,18 @@ class CastflowManager(object):
             core.openflow.addListeners(self)
             core.openflow_discovery.addListeners(self)
 
-        # Known switches:  [dpid] -> Switch
-        self.switches = {}
+        # Known routers:  [dpid] -> Router
+        self.routers = {}
 
         # Known links (contains Link objects defined in openflow.discovery
         # Not used in current code - replaced by adjacency map
         # self.links = []
 
-        # Adjacency map:  [sw1][sw2] -> port from sw1 to sw2
+        # Adjacency map:  [router1][router2] -> port from router1 to router2
         self.adjacency = defaultdict(lambda : defaultdict(lambda : \
                 None))
 
-        # ethaddr -> (switch, port)
+        # ethaddr -> (router, port)
         self.mac_map = {}
 
         # Setup listeners
@@ -109,18 +109,18 @@ class CastflowManager(object):
         # log.debug(self.links)
 
         l = event.link
-        sw1 = self.switches[l.dpid1]
-        sw2 = self.switches[l.dpid2]
+        router1 = self.routers[l.dpid1]
+        router2 = self.routers[l.dpid2]
 
         if event.removed:
             # This link no longer okay
-            if sw2 in self.adjacency[sw1]:
-                del self.adjacency[sw1][sw2]
-            if sw1 in self.adjacency[sw2]:
-                del self.adjacency[sw2][sw1]
+            if router2 in self.adjacency[router1]:
+                del self.adjacency[router1][router2]
+            if router1 in self.adjacency[router2]:
+                del self.adjacency[router2][router1]
                 
-            log.info('Removed adjacency: ' + str(sw1) + '.'
-                 + str(l.port1) + ' <-> ' + str(sw2) + '.'
+            log.info('Removed adjacency: ' + str(router1) + '.'
+                 + str(l.port1) + ' <-> ' + str(router2) + '.'
                  + str(l.port2))
 
             # But maybe there's another way to connect these...
@@ -129,35 +129,35 @@ class CastflowManager(object):
                     if flip(ll) in core.openflow_discovery.adjacency:
                         # Yup, link goes both ways
                         log.info('Found parallel adjacency');
-                        self.adjacency[sw1][sw2] = ll.port1
-                        self.adjacency[sw2][sw1] = ll.port2
+                        self.adjacency[router1][router2] = ll.port1
+                        self.adjacency[router2][router1] = ll.port2
                         # Fixed -- new link chosen to connect these
                         break
         else:
             # If we already consider these nodes connected, we can
             # ignore this link up.
             # Otherwise, we might be interested...
-            if self.adjacency[sw1][sw2] is None:
+            if self.adjacency[router1][router2] is None:
                 # These previously weren't connected.  If the link
                 # exists in both directions, we consider them connected now.
                 if flip(l) in core.openflow_discovery.adjacency:
                     # Yup, link goes both ways -- connected!
-                    self.adjacency[sw1][sw2] = l.port1
-                    self.adjacency[sw2][sw1] = l.port2
-                    log.info('Added adjacency: ' + str(sw1) + '.'
-                             + str(l.port1) + ' <-> ' + str(sw2) + '.'
+                    self.adjacency[router1][router2] = l.port1
+                    self.adjacency[router2][router1] = l.port2
+                    log.info('Added adjacency: ' + str(router1) + '.'
+                             + str(l.port1) + ' <-> ' + str(router2) + '.'
                              + str(l.port2))
 
             # If we have learned a MAC on this port which we now know to
-            # be connected to a switch, unlearn it.
+            # be connected to a router, unlearn it.
             bad_macs = set()
-            for (mac, (sw, port)) in self.mac_map.iteritems():
-                # print sw,sw1,port,l.port1
-                if sw is sw1 and port == l.port1:
+            for (mac, (router, port)) in self.mac_map.iteritems():
+                # print sw,router1,port,l.port1
+                if router is router1 and port == l.port1:
                     if mac not in bad_macs:
                         log.debug('Unlearned %s', mac)
                         bad_macs.add(mac)
-                if sw is sw2 and port == l.port2:
+                if router is router2 and port == l.port2:
                     if mac not in bad_macs:
                         log.debug('Unlearned %s', mac)
                         bad_macs.add(mac)
@@ -165,33 +165,33 @@ class CastflowManager(object):
                     del self.mac_map[mac]
 
     def _handle_ConnectionUp(self, event):
-        sw = self.switches.get(event.dpid)
-        if sw is None:
-            # New switch
-            sw = Switch()
-            sw.dpid = event.dpid
-            self.switches[event.dpid] = sw
-            log.info('Learned new switch: ' + str(sw))
+        router = self.routers.get(event.dpid)
+        if router is None:
+            # New router
+            router = Router()
+            router.dpid = event.dpid
+            self.routers[event.dpid] = router
+            log.info('Learned new router: ' + str(router))
             # sw.connect(event.connection)
         # else:
             # sw.connect(event.connection)
             
     def _handle_ConnectionDown (self, event):
-        sw = self.switches.get(event.dpid)
-        if sw is None:
-            log.info('Warning: Got ConnectionDown for unrecognized switch')
+        router = self.routers.get(event.dpid)
+        if router is None:
+            log.warn('Got ConnectionDown for unrecognized router')
         else:
-            log.info('Switch down: ' + str(self.switches[event.dpid]))
-            del self.switches[event.dpid]
+            log.info('Router down: ' + str(self.routers[event.dpid]))
+            del self.routers[event.dpid]
     
     def _handle_PacketIn(self, event):
         igmpPkt = event.parsed.find(pkt.igmp)
         if not igmpPkt is None:
             # IGMP packet - IPv4 Network
-            if event.connection.dpid in self.switches:
-                log.debug('Got IGMP packet at switch: ' + str(self.switches[event.connection.dpid]))
+            if event.connection.dpid in self.routers:
+                log.debug('Got IGMP packet at router: ' + str(self.routers[event.connection.dpid]))
             else:
-                log.debug('Got IGMP packet from unrecognized switch: ' + str(event.connection.dpid))
+                log.debug('Got IGMP packet from unrecognized router: ' + str(event.connection.dpid))
             ipv4Pkt = event.parsed.find(pkt.ipv4)
             log.info(str(igmpPkt) + ' from Host: ' + str(ipv4Pkt.srcip))
         
