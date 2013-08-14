@@ -91,9 +91,6 @@ class CastflowManager(object):
 
         # ethaddr -> (switch, port)
         self.mac_map = {}
-        
-        self.receiver_ips = []
-        self.sender_ips = []
 
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
@@ -195,12 +192,8 @@ class CastflowManager(object):
                 log.debug('Got IGMP packet at switch: ' + str(self.switches[event.connection.dpid]))
             else:
                 log.debug('Got IGMP packet from unrecognized switch: ' + str(event.connection.dpid))
-            log.debug(str(igmpPkt))
             ipv4Pkt = event.parsed.find(pkt.ipv4)
-            log.debug('Originating host: ' + str(ipv4Pkt.srcip))
-            if not ipv4Pkt.srcip in self.receiver_ips:
-                self.receiver_ips.append(ipv4Pkt.srcip)
-                log.info('Added new receiver: ' + str(ipv4Pkt.srcip))
+            log.info(str(igmpPkt) + ' from Host: ' + str(ipv4Pkt.srcip))
         
         
 def launch():
