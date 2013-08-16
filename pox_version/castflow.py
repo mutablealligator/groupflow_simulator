@@ -21,6 +21,7 @@ from pox.core import core
 from pox.lib.revent import *
 from pox.lib.util import dpid_to_str
 import pox.lib.packet as pkt
+import pox.openflow.libopenflow_01 as of
 from pox.lib.addresses import IPAddr, EthAddr
 
 log = core.getLogger()
@@ -97,6 +98,15 @@ class CastflowManager(object):
 
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
+        
+    def drop_packet(self, packet_in_event):
+        msg = of.ofp_packet_out()
+        msg.data = packet_in_event.ofp
+        msg.buffer_id = packet_in_event.ofp.buffer_id
+        msg.in_port = packet_in_event.port
+        msg.actions = []    # No actions = drop packet
+        packet_in_event.connection.send(msg)
+        log.debug('Packet dropped')
 
     def _handle_LinkEvent(self, event):
 
@@ -199,17 +209,27 @@ class CastflowManager(object):
         igmpPkt = event.parsed.find(pkt.igmp)
         if not igmpPkt is None:
             # IGMP packet - IPv4 Network
+            # Make sure this router is known to the controller, drop the packet if now
             if not event.connection.dpid in self.routers:
                 log.debug('Got IGMP packet from unrecognized router: ' + str(event.connection.dpid))
+                # self.drop_packet(event)
                 return
+            
+            # Determine the source IP of the packet
             receiving_router = self.routers[event.connection.dpid]
-            for neighbour in self.adjacency[receiving_router]:
-                if self.adjacency[receiving_router][neighbour]:
-                    log.debug('IGMP packet received from neighbouring router.')
-                    return
             log.info('Got IGMP packet at router: ' + str(receiving_router) + ' on port: ' + str(event.port))
             ipv4Pkt = event.parsed.find(pkt.ipv4)
             log.info(str(igmpPkt) + ' from Host: ' + str(ipv4Pkt.srcip))
+            
+            # Check to see if this IGMP message was received from a neighbouring router, and drop
+            # it if so
+            for neighbour in self.adjacency[receiving_router]:
+                if self.adjacency[receiving_router][neighbour]:
+                    log.info('IGMP packet received from neighbouring router, dropping packet.')
+                    self.drop_packet(event)
+                    return
+            
+            # The host must be directly connected to this router, learn its IP and port
             if not event.port in receiving_router.connected_hosts:
                 receiving_router.connected_hosts[event.port] = ipv4Pkt.srcip
                 log.info('Learned new host: ' + str(ipv4Pkt.srcip) + ' on port: ' + str(event.port))
