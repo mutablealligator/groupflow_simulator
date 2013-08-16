@@ -34,6 +34,9 @@ class Router(EventMixin):
         self.dpid = None
         self._listeners = None
         self._connected_at = None
+        
+        # Dictionary of connected host IPs keyed by port numbers
+        self.connected_hosts = defaultdict(lambda : None)
 
     def __repr__(self):
         return dpid_to_str(self.dpid)
@@ -147,22 +150,30 @@ class CastflowManager(object):
                     log.info('Added adjacency: ' + str(router1) + '.'
                              + str(l.port1) + ' <-> ' + str(router2) + '.'
                              + str(l.port2))
+                    if l.port1 in router1.connected_hosts:
+                        log.debug('Deleted connected host (' + str(router1.connected_hosts[l.port1]) + ') on port ' + str(l.port1) + ' (host is actually a router)')
+                        del router1.connected_hosts[l.port1]
+                    if l.port2 in router2.connected_hosts:
+                        log.debug('Deleted connected host (' + str(router2.connected_hosts[l.port2]) + ') on port ' + str(l.port2) + ' (host is actually a router)')
+                        del router2.connected_hosts[l.port2]
 
+            # This was replaced with the connected_hosts dictionaries
+            
             # If we have learned a MAC on this port which we now know to
             # be connected to a router, unlearn it.
-            bad_macs = set()
-            for (mac, (router, port)) in self.mac_map.iteritems():
-                # print sw,router1,port,l.port1
-                if router is router1 and port == l.port1:
-                    if mac not in bad_macs:
-                        log.debug('Unlearned %s', mac)
-                        bad_macs.add(mac)
-                if router is router2 and port == l.port2:
-                    if mac not in bad_macs:
-                        log.debug('Unlearned %s', mac)
-                        bad_macs.add(mac)
-                for mac in bad_macs:
-                    del self.mac_map[mac]
+            # bad_macs = set()
+            # for (mac, (router, port)) in self.mac_map.iteritems():
+            #    # print sw,router1,port,l.port1
+            #    if router is router1 and port == l.port1:
+            #        if mac not in bad_macs:
+            #            log.debug('Unlearned %s', mac)
+            #            bad_macs.add(mac)
+            #    if router is router2 and port == l.port2:
+            #        if mac not in bad_macs:
+            #            log.debug('Unlearned %s', mac)
+            #            bad_macs.add(mac)
+            #    for mac in bad_macs:
+            #        del self.mac_map[mac]
 
     def _handle_ConnectionUp(self, event):
         router = self.routers.get(event.dpid)
@@ -188,12 +199,20 @@ class CastflowManager(object):
         igmpPkt = event.parsed.find(pkt.igmp)
         if not igmpPkt is None:
             # IGMP packet - IPv4 Network
-            if event.connection.dpid in self.routers:
-                log.debug('Got IGMP packet at router: ' + str(self.routers[event.connection.dpid]))
-            else:
+            if not event.connection.dpid in self.routers:
                 log.debug('Got IGMP packet from unrecognized router: ' + str(event.connection.dpid))
+                return
+            receiving_router = self.routers[event.connection.dpid]
+            for neighbour in self.adjacency[receiving_router]:
+                if self.adjacency[receiving_router][neighbour]:
+                    log.debug('IGMP packet received from neighbouring router.')
+                    return
+            log.info('Got IGMP packet at router: ' + str(receiving_router) + ' on port: ' + str(event.port))
             ipv4Pkt = event.parsed.find(pkt.ipv4)
             log.info(str(igmpPkt) + ' from Host: ' + str(ipv4Pkt.srcip))
+            if not event.port in receiving_router.connected_hosts:
+                receiving_router.connected_hosts[event.port] = ipv4Pkt.srcip
+                log.info('Learned new host: ' + str(ipv4Pkt.srcip) + ' on port: ' + str(event.port))
         
         
 def launch():

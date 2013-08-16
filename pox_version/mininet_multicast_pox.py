@@ -55,7 +55,7 @@ def mcastTest():
 	topo = MulticastTestTopo()
 
 	# External controller
-	# ./pox.py samples.pretty_log forwarding.l2_learning openflow.discovery openflow.castflow log.level --INFO --packet=WARN
+	# ./pox.py samples.pretty_log forwarding.l2_learning openflow.discovery openflow.castflow log.level --WARNING --openflow.castflow=DEBUG
 	net = Mininet(topo, controller=RemoteController, build=False)
 	pox = RemoteController('pox', '127.0.0.1', 6633)
 	net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
