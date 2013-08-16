@@ -21,12 +21,33 @@ from pox.core import core
 from pox.lib.revent import *
 from pox.lib.util import dpid_to_str
 import pox.lib.packet as pkt
+from pox.lib.packet.igmp import *   # Required for various IGMP variable constants
 import pox.openflow.libopenflow_01 as of
 from pox.lib.addresses import IPAddr, EthAddr
 
 log = core.getLogger()
 
+class MulticastMembershipRecord:
+    '''Multicast routers implementing IGMPv3 keep state per group per
+    attached network.  This group state consists of a filter-mode, a list
+    of sources, and various timers.  For each attached network running
+    IGMP, a multicast router records the desired reception state for that
+    network.  That state conceptually consists of a set of records of the
+    form:
 
+        (multicast address, group timer, filter-mode, (source records))
+
+    Each source record is of the form:
+
+        (source address, source timer)
+    '''
+    def __init__(self):
+        self.multicast_address = None
+        self.group_timer = None
+        self.filter_mode = MODE_IS_INCLUDE  # TODO - Re-examine this as the default
+        source_records = [] # Source records are stored as a tuple of the source address and the source timer
+
+        
 class Router(EventMixin):
 
     def __init__(self):
@@ -76,26 +97,41 @@ class Router(EventMixin):
 class CastflowManager(object):
 
     def __init__(self):
-
         # Listen to dependencies
         def startup():
             core.openflow.addListeners(self)
             core.openflow_discovery.addListeners(self)
+        
+        # Set variables for IGMP operation to default values
+        self.igmp_robustness = 2
+        self.igmp_query_inteval = 125               # Seconds
+        self.igmp_query_response_interval = 100     # Tenths of a second
+        self.igmp_group_membership_interval = (self.igmp_robustness * self.igmp_query_inteval) \
+                + (self.igmp_query_response_interval * 0.1)             # Seconds
+        # Note: Other querier present interval should not actually be required with this centralized
+        # implementation
+        self.igmp_other_querier_present_interval = (self.igmp_robustness * self.igmp_query_inteval) \
+                + ((self.igmp_query_response_interval * 0.1) / 2)       # Seconds
+        self.igmp_startup_query_interval = self.igmp_query_inteval / 4  # Seconds
+        self.igmp_startup_query_count = self.igmp_robustness
+        self.igmp_last_member_query_interval = 10                       # Tenths of a second
+        self.igmp_last_member_query_count = self.igmp_robustness
+        self.igmp_last_member_query_time = self.igmp_last_member_query_interval \
+                * self.igmp_last_member_query_count                     # Tenths of a second
+        self.igmp_unsolicited_report_interval = 1       # Seconds (not used in router implementation)
 
+        # Setup topology discovery state
+        
         # Known routers:  [dpid] -> Router
         self.routers = {}
-
-        # Known links (contains Link objects defined in openflow.discovery
-        # Not used in current code - replaced by adjacency map
-        # self.links = []
-
         # Adjacency map:  [router1][router2] -> port from router1 to router2
         self.adjacency = defaultdict(lambda : defaultdict(lambda : \
                 None))
-
-        # ethaddr -> (router, port)
-        self.mac_map = {}
-
+        
+        # Setup IGMP state
+        self.membership_records = []
+                
+                
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
         
@@ -154,7 +190,7 @@ class CastflowManager(object):
                 # These previously weren't connected.  If the link
                 # exists in both directions, we consider them connected now.
                 if flip(l) in core.openflow_discovery.adjacency:
-                    # Yup, link goes both ways -- connected!
+                    # Link goes both ways -- connected!
                     self.adjacency[router1][router2] = l.port1
                     self.adjacency[router2][router1] = l.port2
                     log.info('Added adjacency: ' + str(router1) + '.'
@@ -166,24 +202,6 @@ class CastflowManager(object):
                     if l.port2 in router2.connected_hosts:
                         log.debug('Deleted connected host (' + str(router2.connected_hosts[l.port2]) + ') on port ' + str(l.port2) + ' (host is actually a router)')
                         del router2.connected_hosts[l.port2]
-
-            # This was replaced with the connected_hosts dictionaries
-            
-            # If we have learned a MAC on this port which we now know to
-            # be connected to a router, unlearn it.
-            # bad_macs = set()
-            # for (mac, (router, port)) in self.mac_map.iteritems():
-            #    # print sw,router1,port,l.port1
-            #    if router is router1 and port == l.port1:
-            #        if mac not in bad_macs:
-            #            log.debug('Unlearned %s', mac)
-            #            bad_macs.add(mac)
-            #    if router is router2 and port == l.port2:
-            #        if mac not in bad_macs:
-            #            log.debug('Unlearned %s', mac)
-            #            bad_macs.add(mac)
-            #    for mac in bad_macs:
-            #        del self.mac_map[mac]
 
     def _handle_ConnectionUp(self, event):
         router = self.routers.get(event.dpid)
