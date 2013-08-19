@@ -28,7 +28,9 @@ from pox.lib.addresses import IPAddr, EthAddr
 log = core.getLogger()
 
 class MulticastMembershipRecord:
-    '''Multicast routers implementing IGMPv3 keep state per group per
+    """Class representing the groud record state maintained by an IGMPv3 multicast router
+
+    Multicast routers implementing IGMPv3 keep state per group per
     attached network.  This group state consists of a filter-mode, a list
     of sources, and various timers.  For each attached network running
     IGMP, a multicast router records the desired reception state for that
@@ -40,7 +42,8 @@ class MulticastMembershipRecord:
     Each source record is of the form:
 
         (source address, source timer)
-    '''
+    """
+    
     def __init__(self):
         self.multicast_address = None
         self.group_timer = None
@@ -49,6 +52,9 @@ class MulticastMembershipRecord:
 
         
 class Router(EventMixin):
+    """
+    Class representing an OpenFlow router
+    """
 
     def __init__(self):
         self.connection = None
@@ -136,6 +142,7 @@ class CastflowManager(object):
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
         
     def drop_packet(self, packet_in_event):
+        """Drops the packet represented by the PacketInEvent without any flow table modification"""
         msg = of.ofp_packet_out()
         msg.data = packet_in_event.ofp
         msg.buffer_id = packet_in_event.ofp.buffer_id
@@ -145,6 +152,7 @@ class CastflowManager(object):
         log.debug('Packet dropped')
 
     def _handle_LinkEvent(self, event):
+        """Handler for LinkEvents from the discovery module, which are used to learn the network topology."""
 
         def flip(link):
             return Discovery.Link(link[2], link[3], link[0], link[1])
@@ -162,7 +170,7 @@ class CastflowManager(object):
         router2 = self.routers[l.dpid2]
 
         if event.removed:
-            # This link no longer okay
+            # This link no longer up
             if router2 in self.adjacency[router1]:
                 del self.adjacency[router1][router2]
             if router1 in self.adjacency[router2]:
@@ -172,7 +180,7 @@ class CastflowManager(object):
                  + str(l.port1) + ' <-> ' + str(router2) + '.'
                  + str(l.port2))
 
-            # But maybe there's another way to connect these...
+            # These routers may still be adjacent through a different link
             for ll in core.openflow_discovery.adjacency:
                 if ll.dpid1 == l.dpid1 and ll.dpid2 == l.dpid2:
                     if flip(ll) in core.openflow_discovery.adjacency:
@@ -183,8 +191,7 @@ class CastflowManager(object):
                         # Fixed -- new link chosen to connect these
                         break
         else:
-            # If we already consider these nodes connected, we can
-            # ignore this link up.
+            # If we already consider these nodes connected, we can ignore this link up.
             # Otherwise, we might be interested...
             if self.adjacency[router1][router2] is None:
                 # These previously weren't connected.  If the link
@@ -196,6 +203,8 @@ class CastflowManager(object):
                     log.info('Added adjacency: ' + str(router1) + '.'
                              + str(l.port1) + ' <-> ' + str(router2) + '.'
                              + str(l.port2))
+
+                    # Remove router IPs that have been previously identified as hosts
                     if l.port1 in router1.connected_hosts:
                         log.debug('Deleted connected host (' + str(router1.connected_hosts[l.port1]) + ') on port ' + str(l.port1) + ' (host is actually a router)')
                         del router1.connected_hosts[l.port1]
@@ -203,7 +212,12 @@ class CastflowManager(object):
                         log.debug('Deleted connected host (' + str(router2.connected_hosts[l.port2]) + ') on port ' + str(l.port2) + ' (host is actually a router)')
                         del router2.connected_hosts[l.port2]
 
+                    # While it is tempting to add a flow table entry to block IGMP messages from being transmitted between
+                    # adjoining routers, this would also cause IGMP packets to be dropped silently without processing
+                    # by the controller.
+
     def _handle_ConnectionUp(self, event):
+        """Handler for ConnectionUp from the discovery module, which represent new routers joining the network."""
         router = self.routers.get(event.dpid)
         if router is None:
             # New router
@@ -216,6 +230,7 @@ class CastflowManager(object):
             # sw.connect(event.connection)
             
     def _handle_ConnectionDown (self, event):
+        """Handler for ConnectionUp from the discovery module, which represent a router leaving the network."""
         router = self.routers.get(event.dpid)
         if router is None:
             log.warn('Got ConnectionDown for unrecognized router')
@@ -224,6 +239,14 @@ class CastflowManager(object):
             del self.routers[event.dpid]
     
     def _handle_PacketIn(self, event):
+        """Handler for OpenFlow PacketIn events.
+
+        Two types of packets are of primary importance for this module:
+        1) IGMP packets: All IGMP packets in the network should be directed to the controller, as the controller
+        acts as a single, centralized IGMPv3 multicast router for the purposes of determining group membership.
+        2) IP packets destined to a multicast address: When a new multicast flow is received, this should trigger
+        a calculation of a multicast tree, and the installation of the appropriate flows in the network.
+        """
         igmpPkt = event.parsed.find(pkt.igmp)
         if not igmpPkt is None:
             # IGMP packet - IPv4 Network
@@ -242,12 +265,13 @@ class CastflowManager(object):
             # Check to see if this IGMP message was received from a neighbouring router, and drop
             # it if so
             for neighbour in self.adjacency[receiving_router]:
-                if self.adjacency[receiving_router][neighbour]:
+                if self.adjacency[receiving_router][neighbour] is not None:
                     log.info('IGMP packet received from neighbouring router, dropping packet.')
                     self.drop_packet(event)
                     return
             
-            # The host must be directly connected to this router, learn its IP and port
+            # The host must be directly connected to this router (or it is a router in an adjoining
+            # network outside the controllers administrative domain), learn its IP and port
             if not event.port in receiving_router.connected_hosts:
                 receiving_router.connected_hosts[event.port] = ipv4Pkt.srcip
                 log.info('Learned new host: ' + str(ipv4Pkt.srcip) + ' on port: ' + str(event.port))
