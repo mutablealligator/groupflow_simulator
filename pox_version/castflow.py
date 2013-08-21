@@ -24,6 +24,7 @@ import pox.lib.packet as pkt
 from pox.lib.packet.igmp import *   # Required for various IGMP variable constants
 import pox.openflow.libopenflow_01 as of
 from pox.lib.addresses import IPAddr, EthAddr
+import time
 
 log = core.getLogger()
 
@@ -141,6 +142,43 @@ class CastflowManager(object):
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
         
+    def launch_igmp_general_query(self, router_dpid):
+        """Generates an IGMP general query, and sends it to all attached hosts on the given router dpid"""
+        
+        # Build the IGMP payload for the message
+        igmp_pkt = pkt.igmp()
+        igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
+        igmp_pkt.max_response_time = self.igmp_query_response_interval
+        igmp_pkt.address = IPAddr("0.0.0.0")
+        igmp_pkt.qrv = self.igmp_robustness
+        igmp_pkt.qqic = self.igmp_query_inteval
+        igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
+        
+        # Build the encapsulating IP packet
+        ip_pkt = pkt.ipv4()
+        ip_pkt.ttl = 1
+        ip_pkt.protocol = IGMP_PROTOCOL
+        ip_pkt.tos = 0xc0   # Type of service: Internetwork Control
+        ip_pkt.dstip = IGMP_V3_ALL_SYSTEMS_ADDRESS
+        # TODO: Set IP Router alert option
+        ip_pkt.payload = igmp_pkt
+        
+        # Build the encapsulating ethernet packet
+        eth_pkt = eth = pkt.ethernet(type=pkt.ethernet.IP_TYPE)
+        eth_pkt.payload = ip_pkt
+        
+        # Send out the packet
+        sending_router = self.routers[router_dpid]
+        for port_num in sending_router.connected_hosts:    # Real implementation
+        # for neighbour in self.adjacency[sending_router]:  # Debug, send to neighbouring routers
+        #    port_num = self.adjacency[sending_router][neighbour]
+            output = of.ofp_packet_out(action = of.ofp_action_output(port=port_num))
+            output.data = eth_pkt.pack()
+            output.pack()
+            sending_router.connection.send(output)
+            log.debug('Router ' + str(sending_router) + ' sending IGMP query on port: ' + str(port_num))
+        
+        
     def drop_packet(self, packet_in_event):
         """Drops the packet represented by the PacketInEvent without any flow table modification"""
         msg = of.ofp_packet_out()
@@ -225,6 +263,7 @@ class CastflowManager(object):
             router.dpid = event.dpid
             self.routers[event.dpid] = router
             log.info('Learned new router: ' + str(router))
+            router.connect(event.connection)
             # sw.connect(event.connection)
         # else:
             # sw.connect(event.connection)
@@ -247,6 +286,8 @@ class CastflowManager(object):
         2) IP packets destined to a multicast address: When a new multicast flow is received, this should trigger
         a calculation of a multicast tree, and the installation of the appropriate flows in the network.
         """
+        # log.debug('Router ' + str(event.connection.dpid) + ':' + str(event.port) + ' PacketIn')
+        
         igmpPkt = event.parsed.find(pkt.igmp)
         if not igmpPkt is None:
             # IGMP packet - IPv4 Network
@@ -275,6 +316,9 @@ class CastflowManager(object):
             if not event.port in receiving_router.connected_hosts:
                 receiving_router.connected_hosts[event.port] = ipv4Pkt.srcip
                 log.info('Learned new host: ' + str(ipv4Pkt.srcip) + ' on port: ' + str(event.port))
+            
+            # Debug 
+            self.launch_igmp_general_query(event.connection.dpid)
             
             # Drop the IGMP packet to prevent it from being uneccesarily forwarded to neighbouring routers
             self.drop_packet(event)
