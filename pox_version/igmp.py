@@ -148,6 +148,7 @@ BLOCK_OLD_SOURCES       = 6
 
 # IGMP multicast address
 IGMP_ADDRESS = IPAddr("224.0.0.22")
+IGMP_V3_ALL_SYSTEMS_ADDRESS = IPAddr("224.0.0.1")
 
 # IGMP IP protocol
 IGMP_PROTOCOL = 2
@@ -305,7 +306,7 @@ class igmp (packet_base):
                 self.msg_type = MEMBERSHIP_QUERY_V3
                 s_flag_qrv_byte = 0
                 s_flag_qrv_byte, self.qqic, self.num_sources, = \
-                    struct.unpack("!BBI", raw[self.MIN_LEN:self.V3_QUERY_HDR_LEN])
+                    struct.unpack("!BBH", raw[self.MIN_LEN:self.V3_QUERY_HDR_LEN])
                 if self.qqic >= 128 :
                     #TODO - Handle floating point qqic
                     self.err('IGMP packet parsed with floating point qqic - CURRENTLY UNSUPPORTED')
@@ -331,7 +332,7 @@ class igmp (packet_base):
     def pack(self, recalc_checksum = True):
         if recalc_checksum:
             packed_no_checksum = self.pack(False)
-            self.csum = checksum(s)
+            self.csum = checksum(packed_no_checksum)
         
         if self.max_response_time >= 128 :
             # TODO - Handle floating point max_response_time
