@@ -321,14 +321,14 @@ class igmp (packet_base):
                 self.msg_type = self.ver_and_type
                 self.extra = raw[self.MIN_LEN:]
 
-        s = self.pack()
+        s = self.pack(False)
         csum = checksum(s)
         if csum != self.csum:
             self.err("IGMP checksums don't match")
         else:
             self.parsed = True
     
-    def pack(self, recalc_checksum = False):
+    def pack(self, recalc_checksum = True):
         if recalc_checksum:
             packed_no_checksum = self.pack(False)
             self.csum = checksum(s)

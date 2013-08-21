@@ -265,7 +265,7 @@ class CastflowManager(object):
             # Check to see if this IGMP message was received from a neighbouring router, and drop
             # it if so
             for neighbour in self.adjacency[receiving_router]:
-                if self.adjacency[receiving_router][neighbour] is not None:
+                if self.adjacency[receiving_router][neighbour] == event.port:
                     log.info('IGMP packet received from neighbouring router, dropping packet.')
                     self.drop_packet(event)
                     return
@@ -275,6 +275,9 @@ class CastflowManager(object):
             if not event.port in receiving_router.connected_hosts:
                 receiving_router.connected_hosts[event.port] = ipv4Pkt.srcip
                 log.info('Learned new host: ' + str(ipv4Pkt.srcip) + ' on port: ' + str(event.port))
+            
+            # Drop the IGMP packet to prevent it from being uneccesarily forwarded to neighbouring routers
+            self.drop_packet(event)
         
         
 def launch():
