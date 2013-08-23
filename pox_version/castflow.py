@@ -8,6 +8,8 @@ Implementation adapted from NOX-Classic CastFlow implementation provided by caio
 
 Depends on openflow.discovery
 
+WARNING: This module is not complete, and should currently only be tested on loop free topologies
+
 Created on July 16, 2013
 @author: alexcraig
 '''
@@ -118,7 +120,7 @@ class CastflowManager(object):
         self.igmp_robustness = 2
         self.igmp_query_interval = 125               # Seconds
         # Debug: Make the IGMP query interval shorter than default to aid testing
-        # self.igmp_query_interval = 20
+        self.igmp_query_interval = 20
         self.igmp_query_response_interval = 100     # Tenths of a second
         self.igmp_group_membership_interval = (self.igmp_robustness * self.igmp_query_interval) \
                 + (self.igmp_query_response_interval * 0.1)             # Seconds
@@ -188,7 +190,7 @@ class CastflowManager(object):
             #    port_num = self.adjacency[sending_router][neighbour]
             for port in sending_router.ports:
                 port_num = port.port_no
-                if port_num ==  OFPP_LOCAL:
+                if port_num ==  of.OFPP_CONTROLLER or port_num == of.OFPP_LOCAL:
                     continue
                 output = of.ofp_packet_out(action = of.ofp_action_output(port=port_num))
                 output.data = eth_pkt.pack()
@@ -286,8 +288,6 @@ class CastflowManager(object):
         if not self.got_first_connection_up:
             self.got_first_connection_up = True
             # Setup the Timer to send periodic general queries
-            # TODO: This could be improved by only starting this Timer when at least one router is actually
-            # connected to the network.
             self.general_query_timer = Timer(self.igmp_query_interval, self.launch_igmp_general_query, recurring = True)
             log.debug('Launching IGMP general query timer with interval ' + str(self.igmp_query_interval) + ' seconds')
             
@@ -311,40 +311,83 @@ class CastflowManager(object):
         """
         # log.debug('Router ' + str(event.connection.dpid) + ':' + str(event.port) + ' PacketIn')
         
-        igmpPkt = event.parsed.find(pkt.igmp)
-        if not igmpPkt is None:
-            # IGMP packet - IPv4 Network
-            # Make sure this router is known to the controller, drop the packet if now
-            if not event.connection.dpid in self.routers:
-                log.debug('Got IGMP packet from unrecognized router: ' + str(event.connection.dpid))
-                # self.drop_packet(event)
-                return
-            
+        # Make sure this router is known to the controller, ignore the packet if not
+        if not event.connection.dpid in self.routers:
+            log.debug('Got packet from unrecognized router: ' + str(event.connection.dpid))
+            return
+        receiving_router = self.routers[event.connection.dpid]
+        
+        igmp_pkt = event.parsed.find(pkt.igmp)
+        if not igmp_pkt is None:
+            # ==== IGMP packet - IPv4 Network ====
             # Determine the source IP of the packet
-            receiving_router = self.routers[event.connection.dpid]
-            log.debug('Got IGMP packet at router: ' + str(receiving_router) + ' on port: ' + str(event.port))
-            ipv4Pkt = event.parsed.find(pkt.ipv4)
-            log.debug(str(igmpPkt) + ' from Host: ' + str(ipv4Pkt.srcip))
+            log.debug(str(receiving_router) + ':' + str(event.port) + '| Received IGMP packet')
+            ipv4_pkt = event.parsed.find(pkt.ipv4)
+            log.debug(str(receiving_router) + ':' + str(event.port) + '| ' + str(igmp_pkt) + ' from Host: ' + str(ipv4_pkt.srcip))
             
-            # Check to see if this IGMP message was received from a neighbouring router, and drop
-            # it if so
+            # Check to see if this IGMP message was received from a neighbouring router, and if so
+            # add a rule to drop additional IGMP packets on this port
             for neighbour in self.adjacency[receiving_router]:
                 if self.adjacency[receiving_router][neighbour] == event.port:
-                    log.debug('IGMP packet received from neighbouring router, dropping packet.')
+                    log.debug(str(receiving_router) + ':' + str(event.port) + '| IGMP packet received from neighbouring router.')
                     self.drop_packet(event)
+                    
+                    # This doesn't appear to actually be working with mininet
+                    # msg = of.ofp_flow_mod()
+                    # msg.match.dl_type = ipv4_pkt.protocol
+                    # msg.match.nw_dst = ipv4_pkt.dstip
+                    # msg.match.in_port = event.port
+                    ## msg.actions.append(of.ofp_action_output(port = of.OFPP_NONE))
+                    # msg.action = []     # No actions = drop packet
+                    # event.connection.send(msg)
+                    # log.info(str(receiving_router) + ':' + str(event.port) + '| Installed flow to drop all IGMP packets on port: ' + str(event.port))
                     return
             
             # The host must be directly connected to this router (or it is a router in an adjoining
             # network outside the controllers administrative domain), learn its IP and port
             if not event.port in receiving_router.connected_hosts:
-                receiving_router.connected_hosts[event.port] = ipv4Pkt.srcip
-                log.info('Learned new host: ' + str(ipv4Pkt.srcip) + ' on port: ' + str(event.port))
-            
-            # Debug 
-            # self.launch_igmp_general_query()
-            
+                receiving_router.connected_hosts[event.port] = ipv4_pkt.srcip
+                log.info('Learned new host (IGMP packet): ' + str(ipv4_pkt.srcip) + ':' + str(event.port))
+
             # Drop the IGMP packet to prevent it from being uneccesarily forwarded to neighbouring routers
             self.drop_packet(event)
+            return
+            
+        ipv4_pkt = event.parsed.find(pkt.ipv4)
+        if not ipv4_pkt is None:
+            # ==== IPv4 Packet ====
+            # Check the destination address to see if this is a multicast packet
+            if ipv4_pkt.dstip.inNetwork('224.0.0.0/4'):
+                log.debug(str(receiving_router) + ':' + str(event.port) + '| Received non-IGMP multicast packet')
+            
+                from_neighbour_router = False
+                for neighbour in self.adjacency[receiving_router]:
+                    if self.adjacency[receiving_router][neighbour] == event.port:
+                        from_neighbour_router = True
+                        break
+                if not from_neighbour_router:
+                    # This packet must be from a connected host (more specifically, a multicast sender)
+                    if not event.port in receiving_router.connected_hosts:
+                        receiving_router.connected_hosts[event.port] = ipv4_pkt.srcip
+                        log.info('Learned new host (multicast packet): ' + str(ipv4_pkt.srcip) + ':' + str(event.port))
+                
+                # For now, just broadcast all packets from this multicast group
+                # TODO: Does a separate ofp_packet_out msg actually need to be send to forward this particular packet?
+                msg = of.ofp_packet_out()
+                msg.data = event.ofp
+                msg.buffer_id = event.ofp.buffer_id
+                msg.in_port = event.port
+                msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
+                event.connection.send(msg)
+        
+                msg = of.ofp_flow_mod()
+                msg.match.dl_type = 0x800   # IPV4
+                msg.match.nw_dst = ipv4_pkt.dstip
+                msg.match.in_port = event.port
+                msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
+                event.connection.send(msg)
+                log.info(str(receiving_router) + ':' + str(event.port) + '| Installed flow to flood all packets for multicast group: ' + str(ipv4_pkt.dstip))
+                
         
         
 def launch():

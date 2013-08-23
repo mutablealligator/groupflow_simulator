@@ -67,7 +67,7 @@ def mcastTest():
 	# net.get('h4').cmd('python ~/pythontest/multicast_receiver.py &');
 	# net.get('h5').cmd('python ~/pythontest/multicast_receiver.py &');
 	net.get('h6').cmd('python ~/pythontest/multicast_receiver.py &');
-	# net.get('h1').cmd('python ~/pythontest/multicast_sender.py');
+	net.get('h1').cmd('python ~/pythontest/multicast_sender.py &');
 	CLI(net)
 	net.stop()
 

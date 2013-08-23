@@ -404,6 +404,8 @@ class igmp (packet_base):
                 elif group_record.record_type == CHANGE_TO_INCLUDE_MODE:
                     type_string += ' | ' + str(group_record_index) + ':' \
                             + str(group_record.multicast_address) + ':CHANGE_TO_INCLUDE_MODE'
+                    if group_record.num_sources == 0:
+                        type_string += ' (Equiv V2 LEAVE GROUP)'
                 elif group_record.record_type == CHANGE_TO_EXCLUDE_MODE:
                     type_string += ' | ' + str(group_record_index) + ':' \
                             + str(group_record.multicast_address) + ':CHANGE_TO_EXCLUDE_MODE'
