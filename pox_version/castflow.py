@@ -22,11 +22,15 @@ from pox.lib.revent import *
 from pox.lib.util import dpid_to_str
 import pox.lib.packet as pkt
 from pox.lib.packet.igmp import *   # Required for various IGMP variable constants
+from pox.lib.packet.ethernet import *
 import pox.openflow.libopenflow_01 as of
 from pox.lib.addresses import IPAddr, EthAddr
+from pox.lib.recoco import Timer
 import time
 
 log = core.getLogger()
+
+OFPP_LOCAL = 65534
 
 class MulticastMembershipRecord:
     """Class representing the groud record state maintained by an IGMPv3 multicast router
@@ -83,6 +87,7 @@ class Router(EventMixin):
         assert self.dpid == connection.dpid
         if self.ports is None:
             self.ports = connection.features.ports
+            # log.debug(self.ports) # Debug
         self.disconnect()
         log.debug('Connect %s' % (connection, ))
         self.connection = connection
@@ -111,15 +116,17 @@ class CastflowManager(object):
         
         # Set variables for IGMP operation to default values
         self.igmp_robustness = 2
-        self.igmp_query_inteval = 125               # Seconds
+        self.igmp_query_interval = 125               # Seconds
+        # Debug: Make the IGMP query interval shorter than default to aid testing
+        # self.igmp_query_interval = 20
         self.igmp_query_response_interval = 100     # Tenths of a second
-        self.igmp_group_membership_interval = (self.igmp_robustness * self.igmp_query_inteval) \
+        self.igmp_group_membership_interval = (self.igmp_robustness * self.igmp_query_interval) \
                 + (self.igmp_query_response_interval * 0.1)             # Seconds
         # Note: Other querier present interval should not actually be required with this centralized
         # implementation
-        self.igmp_other_querier_present_interval = (self.igmp_robustness * self.igmp_query_inteval) \
+        self.igmp_other_querier_present_interval = (self.igmp_robustness * self.igmp_query_interval) \
                 + ((self.igmp_query_response_interval * 0.1) / 2)       # Seconds
-        self.igmp_startup_query_interval = self.igmp_query_inteval / 4  # Seconds
+        self.igmp_startup_query_interval = self.igmp_query_interval / 4  # Seconds
         self.igmp_startup_query_count = self.igmp_robustness
         self.igmp_last_member_query_interval = 10                       # Tenths of a second
         self.igmp_last_member_query_count = self.igmp_robustness
@@ -128,6 +135,7 @@ class CastflowManager(object):
         self.igmp_unsolicited_report_interval = 1       # Seconds (not used in router implementation)
 
         # Setup topology discovery state
+        self.got_first_connection_up = False
         
         # Known routers:  [dpid] -> Router
         self.routers = {}
@@ -137,13 +145,18 @@ class CastflowManager(object):
         
         # Setup IGMP state
         self.membership_records = []
-                
-                
+
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
         
-    def launch_igmp_general_query(self, router_dpid):
-        """Generates an IGMP general query, and sends it to all attached hosts on the given router dpid"""
+    def launch_igmp_general_query(self):
+        """Generates an IGMP general query, broadcasts it from all ports on all routers
+        
+        TODO: This could be improved by only broadcasting the query on ports which are not
+        connected to an adjacent router in the same control domain, as these queries will
+        be discarded by the adjacent routers anyway.
+        """
+        log.debug('Launching IGMP general query from all routers')
         
         # Build the IGMP payload for the message
         igmp_pkt = pkt.igmp()
@@ -151,7 +164,7 @@ class CastflowManager(object):
         igmp_pkt.max_response_time = self.igmp_query_response_interval
         igmp_pkt.address = IPAddr("0.0.0.0")
         igmp_pkt.qrv = self.igmp_robustness
-        igmp_pkt.qqic = self.igmp_query_inteval
+        igmp_pkt.qqic = self.igmp_query_interval
         igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
         
         # Build the encapsulating IP packet
@@ -165,18 +178,23 @@ class CastflowManager(object):
         
         # Build the encapsulating ethernet packet
         eth_pkt = eth = pkt.ethernet(type=pkt.ethernet.IP_TYPE)
+        eth_pkt.dst = ETHER_BROADCAST
         eth_pkt.payload = ip_pkt
         
         # Send out the packet
-        sending_router = self.routers[router_dpid]
-        for port_num in sending_router.connected_hosts:    # Real implementation
-        # for neighbour in self.adjacency[sending_router]:  # Debug, send to neighbouring routers
-        #    port_num = self.adjacency[sending_router][neighbour]
-            output = of.ofp_packet_out(action = of.ofp_action_output(port=port_num))
-            output.data = eth_pkt.pack()
-            output.pack()
-            sending_router.connection.send(output)
-            log.debug('Router ' + str(sending_router) + ' sending IGMP query on port: ' + str(port_num))
+        for router_dpid in self.routers:
+            sending_router = self.routers[router_dpid]
+            # for neighbour in self.adjacency[sending_router]:  # Debug, send to neighbouring routers only
+            #    port_num = self.adjacency[sending_router][neighbour]
+            for port in sending_router.ports:
+                port_num = port.port_no
+                if port_num ==  OFPP_LOCAL:
+                    continue
+                output = of.ofp_packet_out(action = of.ofp_action_output(port=port_num))
+                output.data = eth_pkt.pack()
+                output.pack()
+                sending_router.connection.send(output)
+                log.debug('Router ' + str(sending_router) + ' sending IGMP query on port: ' + str(port_num))
         
         
     def drop_packet(self, packet_in_event):
@@ -264,9 +282,14 @@ class CastflowManager(object):
             self.routers[event.dpid] = router
             log.info('Learned new router: ' + str(router))
             router.connect(event.connection)
-            # sw.connect(event.connection)
-        # else:
-            # sw.connect(event.connection)
+        
+        if not self.got_first_connection_up:
+            self.got_first_connection_up = True
+            # Setup the Timer to send periodic general queries
+            # TODO: This could be improved by only starting this Timer when at least one router is actually
+            # connected to the network.
+            self.general_query_timer = Timer(self.igmp_query_interval, self.launch_igmp_general_query, recurring = True)
+            log.debug('Launching IGMP general query timer with interval ' + str(self.igmp_query_interval) + ' seconds')
             
     def _handle_ConnectionDown (self, event):
         """Handler for ConnectionUp from the discovery module, which represent a router leaving the network."""
@@ -299,15 +322,15 @@ class CastflowManager(object):
             
             # Determine the source IP of the packet
             receiving_router = self.routers[event.connection.dpid]
-            log.info('Got IGMP packet at router: ' + str(receiving_router) + ' on port: ' + str(event.port))
+            log.debug('Got IGMP packet at router: ' + str(receiving_router) + ' on port: ' + str(event.port))
             ipv4Pkt = event.parsed.find(pkt.ipv4)
-            log.info(str(igmpPkt) + ' from Host: ' + str(ipv4Pkt.srcip))
+            log.debug(str(igmpPkt) + ' from Host: ' + str(ipv4Pkt.srcip))
             
             # Check to see if this IGMP message was received from a neighbouring router, and drop
             # it if so
             for neighbour in self.adjacency[receiving_router]:
                 if self.adjacency[receiving_router][neighbour] == event.port:
-                    log.info('IGMP packet received from neighbouring router, dropping packet.')
+                    log.debug('IGMP packet received from neighbouring router, dropping packet.')
                     self.drop_packet(event)
                     return
             
@@ -318,7 +341,7 @@ class CastflowManager(object):
                 log.info('Learned new host: ' + str(ipv4Pkt.srcip) + ' on port: ' + str(event.port))
             
             # Debug 
-            self.launch_igmp_general_query(event.connection.dpid)
+            # self.launch_igmp_general_query()
             
             # Drop the IGMP packet to prevent it from being uneccesarily forwarded to neighbouring routers
             self.drop_packet(event)

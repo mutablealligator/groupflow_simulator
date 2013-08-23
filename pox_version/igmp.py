@@ -393,6 +393,27 @@ class igmp (packet_base):
             type_string = 'v2 Membership Report'
         elif self.msg_type == MEMBERSHIP_REPORT_V3:
             type_string = 'v3 Membership Report'
+            group_record_index = 0
+            for group_record in self.group_records:
+                if group_record.record_type == MODE_IS_INCLUDE:
+                    type_string += ' | ' + str(group_record_index) + ':' \
+                            + str(group_record.multicast_address) + ':MODE_IS_INCLUDE'
+                elif group_record.record_type == MODE_IS_EXCLUDE:
+                    type_string += ' | ' + str(group_record_index) + ':' \
+                            + str(group_record.multicast_address) + ':MODE_IS_EXCLUDE'
+                elif group_record.record_type == CHANGE_TO_INCLUDE_MODE:
+                    type_string += ' | ' + str(group_record_index) + ':' \
+                            + str(group_record.multicast_address) + ':CHANGE_TO_INCLUDE_MODE'
+                elif group_record.record_type == CHANGE_TO_EXCLUDE_MODE:
+                    type_string += ' | ' + str(group_record_index) + ':' \
+                            + str(group_record.multicast_address) + ':CHANGE_TO_EXCLUDE_MODE'
+                elif group_record.record_type == ALLOW_NEW_SOURCES:
+                    type_string += ' | ' + str(group_record_index) + ':' \
+                            + str(group_record.multicast_address) + ':ALLOW_NEW_SOURCES'
+                elif group_record.record_type == BLOCK_OLD_SOURCES:
+                    type_string += ' | ' + str(group_record_index) + ':' \
+                            + str(group_record.multicast_address) + ':BLOCK_OLD_SOURCES'
+                group_record_index += 1
         elif self.msg_type == LEAVE_GROUP_V2:
             type_string = 'v2 Leave Group'
             
