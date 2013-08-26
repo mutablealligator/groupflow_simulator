@@ -32,7 +32,20 @@ import time
 
 log = core.getLogger()
 
-OFPP_LOCAL = 65534
+def int_to_filter_mode_str(filter_mode):
+    if filter_mode == MODE_IS_INCLUDE:
+        return 'MODE_IS_INCLUDE'
+    elif filter_mode == MODE_IS_EXCLUDE:
+        return 'MODE_IS_EXCLUDE'
+    elif filter_mode == CHANGE_TO_INCLUDE_MODE:
+        return 'CHANGE_TO_INCLUDE_MODE'
+    elif filter_mode == CHANGE_TO_EXCLUDE_MODE:
+        return 'CHANGE_TO_INCLUDE_MODE'
+    elif filter_mode == ALLOW_NEW_SOURCES:
+        return 'ALLOW_NEW_SOURCES'
+    elif filter_mode == BLOCK_OLD_SOURCES:
+        return 'BLOCK_OLD_SOURCES'
+    return 'UNKNOWN_FILTER_MODE'
 
 class MulticastMembershipRecord:
     """Class representing the groud record state maintained by an IGMPv3 multicast router
@@ -51,25 +64,40 @@ class MulticastMembershipRecord:
         (source address, source timer)
     """
     
-    def __init__(self):
-        self.multicast_address = None
-        self.group_timer = None
-        self.filter_mode = MODE_IS_INCLUDE  # TODO - Re-examine this as the default
-        source_records = [] # Source records are stored as a tuple of the source address and the source timer
-        self.active_senders = []    # Tuples of (Receiving IP, Adjacent Router)
-        self.active_receivers = []  # Tuples of (Sending IP, Adjacent Router)
-
+    def __init__(self, mcast_address, timer_value):
+        self.multicast_address = mcast_address
+        self.group_timer = timer_value
+        self.filter_mode = MODE_IS_EXCLUDE  # TODO: Re-examine this as the default
+        self.source_records = [] # Source records are stored as a tuple of the source address and the source timer
         
+    def add_source_record(self, ip_addr, timer_value):
+        for source_record in self.source_records:
+            if source_record[0] == ip_addr:
+                # Source record already exists
+                # TODO: Update source timer
+                return
+        self.source_records.append((ip_addr, timer_value)) # TODO: Implement source timer functionality
+        
+    def remove_source_record(self, ip_addr):
+        for tuple in self.source_records:
+            if tuple[0] == ip_addr:
+                self.source_records.remove(tuple)
+                return
+
 class Router(EventMixin):
     """
-    Class representing an OpenFlow router
+    Class representing an OpenFlow router controlled by the CastFlow manager
     """
 
-    def __init__(self):
+    def __init__(self, manager):
         self.connection = None
         self.ports = None # Complete list of all ports on the router, contains complete port object provided by connection objects
         self.igmp_ports = [] # List of ports over which IGMP service should be provided, contains only integer indexes
+        
+        # self.multicast_records[igmp_port_index][multicast_address]
+        self.multicast_records = defaultdict(lambda : defaultdict(lambda : None))
         self.dpid = None
+        self.castflow_manager = manager
         self._listeners = None
         self._connected_at = None
         
@@ -113,6 +141,87 @@ class Router(EventMixin):
 
     def _handle_ConnectionDown(self, event):
         self.disconnect()
+    
+    def update_group_record(self, event, igmp_group_record):
+        if self.multicast_records[event.port][igmp_group_record.multicast_address] is None:
+            self.multicast_records[event.port][igmp_group_record.multicast_address] = \
+                    MulticastMembershipRecord(igmp_group_record.multicast_address, 
+                    self.castflow_manager.igmp_group_membership_interval)
+            log.debug('Added group record for multicast IP: ' + str(igmp_group_record.multicast_address))
+            for source_address in igmp_group_record.source_addresses:
+                self.multicast_records[event.port][igmp_group_record.multicast_address].add_source_record(
+                        source_address, 0)  # TODO: Implement source timer functionality
+                log.debug('Added source record with IP: ' + str(source_address))
+        else:
+            self.multicast_records[event.port][igmp_group_record.multicast_address].group_timer = \
+                    self.castflow_manager.igmp_group_membership_interval
+    
+    def trigger_group_record_removal(self, port, multicast_address):
+        if not self.multicast_records[port]:
+            # KLUDGE: This ugly line is here because the act of checking self.multicast_records[port]
+            # creates a default dict with no entries even if one did not exist before... should probably
+            # find a better way to deal with this
+            del self.multicast_records[port]
+            return
+            
+        # TODO: A group specific query should be sent and timed out before the group record is removed
+        if not self.multicast_records[port][multicast_address] is None:
+            del self.multicast_records[port][multicast_address]
+            if not self.multicast_records[port]:
+                # No group records are being stored for this interface
+                del self.multicast_records[port]
+        
+    
+    def process_igmp_event(self, event):
+        """Processes an IGMP event receiving by the router.
+        """
+        
+        igmp_pkt = event.parsed.find(pkt.igmp)
+        ipv4_pkt = event.parsed.find(pkt.ipv4)
+        
+        if igmp_pkt.msg_type == MEMBERSHIP_REPORT_V3:
+            for group_record in igmp_pkt.group_records:
+                if group_record.record_type == MODE_IS_INCLUDE:
+                    log.debug(str(self) + ': Got MODE_IS_INCLUDE group record')
+                    
+                elif group_record.record_type == MODE_IS_EXCLUDE:
+                    log.debug(str(self) + ': Got MODE_IS_EXCLUDE group record')
+                    self.update_group_record(event, group_record)
+                            
+                elif group_record.record_type == CHANGE_TO_INCLUDE_MODE:
+                    log.debug(str(self) + ': Got CHANGE_TO_INCLUDE_MODE group record')
+                    if group_record.num_sources == 0:
+                        # Changing to INCLUDE mode with no sources defined is equivalent to leaving the group
+                        # TODO: A group specific query should be sent and timed out before the group record is removed
+                        self.trigger_group_record_removal(event.port, group_record.multicast_address)
+                        
+                elif group_record.record_type == CHANGE_TO_EXCLUDE_MODE:
+                    log.debug(str(self) + ': Got CHANGE_TO_EXCLUDE_MODE group record')
+                    self.update_group_record(event, group_record)
+                    
+                elif group_record.record_type == ALLOW_NEW_SOURCES:
+                    log.debug(str(self) + ': Got ALLOW_NEW_SOURCES group record')
+                elif group_record.record_type == BLOCK_OLD_SOURCES:
+                    log.debug(str(self) + ': Got BLOCK_OLD_SOURCES group record')
+                    
+                # Debug - Print a listing of the current group membership state
+                log.debug(' ')
+                log.debug('== Router ' + str(self) + ' Group Membership State ==')
+                for port in self.multicast_records:
+                    log.debug('Port: ' + str(port))
+                    for mcast_address in self.multicast_records[port]:
+                        group_record = self.multicast_records[port][mcast_address]
+                        if group_record is None:    # Protects against mutual exclusion issues
+                            continue
+                        log.debug(str(group_record.multicast_address) + ' - ' 
+                                + int_to_filter_mode_str(group_record.filter_mode)
+                                + ' - Timer: ' + str(group_record.group_timer))
+                        for source_record in group_record.source_records:
+                            log.debug(str(source_record[0]) + ' - Timer: ' + str(source_record[1]))
+                log.debug('=====================================================')
+                log.debug(' ')
+        
+        
 
 
 class CastflowManager(object):
@@ -151,30 +260,28 @@ class CastflowManager(object):
         # Adjacency map:  [router1][router2] -> port from router1 to router2
         self.adjacency = defaultdict(lambda : defaultdict(lambda : \
                 None))
-        
-        # Setup IGMP state
-        self.membership_records = defaultdict(lambda : None)    # Group records are keyed by the multicast group address
 
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
-        
-    def launch_igmp_general_query(self):
-        """Generates an IGMP general query, broadcasts it from all ports on all routers
-        
-        TODO: This could be improved by only broadcasting the query on ports which are not
-        connected to an adjacent router in the same control domain, as these queries will
-        be discarded by the adjacent routers anyway.
+    
+    def decrement_all_timers(self):
+        """Decrements the source and group timers for all group_records in the network. As long as this is
+        always called from a recoco Timer, mutual exclusion should not be an issue.
         """
-        log.debug('Launching IGMP general query from all routers')
-        
-        # Build the IGMP payload for the message
-        igmp_pkt = pkt.igmp()
-        igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
-        igmp_pkt.max_response_time = self.igmp_query_response_interval
-        igmp_pkt.address = IPAddr("0.0.0.0")
-        igmp_pkt.qrv = self.igmp_robustness
-        igmp_pkt.qqic = self.igmp_query_interval
-        igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
+        for router_dpid in self.routers:
+            router = self.routers[router_dpid]
+            for port in router.multicast_records:
+                for mcast_address in router.multicast_records[port]:
+                    group_record = router.multicast_records[port][mcast_address]
+                    if group_record is None:        # Protects against mutual exclusion issues
+                        continue
+                    group_record.group_timer -= 1
+                    for source_record in group_record.source_records:
+                        source.record[1] -= 1
+     
+    def send_igmp_query_to_all_networks(self, igmp_pkt):
+        """Encapsulates the provided IGMP packet into IP and Ethernet packets, and sends the packet
+        to all attached network on all routers."""
         
         # Build the encapsulating IP packet
         ip_pkt = pkt.ipv4()
@@ -201,6 +308,26 @@ class CastflowManager(object):
                 output.pack()
                 sending_router.connection.send(output)
                 # log.debug('Router ' + str(sending_router) + ' sending IGMP query on port: ' + str(port_num))
+        
+    def launch_igmp_general_query(self):
+        """Generates an IGMP general query, broadcasts it from all ports on all routers
+        
+        TODO: This could be improved by only broadcasting the query on ports which are not
+        connected to an adjacent router in the same control domain, as these queries will
+        be discarded by the adjacent routers anyway.
+        """
+        log.debug('Launching IGMP general query from all routers')
+        
+        # Build the IGMP payload for the message
+        igmp_pkt = pkt.igmp()
+        igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
+        igmp_pkt.max_response_time = self.igmp_query_response_interval
+        igmp_pkt.address = IPAddr("0.0.0.0")
+        igmp_pkt.qrv = self.igmp_robustness
+        igmp_pkt.qqic = self.igmp_query_interval
+        igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
+        
+        self.send_igmp_query_to_all_networks(igmp_pkt)
         
         
     def drop_packet(self, packet_in_event):
@@ -289,7 +416,7 @@ class CastflowManager(object):
         router = self.routers.get(event.dpid)
         if router is None:
             # New router
-            router = Router()
+            router = Router(self)
             router.dpid = event.dpid
             self.routers[event.dpid] = router
             log.info('Learned new router: ' + str(router))
@@ -300,6 +427,8 @@ class CastflowManager(object):
             # Setup the Timer to send periodic general queries
             self.general_query_timer = Timer(self.igmp_query_interval, self.launch_igmp_general_query, recurring = True)
             log.debug('Launching IGMP general query timer with interval ' + str(self.igmp_query_interval) + ' seconds')
+            # Setup the timer to handle group and source timers
+            self.timer_decrementing_timer = Timer(1, self.decrement_all_timers, recurring = True)
             
     def _handle_ConnectionDown (self, event):
         """Handler for ConnectionUp from the discovery module, which represent a router leaving the network."""
@@ -340,9 +469,8 @@ class CastflowManager(object):
             for neighbour in self.adjacency[receiving_router]:
                 if self.adjacency[receiving_router][neighbour] == event.port:
                     log.debug(str(receiving_router) + ':' + str(event.port) + '| IGMP packet received from neighbouring router.')
-                    self.drop_packet(event)
                     
-                    # This doesn't appear to actually be working with mininet
+                    # TODO: This doesn't appear to actually be working with mininet, just drop individual IGMP packets without installing a flow for now
                     # msg = of.ofp_flow_mod()
                     # msg.match.dl_type = ipv4_pkt.protocol
                     # msg.match.nw_dst = ipv4_pkt.dstip
@@ -351,6 +479,8 @@ class CastflowManager(object):
                     # msg.action = []     # No actions = drop packet
                     # event.connection.send(msg)
                     # log.info(str(receiving_router) + ':' + str(event.port) + '| Installed flow to drop all IGMP packets on port: ' + str(event.port))
+                    
+                    self.drop_packet(event)
                     return
             
             # The host must be directly connected to this router (or it is a router in an adjoining
@@ -358,7 +488,10 @@ class CastflowManager(object):
             if not event.port in receiving_router.connected_hosts:
                 receiving_router.connected_hosts[event.port] = ipv4_pkt.srcip
                 log.info('Learned new host (IGMP packet): ' + str(ipv4_pkt.srcip) + ':' + str(event.port))
-
+            
+            # Have the receiving router process the IGMP packet accordingly
+            receiving_router.process_igmp_event(event)
+            
             # Drop the IGMP packet to prevent it from being uneccesarily forwarded to neighbouring routers
             self.drop_packet(event)
             return
@@ -381,8 +514,12 @@ class CastflowManager(object):
                         receiving_router.connected_hosts[event.port] = ipv4_pkt.srcip
                         log.info('Learned new host (multicast packet): ' + str(ipv4_pkt.srcip) + ':' + str(event.port))
                 
-                # For now, just broadcast all packets from this multicast group
-                # TODO: Does a separate ofp_packet_out msg actually need to be send to forward this particular packet?
+                # For now, just flood all packets from this multicast group
+                # TODO: This will completely break in the presence of loops, make sure that testing uses loop free
+                #       topologies until the actual multicast protocol is in place
+                
+                # TODO: Does a separate ofp_packet_out msg actually need to be send to forward this particular packet,
+                #       or is the flow mod sufficient?
                 msg = of.ofp_packet_out()
                 msg.data = event.ofp
                 msg.buffer_id = event.ofp.buffer_id
