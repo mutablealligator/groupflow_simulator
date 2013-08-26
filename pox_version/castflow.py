@@ -56,6 +56,8 @@ class MulticastMembershipRecord:
         self.group_timer = None
         self.filter_mode = MODE_IS_INCLUDE  # TODO - Re-examine this as the default
         source_records = [] # Source records are stored as a tuple of the source address and the source timer
+        self.active_senders = []    # Tuples of (Receiving IP, Adjacent Router)
+        self.active_receivers = []  # Tuples of (Sending IP, Adjacent Router)
 
         
 class Router(EventMixin):
@@ -65,7 +67,8 @@ class Router(EventMixin):
 
     def __init__(self):
         self.connection = None
-        self.ports = None
+        self.ports = None # Complete list of all ports on the router, contains complete port object provided by connection objects
+        self.igmp_ports = [] # List of ports over which IGMP service should be provided, contains only integer indexes
         self.dpid = None
         self._listeners = None
         self._connected_at = None
@@ -89,6 +92,10 @@ class Router(EventMixin):
         assert self.dpid == connection.dpid
         if self.ports is None:
             self.ports = connection.features.ports
+            for port in self.ports:
+                if port.port_no ==  of.OFPP_CONTROLLER or port.port_no == of.OFPP_LOCAL:
+                    continue
+                self.igmp_ports.append(port.port_no)
             # log.debug(self.ports) # Debug
         self.disconnect()
         log.debug('Connect %s' % (connection, ))
@@ -146,7 +153,7 @@ class CastflowManager(object):
                 None))
         
         # Setup IGMP state
-        self.membership_records = []
+        self.membership_records = defaultdict(lambda : None)    # Group records are keyed by the multicast group address
 
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
@@ -188,15 +195,12 @@ class CastflowManager(object):
             sending_router = self.routers[router_dpid]
             # for neighbour in self.adjacency[sending_router]:  # Debug, send to neighbouring routers only
             #    port_num = self.adjacency[sending_router][neighbour]
-            for port in sending_router.ports:
-                port_num = port.port_no
-                if port_num ==  of.OFPP_CONTROLLER or port_num == of.OFPP_LOCAL:
-                    continue
+            for port_num in sending_router.igmp_ports:
                 output = of.ofp_packet_out(action = of.ofp_action_output(port=port_num))
                 output.data = eth_pkt.pack()
                 output.pack()
                 sending_router.connection.send(output)
-                log.debug('Router ' + str(sending_router) + ' sending IGMP query on port: ' + str(port_num))
+                # log.debug('Router ' + str(sending_router) + ' sending IGMP query on port: ' + str(port_num))
         
         
     def drop_packet(self, packet_in_event):
@@ -233,6 +237,8 @@ class CastflowManager(object):
                 del self.adjacency[router1][router2]
             if router1 in self.adjacency[router2]:
                 del self.adjacency[router2][router1]
+            router1.igmp_ports.append(l.port1)
+            router2.igmp_ports.append(l.port2)
                 
             log.info('Removed adjacency: ' + str(router1) + '.'
                  + str(l.port1) + ' <-> ' + str(router2) + '.'
@@ -245,7 +251,9 @@ class CastflowManager(object):
                         # Yup, link goes both ways
                         log.info('Found parallel adjacency');
                         self.adjacency[router1][router2] = ll.port1
+                        router1.igmp_ports.remove(ll.port1)
                         self.adjacency[router2][router1] = ll.port2
+                        router2.igmp_ports.remove(ll.port2)
                         # Fixed -- new link chosen to connect these
                         break
         else:
@@ -257,7 +265,9 @@ class CastflowManager(object):
                 if flip(l) in core.openflow_discovery.adjacency:
                     # Link goes both ways -- connected!
                     self.adjacency[router1][router2] = l.port1
+                    router1.igmp_ports.remove(l.port1)
                     self.adjacency[router2][router1] = l.port2
+                    router2.igmp_ports.remove(l.port2)
                     log.info('Added adjacency: ' + str(router1) + '.'
                              + str(l.port1) + ' <-> ' + str(router2) + '.'
                              + str(l.port2))
