@@ -15,6 +15,22 @@ multicast_port = 5007
 packets_to_receive = 30
 echo_port = 5008
 
+# WARNING: These attributes are very unlikely to work across all platforms... best that can be
+# done until the python socket module is updated
+if not hasattr(socket, 'IP_UNBLOCK_SOURCE'):
+    setattr(socket, 'IP_UNBLOCK_SOURCE', 37)
+if not hasattr(socket, 'IP_BLOCK_SOURCE'):
+    setattr(socket, 'IP_BLOCK_SOURCE', 38)
+if not hasattr(socket, 'IP_ADD_SOURCE_MEMBERSHIP'):
+    setattr(socket, 'IP_ADD_SOURCE_MEMBERSHIP', 39)
+if not hasattr(socket, 'IP_DROP_SOURCE_MEMBERSHIP'):
+    setattr(socket, 'IP_DROP_SOURCE_MEMBERSHIP', 40)
+    
+if not hasattr(socket, 'MCAST_EXCLUDE'):
+    setattr(socket, 'MCAST_EXCLUDE', 0)
+if not hasattr(socket, 'MCAST_INCLUDE'):
+    setattr(socket, 'MCAST_INCLUDE', 1)
+
 def main():
     global multicast_group, multicast_port, packets_to_receive, source_address
     
@@ -32,13 +48,12 @@ def main():
     
     # Setup the socket for receive multicast traffic
     multicast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    multicast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    multicast_socket.bind(('', multicast_port))
-    #mreq = struct.pack("=4sl", socket.inet_aton(multicast_group), socket.INADDR_ANY)
-    #multicast_socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-    mreq = (socket.inet_pton(socket.AF_INET, multicast_group) +
-                   socket.inet_pton(socket.AF_INET, source_address))
-    multicast_socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_SOURCE_MEMBERSHIP, mreq)
+    # multicast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    # print 'multicast_group: ' + str(multicast_group)
+    # print 'source_address: ' + str(source_address)
+    mreq = struct.pack("=4sl4s", socket.inet_aton(multicast_group), socket.INADDR_ANY, socket.inet_aton(source_address))
+    multicast_socket.setsockopt(socket.SOL_IP, socket.IP_ADD_SOURCE_MEMBERSHIP, mreq)
+    multicast_socket.bind((multicast_group, multicast_port))
     
     # Setup the socket for sending echo response
     echo_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
