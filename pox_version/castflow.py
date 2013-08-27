@@ -197,6 +197,57 @@ class Router(EventMixin):
         
         return self.multicast_records[event.port][igmp_group_record.multicast_address]
     
+    def send_group_specific_query(self, port, multicast_address, retransmissions = self.castflow_manager.igmp_robustness - 1):
+        Build the IGMP payload for the message
+        igmp_pkt = pkt.igmp()
+        igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
+        igmp_pkt.max_response_time = self.castflow_manager.igmp_query_response_interval
+        igmp_pkt.address = multicast_address
+        igmp_pkt.qrv = self.castflow_manager.igmp_robustness
+        igmp_pkt.qqic = self.castflow_manager.igmp_query_interval
+        igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
+        eth_pkt = self.castflow_manager.encapsulate_igmp_packet(igmp_pkt)
+        output = of.ofp_packet_out(action = of.ofp_action_output(port=port))
+        output.data = eth_pkt.pack()
+        output.pack()
+        self.connection.send(output)
+        log.info('Router ' + str(self) + ':' + str(port) '| Sent group specific query for group: ' + str(multicast_address))
+        self.multicast_records[port][multicast_address].group_timer = self.igmp_last_member_query_time / 10
+        
+        if retransmissions > 0:
+            Timer(self.igmp_last_member_query_interval, send_group_specific_query, 
+                    args = [self, port, multicast_address, retransmissions - 1], recurring = False)
+                    
+    def send_group_and_source_specific_query(self, port, multicast_address, sources, retransmissions = self.castflow_manager.igmp_robustness - 1):
+        # Build the IGMP payload for the message
+        igmp_pkt = pkt.igmp()
+        igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
+        igmp_pkt.max_response_time = self.castflow_manager.igmp_query_response_interval
+        igmp_pkt.address = multicast_address
+        igmp_pkt.qrv = self.castflow_manager.igmp_robustness
+        igmp_pkt.qqic = self.castflow_manager.igmp_query_interval
+        igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
+        igmp_pkt.num_sources = len(sources)
+        for source in sources:
+            igmp_pkt.source_addresses.append(source[0])
+            
+        igmp_group_record = igmp_group_record()
+
+        eth_pkt = self.castflow_manager.encapsulate_igmp_packet(igmp_pkt)
+        output = of.ofp_packet_out(action = of.ofp_action_output(port=port))
+        output.data = eth_pkt.pack()
+        output.pack()
+        self.connection.send(output)
+        log.info('Router ' + str(self) + ':' + str(port) '| Sent group specific query for group: ' + str(multicast_address))
+        for source in sources:
+            log.info('Source: ' + str(source[0]))
+        self.multicast_records[port][multicast_address].group_timer = self.igmp_last_member_query_time / 10
+        
+        if retransmissions > 0:
+            Timer(self.igmp_last_member_query_interval, send_group_specific_query, 
+                    args = [self, port, multicast_address, retransmissions - 1], recurring = False)
+        
+    
     def remove_group_record(self, port, multicast_address):
         if not self.multicast_records[port]:
             # KLUDGE: This ugly line is here because the act of checking self.multicast_records[port]
@@ -206,25 +257,6 @@ class Router(EventMixin):
             return
             
         if not self.multicast_records[port][multicast_address] is None:
-            # TODO: Move this logic elsewhere
-            # TODO: A group specific query should be sent and timed out before the group record is removed
-            # TODO: Multiple transmissions of the group specific query
-            # Build the IGMP payload for the message
-            #igmp_pkt = pkt.igmp()
-            #igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
-            #igmp_pkt.max_response_time = self.castflow_manager.igmp_query_response_interval
-            #igmp_pkt.address = multicast_address
-            #igmp_pkt.qrv = self.castflow_manager.igmp_robustness
-            #igmp_pkt.qqic = self.castflow_manager.igmp_query_interval
-            #igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
-            #eth_pkt = self.castflow_manager.encapsulate_igmp_packet(igmp_pkt)
-            #output = of.ofp_packet_out(action = of.ofp_action_output(port=port))
-            #output.data = eth_pkt.pack()
-            #output.pack()
-            #self.connection.send(output)
-            #log.debug('Router ' + str(self) + ' Sent group specific query for group: ' + str(multicast_address)
-            #        + ' Port: ' + str(port))
-            
             del self.multicast_records[port][multicast_address]
             if not self.multicast_records[port]:
                 # No group records are being stored for this interface
@@ -285,7 +317,11 @@ class Router(EventMixin):
             
             elif igmp_group_record.record_type == BLOCK_OLD_SOURCES:
                 log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is INCLUDE, Received BLOCK_OLD_SOURCES')
-                # TODO: Send Q(G, A*B)
+                query_sources = []
+                for source_address in igmp_group_record.source_addresses:
+                    if router_group_record.addr_in_x_source_records(source_address):
+                        sources.append([source_address])
+                self.send_group_and_source_specific_query(event.port, igmp_group_record.multicast_address, sources)
                 
             elif igmp_group_record.record_type == CHANGE_TO_EXCLUDE_MODE:
                 log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is INCLUDE, Received CHANGE_TO_EXCLUDE_MODE')
@@ -306,7 +342,7 @@ class Router(EventMixin):
                 for new_y_record in new_y_source_records:
                     new_y_record[1] = 0
                 
-                # TODO: Send Q(G, A*B)
+                self.send_group_and_source_specific_query(event.port, igmp_group_record.multicast_address, new_x_source_records)
                 
                 router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
                 
@@ -393,7 +429,7 @@ class Router(EventMixin):
                                 router_group_record.get_curr_source_timer(source_address)])
                         continue
                 
-                # TODO: Send (G, A-Y)
+                self.send_group_and_source_specific_query(event.port, igmp_group_record.multicast_address, new_x_source_records)
                 
                 router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
                     
@@ -426,7 +462,8 @@ class Router(EventMixin):
                         new_y_source_records.remove(source_record)
                         
                     # TODO: Send Q(G, X-A)
-                    # TODO: Send Q(G)
+                    
+                    self.send_group_specific_query(event.port, igmp_group_record.multicast_address)
                     
                     
         if router_group_record.filter_mode == MODE_IS_INCLUDE and len(new_x_source_records) == 0:
