@@ -67,39 +67,39 @@ class MulticastMembershipRecord:
     def __init__(self, mcast_address, timer_value):
         self.multicast_address = mcast_address
         self.group_timer = timer_value
-        self.filter_mode = MODE_IS_EXCLUDE  # TODO: Re-examine this as the default
-        self.x_source_records = [] # Source records are stored as a tuple of the source address and the source timer
+        self.filter_mode = MODE_IS_INCLUDE  # TODO: Re-examine this as the default
+        self.x_source_records = [] # Source records are stored as a list of the source address and the source timer
         self.y_source_records = [] # Source records with a zero source timer are stored separately
     
     def get_curr_source_timer(self, ip_addr):
-        for tuple in self.source_records:
-            if tuple[0] == ip_addr:
-                return tuple[1]
+        for record in self.x_source_records:
+            if record[0] == ip_addr:
+                return record[1]
          
         return 0
         
     def remove_source_record(self, ip_addr):
-        for tuple in self.source_records:
-            if tuple[0] == ip_addr:
-                self.source_records.remove(tuple)
+        for record in self.x_source_records:
+            if record[0] == ip_addr:
+                self.x_source_records.remove(record)
                 return
         
-        for tuple in self.zero_timer_source_records:
-            if tuple[0] == ip_addr:
-                self.source_records.remove(tuple)
+        for record in self.y_source_records:
+            if record[0] == ip_addr:
+                self.y_source_records.remove(record)
                 return
     
     def addr_in_x_source_records(self, ip_addr):
-        for tuple in self.source_records:
-            if tuple[0] == ip_addr:
+        for record in self.x_source_records:
+            if record[0] == ip_addr:
                 return True
                 
         return False
         
         
     def addr_in_y_source_records(self, ip_addr):
-        for tuple in self.zero_timer_source_records:
-            if tuple[0] == ip_addr:
+        for record in self.y_source_records:
+            if record[0] == ip_addr:
                 return True
         
         return False
@@ -174,9 +174,14 @@ class Router(EventMixin):
                 group_record = self.multicast_records[port][mcast_address]
                 if group_record is None:    # Protects against mutual exclusion issues
                     continue
-                log.debug(str(group_record.multicast_address) + ' - ' 
-                        + int_to_filter_mode_str(group_record.filter_mode)
-                        + ' - Timer: ' + str(group_record.group_timer))
+                
+                if group_record.filter_mode == MODE_IS_EXCLUDE:
+                    log.debug(str(group_record.multicast_address) + ' - ' 
+                            + int_to_filter_mode_str(group_record.filter_mode)
+                            + ' - Timer: ' + str(group_record.group_timer))
+                else:
+                    log.debug(str(group_record.multicast_address) + ' - ' 
+                            + int_to_filter_mode_str(group_record.filter_mode))
                 for source_record in group_record.x_source_records:
                     log.debug('X: ' + str(source_record[0]) + ' - Timer: ' + str(source_record[1]))
                 for source_record in group_record.y_source_records:
@@ -225,8 +230,213 @@ class Router(EventMixin):
                 # No group records are being stored for this interface
                 del self.multicast_records[port]
     
+    def process_state_change_record(self, event, igmp_group_record):
+        """Processes state change IGMP membership reports according to the following table:
+        
+        Router State   Report Rec'd New Router State        Actions
+        ------------   ------------ ----------------        -------
+
+        INCLUDE (A)    ALLOW (B)    INCLUDE (A+B)           (B)=GMI
+
+        INCLUDE (A)    BLOCK (B)    INCLUDE (A)             Send Q(G,A*B)
+
+        INCLUDE (A)    TO_EX (B)    EXCLUDE (A*B,B-A)       (B-A)=0
+                                                            Delete (A-B)
+                                                            Send Q(G,A*B)
+                                                            Group Timer=GMI
+
+        INCLUDE (A)    TO_IN (B)    INCLUDE (A+B)           (B)=GMI
+                                                            Send Q(G,A-B)
+
+        EXCLUDE (X,Y)  ALLOW (A)    EXCLUDE (X+A,Y-A)       (A)=GMI
+
+        EXCLUDE (X,Y)  BLOCK (A)    EXCLUDE (X+(A-Y),Y)     (A-X-Y)=Group Timer
+                                                            Send Q(G,A-Y)
+
+        EXCLUDE (X,Y)  TO_EX (A)    EXCLUDE (A-Y,Y*A)       (A-X-Y)=Group Timer
+                                                            Delete (X-A)
+                                                            Delete (Y-A)
+                                                            Send Q(G,A-Y)
+                                                            Group Timer=GMI
+                                                            
+        EXCLUDE (X,Y)  TO_IN (A)    EXCLUDE (X+A,Y-A)       (A)=GMI
+                                                            Send Q(G,X-A)
+                                                            Send Q(G)
+        """
+        router_group_record = self.create_group_record(event, igmp_group_record,
+                    self.castflow_manager.igmp_group_membership_interval)
+        new_x_source_records = []
+        new_y_source_records = []
+        
+        if router_group_record.filter_mode == MODE_IS_INCLUDE:
+            if igmp_group_record.record_type == ALLOW_NEW_SOURCES:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is INCLUDE, Received ALLOW_NEW_SOURCES')
+                new_x_source_records = router_group_record.x_source_records[:]
+                for source_address in igmp_group_record.source_addresses:
+                    record_already_present = False
+                    for source_record in new_x_source_records:
+                        if source_record[0] == source_address:
+                            source_record[1] = self.castflow_manager.igmp_group_membership_interval
+                            record_already_present = True
+                            break
+                    if not record_already_present:
+                        new_x_source_records.append([source_address, 
+                            self.castflow_manager.igmp_group_membership_interval])
+            
+            elif igmp_group_record.record_type == BLOCK_OLD_SOURCES:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is INCLUDE, Received BLOCK_OLD_SOURCES')
+                # TODO: Send Q(G, A*B)
+                
+            elif igmp_group_record.record_type == CHANGE_TO_EXCLUDE_MODE:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is INCLUDE, Received CHANGE_TO_EXCLUDE_MODE')
+                router_group_record.filter_mode = MODE_IS_EXCLUDE
+                new_y_source_records = router_group_record.x_source_records[:]
+                for source_address in igmp_group_record.source_addresses:
+                    if router_group_record.addr_in_x_source_records(source_address):
+                        new_x_source_records.append([source_address, 
+                                router_group_record.get_curr_source_timer(source_address)])
+                        new_y_to_remove = None
+                        for new_y_record in new_y_source_records:
+                            if new_y_record[0] == source_address:
+                                new_y_to_remove = new_y_record
+                                break
+                        if new_y_to_remove is not None:
+                            new_y_source_records.remove(new_y_to_remove)
+                            
+                for new_y_record in new_y_source_records:
+                    new_y_record[1] = 0
+                
+                # TODO: Send Q(G, A*B)
+                
+                router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
+                
+            elif igmp_group_record.record_type == CHANGE_TO_INCLUDE_MODE:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is INCLUDE, Received CHANGE_TO_INCLUDE_MODE')
+                new_x_source_records = router_group_record.x_source_records[:]
+                # Add any new sources which did not already appear with a
+                # refreshed timer
+                # X = X + B
+                for source_address in igmp_group_record.source_addresses:
+                    record_already_present = False
+                    for source_record in new_x_source_records:
+                        if source_record[0] == source_address:
+                            source_record[1] = self.castflow_manager.igmp_group_membership_interval
+                            record_already_present = True
+                            break
+                    if not record_already_present:
+                        new_x_source_records.append([source_address, 
+                            self.castflow_manager.igmp_group_membership_interval])
+                            
+                # TODO: Send Q(G,A*B)
+
+        elif router_group_record.filter_mode == MODE_IS_EXCLUDE:
+            if igmp_group_record.record_type == ALLOW_NEW_SOURCES:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is EXCLUDE, Received ALLOW_NEW_SOURCES')
+                new_x_source_records = router_group_record.x_source_records[:]
+                new_y_source_records = router_group_record.x_source_records[:]
+                
+                for source_address in igmp_group_record.source_addresses:
+                    # Update X * A with new GMI
+                    record_already_present = False
+                    for source_record in new_x_source_records:
+                        if source_record[0] == source_address:
+                            source_record[1] = self.castflow_manager.igmp_group_membership_interval
+                            record_already_present = True
+                            break
+                    
+                    # X = X + A
+                    if not record_already_present:
+                        new_x_source_records.append([source_address, 
+                            self.castflow_manager.igmp_group_membership_interval])
+                    
+                    # Y = Y - A
+                    source_record_to_remove = None                    
+                    for source_record in new_y_source_records:
+                        if source_record[0] == source_address:
+                            source_record_to_remove = source_record
+                            break
+                    if source_record_to_remove is not None:
+                        new_y_source_records.remove(source_record)
+                
+            elif igmp_group_record.record_type == BLOCK_OLD_SOURCES:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is EXCLUDE, Received BLOCK_OLD_SOURCES')
+                new_x_source_records = router_group_record.x_source_records[:]
+                new_y_source_records = router_group_record.y_source_records[:]
+                
+                for source_address in igmp_group_record.source_addresses:
+                    if not router_group_record.addr_in_x_source_records(source_address) and \
+                            not router_group_record.addr_in_y_source_records(source_address):
+                        new_x_source_records.append([source_address, 
+                                router_group_record.group_timer])
+                        continue
+                
+                # TODO: Send Q(G, A-Y)
+                    
+            elif igmp_group_record.record_type == CHANGE_TO_EXCLUDE_MODE:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is EXCLUDE, Received CHANGE_TO_EXCLUDE_MODE')
+                new_x_source_records = []
+                new_y_source_records = []
+                
+                for source_address in igmp_group_record.source_addresses:
+                    if router_group_record.addr_in_y_source_records(source_address):
+                        new_y_source_records.append([source_address, 0])
+                        continue
+                        
+                    if not router_group_record.addr_in_x_source_records(source_address) and \
+                            not router_group_record.addr_in_y_source_records(source_address):
+                        new_x_source_records.append([source_address, 
+                                router_group_record.group_timer])
+                        continue
+                    
+                    if not router_group_record.addr_in_y_source_records(source_address):
+                        new_x_source_records.append([source_address, 
+                                router_group_record.get_curr_source_timer(source_address)])
+                        continue
+                
+                # TODO: Send (G, A-Y)
+                
+                router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
+                    
+            elif igmp_group_record.record_type == CHANGE_TO_INCLUDE_MODE:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is EXCLUDE, Received CHANGE_TO_INCLUDE_MODE')
+                new_x_source_records = router_group_record.x_source_records[:]
+                new_y_source_records = router_group_record.x_source_records[:]
+                
+                for source_address in igmp_group_record.source_addresses:
+                    # Update X * A with new GMI
+                    record_already_present = False
+                    for source_record in new_x_source_records:
+                        if source_record[0] == source_address:
+                            source_record[1] = self.castflow_manager.igmp_group_membership_interval
+                            record_already_present = True
+                            break
+                    
+                    # X = X + A
+                    if not record_already_present:
+                        new_x_source_records.append([source_address, 
+                            self.castflow_manager.igmp_group_membership_interval])
+                    
+                    # Y = Y - A
+                    source_record_to_remove = None                    
+                    for source_record in new_y_source_records:
+                        if source_record[0] == source_address:
+                            source_record_to_remove = source_record
+                            break
+                    if source_record_to_remove is not None:
+                        new_y_source_records.remove(source_record)
+                        
+                    # TODO: Send Q(G, X-A)
+                    # TODO: Send Q(G)
+                    
+                    
+        if router_group_record.filter_mode == MODE_IS_INCLUDE and len(new_x_source_records) == 0:
+            self.remove_group_record(event.port, igmp_group_record.multicast_address)
+        else:
+            router_group_record.x_source_records = new_x_source_records
+            router_group_record.y_source_records = new_y_source_records
+    
     def process_current_state_record(self, event, igmp_group_record):
-        """Processes current state IGMP memebership reports according to the following table:
+        """Processes current state IGMP membership reports according to the following table:
           
         Router State   Report Rec'd  New Router State         Actions
         ------------   ------------  ----------------         -------
@@ -249,11 +459,49 @@ class Router(EventMixin):
                     self.castflow_manager.igmp_group_membership_interval)
         new_x_source_records = []
         new_y_source_records = []
+        
+        if router_group_record.filter_mode == MODE_IS_INCLUDE:
+            if igmp_group_record.record_type == MODE_IS_INCLUDE:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is INCLUDE, Received MODE_IS_INCLUDE')
+                new_x_source_records = router_group_record.x_source_records[:]
+                # Add any new sources which did not already appear with a
+                # refreshed timer
+                # X = X + B
+                for source_address in igmp_group_record.source_addresses:
+                    record_already_present = False
+                    for source_record in new_x_source_records:
+                        if source_record[0] == source_address:
+                            source_record[1] = self.castflow_manager.igmp_group_membership_interval
+                            record_already_present = True
+                            break
+                    if not record_already_present:
+                        new_x_source_records.append([source_address, 
+                            self.castflow_manager.igmp_group_membership_interval])
             
-        if igmp_group_record.record_type == MODE_IS_INCLUDE:
-            log.debug(str(self) + ': Got MODE_IS_INCLUDE group record')
-            
-            if router_group_record.filter_mode == MODE_IS_EXCLUDE:
+            elif igmp_group_record.record_type == MODE_IS_EXCLUDE:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is INCLUDE, Received MODE_IS_EXCLUDE')
+                router_group_record.filter_mode = MODE_IS_EXCLUDE
+                new_y_source_records = router_group_record.x_source_records[:]
+                for source_address in igmp_group_record.source_addresses:
+                    if router_group_record.addr_in_x_source_records(source_address):
+                        new_x_source_records.append([source_address, 
+                                router_group_record.get_curr_source_timer(source_address)])
+                        new_y_to_remove = None
+                        for new_y_record in new_y_source_records:
+                            if new_y_record[0] == source_address:
+                                new_y_to_remove = new_y_record
+                                break
+                        if new_y_to_remove is not None:
+                            new_y_source_records.remove(new_y_to_remove)
+                            
+                for new_y_record in new_y_source_records:
+                    new_y_record[1] = 0
+                
+                router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
+        
+        elif router_group_record.filter_mode == MODE_IS_EXCLUDE:
+            if igmp_group_record.record_type == MODE_IS_INCLUDE:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is EXCLUDE, Received MODE_IS_INCLUDE')
                 new_x_source_records = router_group_record.x_source_records[:]
                 new_y_source_records = router_group_record.x_source_records[:]
                 
@@ -268,8 +516,8 @@ class Router(EventMixin):
                     
                     # X = X + A
                     if not record_already_present:
-                        new_x_source_records.append((source_address, 
-                            self.castflow_manager.igmp_group_membership_interval))
+                        new_x_source_records.append([source_address, 
+                            self.castflow_manager.igmp_group_membership_interval])
                     
                     # Y = Y - A
                     source_record_to_remove = None                    
@@ -279,69 +527,35 @@ class Router(EventMixin):
                             break
                     if source_record_to_remove is not None:
                         new_y_source_records.remove(source_record)
-            
-            if router_group_record.filter_mode == MODE_IS_INCLUDE:                
-                # Add any new sources which did not already appear with a
-                # refreshed timer
-                # X = X + A
-                for source_address in igmp_group_record.source_addresses:
-                    record_already_present = False
-                    for source_record in new_x_source_records:
-                        if source_record[0] == source_address:
-                            source_record[1] = self.castflow_manager.igmp_group_membership_interval
-                            record_already_present = True
-                            break
-                    if not record_already_present:
-                        new_x_source_records.append((source_address, 
-                            self.castflow_manager.igmp_group_membership_interval))
-                    
-            
-        elif igmp_group_record.record_type == MODE_IS_EXCLUDE:
-            log.debug(str(self) + ': Got MODE_IS_EXCLUDE group record')
-            
-            if router_group_record.filter_mode == MODE_IS_EXCLUDE:
-                # Ensure the group record exists, and set its timer to GMI
+                            
+            elif igmp_group_record.record_type == MODE_IS_EXCLUDE:
+                log.debug(str(self) + ':' + str(event.port) + '|' + str(igmp_group_record.multicast_address) + ' is EXCLUDE, Received MODE_IS_EXCLUDE')
                 new_x_source_records = []
                 new_y_source_records = []
                 
-                # Manage the source records
                 for source_address in igmp_group_record.source_addresses:
                     if router_group_record.addr_in_y_source_records(source_address):
-                        new_y_source_records.append((source_address, 0))
+                        new_y_source_records.append([source_address, 0])
                         continue
                         
                     if not router_group_record.addr_in_x_source_records(source_address) and \
                             not router_group_record.addr_in_y_source_records(source_address):
-                        new_x_source_records.append((source_address, 
-                                self.castflow_manager.igmp_group_membership_interval))
+                        new_x_source_records.append([source_address, 
+                                self.castflow_manager.igmp_group_membership_interval])
                         continue
                     
                     if not router_group_record.addr_in_y_source_records(source_address):
-                        new_x_source_records.append((source_address, 
-                                router_group_record.get_curr_source_timer(source_address)))
+                        new_x_source_records.append([source_address, 
+                                router_group_record.get_curr_source_timer(source_address)])
                         continue
-                        
-            if router_group_record.filter_mode == MODE_IS_INCLUDE:
-                self.filter_mode = MODE_IS_EXCLUDE
-                new_y_source_records = router_group_record.x_source_records[:]
-                for source_address in igmp_group_record.source_addresses:
-                    if router_group_record.addr_in_x_source_records(source_address):
-                        new_x_source_records.append((source_address, 
-                                router_group_record.get_curr_source_timer(source_address)))
-                        new_y_to_remove = None
-                        for new_y_record in new_y_source_records:
-                            if new_y_record[0] == source_address:
-                                new_y_to_remove = new_y_record
-                                break
-                        if new_y_to_remove is not None:
-                            new_y_source_records.remove(new_y_to_remove)
-                            
-                for new_y_record in new_y_source_records:
-                    new_y_record[1] = 0
                 
-        router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
-        router_group_record.x_source_records = new_x_source_records
-        router_group_record.y_source_records = new_y_source_records
+                router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
+
+        if router_group_record.filter_mode == MODE_IS_INCLUDE and len(new_x_source_records) == 0:
+            self.remove_group_record(event.port, igmp_group_record.multicast_address)
+        else:
+            router_group_record.x_source_records = new_x_source_records
+            router_group_record.y_source_records = new_y_source_records
     
     def process_igmp_event(self, event):
         """Processes any IGMP event received by the router."""
@@ -351,37 +565,20 @@ class Router(EventMixin):
         if igmp_pkt.msg_type != MEMBERSHIP_REPORT_V3:
             return
             
-        for igmp_group_record in igmp_pkt.group_records:
-            router_group_record = self.create_group_record(event, igmp_group_record,
-                    self.castflow_manager.igmp_group_membership_interval)
-            new_x_source_records = []
-            new_y_source_records = []
-                
+        for igmp_group_record in igmp_pkt.group_records:                
             if igmp_group_record.record_type == MODE_IS_INCLUDE or \
                     igmp_group_record.record_type == MODE_IS_EXCLUDE:
                 self.process_current_state_record(event, igmp_group_record)
                         
-            elif igmp_group_record.record_type == CHANGE_TO_INCLUDE_MODE:
-                log.debug(str(self) + ': Got CHANGE_TO_INCLUDE_MODE group record')
-                if igmp_group_record.num_sources == 0:
-                    # Changing to INCLUDE mode with no sources defined is equivalent to leaving the group
-                    # TODO: A group specific query should be sent and timed out before the group record is removed
-                    self.remove_group_record(event.port, igmp_group_record.multicast_address)
+            elif igmp_group_record.record_type == CHANGE_TO_INCLUDE_MODE or \
+                    igmp_group_record.record_type == CHANGE_TO_EXCLUDE_MODE or \
+                    igmp_group_record.record_type == ALLOW_NEW_SOURCES or \
+                    igmp_group_record.record_type == BLOCK_OLD_SOURCES:
+                self.process_state_change_record(event, igmp_group_record)
                 
-                # TODO: Handle the general case of changing to include mode with source records
-                    
-            elif igmp_group_record.record_type == CHANGE_TO_EXCLUDE_MODE:
-                log.debug(str(self) + ': Got CHANGE_TO_EXCLUDE_MODE group record')
-                router_group_record = self.create_group_record(event, igmp_group_record,
-                        self.castflow_manager.igmp_group_membership_interval)
-                
-            elif igmp_group_record.record_type == ALLOW_NEW_SOURCES:
-                log.debug(str(self) + ': Got ALLOW_NEW_SOURCES group record')
-            elif igmp_group_record.record_type == BLOCK_OLD_SOURCES:
-                log.debug(str(self) + ': Got BLOCK_OLD_SOURCES group record')
-                
-        # Debug - Print a listing of the current group membership state
-        self.print_group_records()
+            # Debug - Print a listing of the current group membership state after
+            # each group record is processed
+            self.print_group_records()
         
         
 
@@ -432,27 +629,55 @@ class CastflowManager(object):
         """
         for router_dpid in self.routers:
             router = self.routers[router_dpid]
+            records_modified = False
+            ports_to_delete = []
             for port in router.multicast_records:
+                mcast_addresses_to_delete = []
+                
                 for mcast_address in router.multicast_records[port]:
                     group_record = router.multicast_records[port][mcast_address]
+                    
                     if group_record is None:        # Protects against mutual exclusion issues
                         continue
-                    
-                    if group_record.group_timer > 0:
-                        group_record.group_timer -= 1
                     
                     source_records_to_move = []
                     for source_record in group_record.x_source_records:
                         if source_record[1] > 0:
                             source_record[1] -= 1
                         
-                        if router.filter_mode == MODE_IS_EXCLUDE and source_record[1] == 0:
+                        if group_record.filter_mode == MODE_IS_EXCLUDE and source_record[1] == 0:
                             source_records_to_move.append(source_records)
+                            records_modified = True
                             
                     for source_record in source_records_to_move:
                         group_record.x_source_records.remove(source_record)
                         group_record.y_source_records.append(source_record)
-    
+                    
+                    if group_record.filter_mode == MODE_IS_EXCLUDE:
+                        if group_record.group_timer > 0:
+                            group_record.group_timer -= 1
+                            
+                        if group_record.group_timer == 0:
+                            log.debug('Group Timer expired')
+                            # Switch the group record back to INCLUDE mode
+                            group_record.filter_mode = MODE_IS_INCLUDE
+                            group_record.y_source_records = []
+                            if not group_record.x_source_records:
+                                mcast_addresses_to_delete.append(mcast_address)
+                                records_modified = True
+                
+                for mcast_address in mcast_addresses_to_delete:
+                    del router.multicast_records[port][mcast_address]
+                    
+                if not router.multicast_records[port]:
+                    ports_to_delete.append(port)
+             
+            for port in ports_to_delete:
+                del router.multicast_records[port]
+            
+            if records_modified:
+                router.print_group_records()
+        
     def encapsulate_igmp_packet(self, igmp_pkt):
         """Encapsulates the provided IGMP packet into IP and Ethernet packets, and returns the
         encapsulating ethernet packet"""
@@ -520,7 +745,7 @@ class CastflowManager(object):
         msg.in_port = packet_in_event.port
         msg.actions = []    # No actions = drop packet
         packet_in_event.connection.send(msg)
-        log.debug('Packet dropped')
+        # log.debug('Packet dropped')
         
 
     def _handle_LinkEvent(self, event):
