@@ -182,9 +182,9 @@ class igmpv3_group_record:
         # print 'Read group record: Type: %d, aux_data_len: %d, num_sources: %d' % (self.record_type, self.aux_data_len, self.num_sources)
         # print 'Read group record multicast address: %s' % (self.multicast_address)
         for i in range(0, self.num_sources):
-            source_address = struct.unpack("!i", raw[self.GROUP_RECORD_HEADER_LEN + (i * 4):self.GROUP_RECORD_HEADER_LEN + ((i + 1) * 4)])
+            (source_address,) = struct.unpack("!i", raw[self.GROUP_RECORD_HEADER_LEN + (i * 4):self.GROUP_RECORD_HEADER_LEN + ((i + 1) * 4)])
             # print 'Read group record source address: %s' % (source_address)
-            self.source_addresses.append(source_address.toSigned(networkOrder=False))
+            self.source_addresses.append(IPAddr(source_address, networkOrder=False))
         self.len = self.GROUP_RECORD_HEADER_LEN + (self.num_sources * 4)
         return self.len
     
