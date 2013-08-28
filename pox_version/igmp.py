@@ -172,6 +172,9 @@ class igmpv3_group_record:
         self.aux_data = None   # Defined but not used in IGMPv3
         
         self.len = 0
+        
+    def get_addr_set(self):
+        return set(self.source_addresses)
     
     def parse(self, raw):
         '''Parses a byte array into a single IGMPv3 group record. Returns the number of bytes processed.'''
