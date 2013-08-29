@@ -237,7 +237,7 @@ class igmp (packet_base):
         self.qrv = 0
         self.qqic = 0
         self.csum = 0
-        self.address = None
+        self.address = IPAddr("0.0.0.0")
         self.num_sources = 0
         self.source_addresses = []
         self.num_group_records =0
