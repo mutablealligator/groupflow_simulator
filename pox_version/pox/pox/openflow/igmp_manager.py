@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-A POX module implementation of the CastFlow clean slate multicast proposal.
-
-Implementation adapted from NOX-Classic CastFlow implementation provided by caioviel.
+A POX module implementation provided IGMP v3 Multicast Router functionality.
 
 Depends on openflow.discovery
 
@@ -33,6 +31,8 @@ import time
 log = core.getLogger()
 
 def int_to_filter_mode_str(filter_mode):
+    """Converts an IGMP integer filter mode into the associated string constant"""
+    
     if filter_mode == MODE_IS_INCLUDE:
         return 'MODE_IS_INCLUDE'
     elif filter_mode == MODE_IS_EXCLUDE:
@@ -49,7 +49,7 @@ def int_to_filter_mode_str(filter_mode):
 
 class MulticastGroupEvent(Event):
     """
-    Link up/down event
+    Event which represents the desired reception state for all interfaces/multicast groups on a single router
     """
     def __init__ (self, router_dpid, desired_reception):
         Event.__init__(self)
@@ -74,7 +74,7 @@ class MulticastGroupEvent(Event):
         log.info('END=======')
     
 class MulticastMembershipRecord:
-    """Class representing the groud record state maintained by an IGMPv3 multicast router
+    """Class representing the group record state maintained by an IGMPv3 multicast router
 
     Multicast routers implementing IGMPv3 keep state per group per
     attached network.  This group state consists of a filter-mode, a list
@@ -98,6 +98,9 @@ class MulticastMembershipRecord:
         self.y_source_records = [] # Source records with a zero source timer are stored separately
     
     def get_curr_source_timer(self, ip_addr):
+        """Returns the current source timer for the specified IP address, or 0 if the specified IP is not known by this
+        group record.
+        """
         for record in self.x_source_records:
             if record[0] == ip_addr:
                 return record[1]
@@ -105,18 +108,26 @@ class MulticastMembershipRecord:
         return 0
         
     def get_x_addr_set(self):
+        """Returns the set of addresses in the X set of source records (see IGMPv3 RFC)
+        Note: When in INCLUDE mode, all sources are stored in the X set.
+        """
+        
         return_set = set()
         for record in self.x_source_records:
             return_set.add(record[0])
         return return_set
     
     def get_y_addr_set(self):
+        """Returns the set of addresses in the Y set of source records (see IGMPv3 RFC)
+        Note: When in INCLUDE mode, his set should always be empty.
+        """
         return_set = set()
         for record in self.y_source_records:
             return_set.add(record[0])
         return return_set
     
     def remove_source_record(self, ip_addr):
+        """Removes the source record with the specified IP address from the group record"""
         for record in self.x_source_records:
             if record[0] == ip_addr:
                 self.x_source_records.remove(record)
@@ -126,26 +137,12 @@ class MulticastMembershipRecord:
             if record[0] == ip_addr:
                 self.y_source_records.remove(record)
                 return
-    
-    def addr_in_x_source_records(self, ip_addr):
-        for record in self.x_source_records:
-            if record[0] == ip_addr:
-                return True
-                
-        return False
-        
-        
-    def addr_in_y_source_records(self, ip_addr):
-        for record in self.y_source_records:
-            if record[0] == ip_addr:
-                return True
-        
-        return False
-        
 
-class Router(EventMixin):
+
+
+class IGMPv3Router(EventMixin):
     """
-    Class representing an OpenFlow router controlled by the CastFlow manager
+    Class representing an IGMP v3 router, with IGMP functionality implemented through OpenFlow interaction
     """
 
     def __init__(self, manager):
@@ -156,15 +153,10 @@ class Router(EventMixin):
         # self.multicast_records[igmp_port_index][multicast_address]
         self.multicast_records = defaultdict(lambda : defaultdict(lambda : None))
         self.dpid = None
-        self.castflow_manager = manager
+        self.igmp_manager = manager
         self._listeners = None
         self._connected_at = None
         self.prev_desired_reception = None
-        
-        # Dictionary of connected host IPs keyed by port numbers
-        # TODO: Determine if this is actually neccesary (probably not, as the router shouldn't need to know which hosts
-        # behind each interface are actually requesting multicast traffic)
-        # self.connected_hosts = defaultdict(lambda : None)
 
     def __repr__(self):
         return dpid_to_str(self.dpid)
@@ -192,14 +184,6 @@ class Router(EventMixin):
         self.connection = connection
         self._listeners = self.listenTo(connection)
         self._connected_at = time.time()
-
-    @property
-    def is_holding_down(self):
-        if self._connected_at is None:
-            return True
-        if time.time() - self._connected_at > FLOOD_HOLDDOWN:
-            return False
-        return True
 
     def _handle_ConnectionDown(self, event):
         self.disconnect()
@@ -250,18 +234,17 @@ class Router(EventMixin):
                             desired_reception[mcast_address][port_index] = []
                         desired_reception[mcast_address][port_index].append(source_record[0])
         
-        # TODO: Raise an event
         if self.prev_desired_reception == None:
             event = MulticastGroupEvent(self.dpid, desired_reception)
             event.debug_print()
-            self.castflow_manager.raiseEvent(event)
+            self.igmp_manager.raiseEvent(event)
         else:
             if desired_reception == self.prev_desired_reception:
                 log.debug('No change in reception state.')
             else:
                 event = MulticastGroupEvent(self.dpid, desired_reception)
                 event.debug_print()
-                self.castflow_manager.raiseEvent(event)
+                self.igmp_manager.raiseEvent(event)
             
         self.prev_desired_reception = desired_reception
     
@@ -280,31 +263,31 @@ class Router(EventMixin):
     
     def send_group_specific_query(self, port, multicast_address, group_record, retransmissions = -1): 
         if retransmissions == -1:
-            retransmissions = self.castflow_manager.igmp_last_member_query_count - 1
+            retransmissions = self.igmp_manager.igmp_last_member_query_count - 1
             
         # Build the IGMP payload for the message
         igmp_pkt = pkt.igmp()
         igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
-        igmp_pkt.max_response_time = self.castflow_manager.igmp_query_response_interval
+        igmp_pkt.max_response_time = self.igmp_manager.igmp_query_response_interval
         igmp_pkt.address = multicast_address
-        igmp_pkt.qrv = self.castflow_manager.igmp_robustness
-        igmp_pkt.qqic = self.castflow_manager.igmp_query_interval
+        igmp_pkt.qrv = self.igmp_manager.igmp_robustness
+        igmp_pkt.qqic = self.igmp_manager.igmp_query_interval
         igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
-        if group_record.group_timer > self.castflow_manager.igmp_last_member_query_time / 10:
+        if group_record.group_timer > self.igmp_manager.igmp_last_member_query_time / 10:
             igmp_pkt.suppress_router_processing = True
         else:
             igmp_pkt.suppress_router_processing = False
-        eth_pkt = self.castflow_manager.encapsulate_igmp_packet(igmp_pkt)
+        eth_pkt = self.igmp_manager.encapsulate_igmp_packet(igmp_pkt)
         output = of.ofp_packet_out(action = of.ofp_action_output(port=port))
         output.data = eth_pkt.pack()
         output.pack()
         self.connection.send(output)
         log.info('Router ' + str(self) + ':' + str(port) + '| Sent group specific query for group: ' + str(multicast_address))
-        group_record.group_timer = self.castflow_manager.igmp_last_member_query_time / 10
+        group_record.group_timer = self.igmp_manager.igmp_last_member_query_time / 10
         
         if retransmissions > 0:
             log.debug('Retransmissions remaininig: ' + str(retransmissions))
-            Timer(self.castflow_manager.igmp_last_member_query_interval / 10, self.send_group_specific_query, 
+            Timer(self.igmp_manager.igmp_last_member_query_interval / 10, self.send_group_specific_query, 
                     args = [port, multicast_address, group_record, retransmissions - 1], recurring = False)
                     
     def send_group_and_source_specific_query(self, port, multicast_address, group_record, sources, retransmissions = -1):
@@ -312,23 +295,23 @@ class Router(EventMixin):
         # at the time of retransmission
         
         if retransmissions == -1:
-            retransmissions = self.castflow_manager.igmp_last_member_query_count - 1
+            retransmissions = self.igmp_manager.igmp_last_member_query_count - 1
             
         # Build and send the IGMP packet for sources whose source timer is greater than LMQT
         igmp_pkt = pkt.igmp()
         igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
-        igmp_pkt.max_response_time = self.castflow_manager.igmp_query_response_interval
+        igmp_pkt.max_response_time = self.igmp_manager.igmp_query_response_interval
         igmp_pkt.address = multicast_address
-        igmp_pkt.qrv = self.castflow_manager.igmp_robustness
-        igmp_pkt.qqic = self.castflow_manager.igmp_query_interval
+        igmp_pkt.qrv = self.igmp_manager.igmp_robustness
+        igmp_pkt.qqic = self.igmp_manager.igmp_query_interval
         igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
         for source in sources:
-            if group_record.get_curr_source_timer(source) > self.castflow_manager.igmp_last_member_query_time / 10:
+            if group_record.get_curr_source_timer(source) > self.igmp_manager.igmp_last_member_query_time / 10:
                 igmp_pkt.num_sources += 1
                 igmp_pkt.source_addresses.append(source)
         igmp_pkt.suppress_router_processing = True
         if(igmp_pkt.num_sources > 0):
-            eth_pkt = self.castflow_manager.encapsulate_igmp_packet(igmp_pkt)
+            eth_pkt = self.igmp_manager.encapsulate_igmp_packet(igmp_pkt)
             output = of.ofp_packet_out(action = of.ofp_action_output(port=port))
             output.data = eth_pkt.pack()
             output.pack()
@@ -340,18 +323,18 @@ class Router(EventMixin):
         # Build and send the IGMP packet for sources whose source timer is less than LMQT
         igmp_pkt = pkt.igmp()
         igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
-        igmp_pkt.max_response_time = self.castflow_manager.igmp_query_response_interval
+        igmp_pkt.max_response_time = self.igmp_manager.igmp_query_response_interval
         igmp_pkt.address = multicast_address
-        igmp_pkt.qrv = self.castflow_manager.igmp_robustness
-        igmp_pkt.qqic = self.castflow_manager.igmp_query_interval
+        igmp_pkt.qrv = self.igmp_manager.igmp_robustness
+        igmp_pkt.qqic = self.igmp_manager.igmp_query_interval
         igmp_pkt.dlen = 12  # TODO: This should be determined by the IGMP packet class somehow
         for source in sources:
-            if group_record.get_curr_source_timer(source) <= self.castflow_manager.igmp_last_member_query_time / 10:
+            if group_record.get_curr_source_timer(source) <= self.igmp_manager.igmp_last_member_query_time / 10:
                 igmp_pkt.num_sources += 1
                 igmp_pkt.source_addresses.append(source)
         igmp_pkt.suppress_router_processing = False
         if(igmp_pkt.num_sources > 0):
-            eth_pkt = self.castflow_manager.encapsulate_igmp_packet(igmp_pkt)
+            eth_pkt = self.igmp_manager.encapsulate_igmp_packet(igmp_pkt)
             output = of.ofp_packet_out(action = of.ofp_action_output(port=port))
             output.data = eth_pkt.pack()
             output.pack()
@@ -361,14 +344,14 @@ class Router(EventMixin):
             # Update timers for all querried source records to LMQT
             for source_record in group_record.x_source_records:
                 if source_record[0] in igmp_pkt.source_addresses:
-                    source_record[1] = self.castflow_manager.igmp_last_member_query_time / 10
+                    source_record[1] = self.igmp_manager.igmp_last_member_query_time / 10
             source_records_to_move = []
             for source_record in group_record.y_source_records:
                 if source_record[0] in igmp_pkt.source_addresses:
                     source_records_to_move.append(source_record)
             for source_record in source_records_to_move:
                 group_record.y_source_records.remove(source_record)
-                group_record.x_source_records.append([source_record[0], self.castflow_manager.igmp_last_member_query_time / 10])
+                group_record.x_source_records.append([source_record[0], self.igmp_manager.igmp_last_member_query_time / 10])
             
             # Debug print
             for source in igmp_pkt.source_addresses:
@@ -376,13 +359,13 @@ class Router(EventMixin):
         
         if retransmissions > 0:
             log.debug('Retransmissions remaininig: ' + str(retransmissions))
-            Timer(self.castflow_manager.igmp_last_member_query_interval / 10, self.send_group_and_source_specific_query, 
+            Timer(self.igmp_manager.igmp_last_member_query_interval / 10, self.send_group_and_source_specific_query, 
                     args = [port, multicast_address, group_record, sources, retransmissions - 1], recurring = False)
         
     
     def remove_group_record(self, port, multicast_address):
         """Removes the group record identified by the provided port and multicast_address from the router's set
-        of records. Does nothing if the record did not exist
+        of records. Does nothing if the record did not exist.
         """
         
         if not self.multicast_records[port]:
@@ -435,7 +418,7 @@ class Router(EventMixin):
         the same list as the X set when in EXCLUDE mode
         """
         router_group_record = self.create_group_record(event, igmp_group_record,
-                    self.castflow_manager.igmp_group_membership_interval)
+                    self.igmp_manager.igmp_group_membership_interval)
         new_x_source_records = []
         new_y_source_records = []
         igmp_record_addresses = igmp_group_record.get_addr_set()
@@ -446,7 +429,7 @@ class Router(EventMixin):
                 new_x_set = router_group_record.get_x_addr_set() | igmp_record_addresses
                 for address in new_x_set:
                     if address in igmp_record_addresses:
-                        new_x_source_records.append([address, self.castflow_manager.igmp_group_membership_interval])
+                        new_x_source_records.append([address, self.igmp_manager.igmp_group_membership_interval])
                     else:
                         new_x_source_records.append([address, router_group_record.get_curr_source_timer(address)])
                         
@@ -474,7 +457,7 @@ class Router(EventMixin):
                 
                 router_group_record.x_source_records = new_x_source_records
                 router_group_record.y_source_records = new_y_source_records
-                router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
+                router_group_record.group_timer = self.igmp_manager.igmp_group_membership_interval
                 
                 # Send: Q(G, A*B)
                 self.send_group_and_source_specific_query(event.port, igmp_group_record.multicast_address, router_group_record, new_x_set)
@@ -485,7 +468,7 @@ class Router(EventMixin):
                 new_x_set = router_group_record.get_x_addr_set() | igmp_record_addresses
                 for address in new_x_set:
                     if address in igmp_record_addresses:
-                        new_x_source_records.append([address, self.castflow_manager.igmp_group_membership_interval])
+                        new_x_source_records.append([address, self.igmp_manager.igmp_group_membership_interval])
                     else:
                         new_x_source_records.append([address, router_group_record.get_curr_source_timer(address)])
                 
@@ -505,7 +488,7 @@ class Router(EventMixin):
                 
                 for address in new_x_set:
                     if address in igmp_record_addresses:
-                        new_x_source_records.append([address, self.castflow_manager.igmp_group_membership_interval])
+                        new_x_source_records.append([address, self.igmp_manager.igmp_group_membership_interval])
                     else:
                         new_x_source_records.append([address, router_group_record.get_curr_source_timer(address)])
                 for address in new_y_set:
@@ -551,7 +534,7 @@ class Router(EventMixin):
                 for address in new_y_set:
                     new_y_source_records.append([address, 0])
 
-                router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
+                router_group_record.group_timer = self.igmp_manager.igmp_group_membership_interval
                 router_group_record.x_source_records = new_x_source_records
                 router_group_record.y_source_records = new_y_source_records
                 
@@ -566,7 +549,7 @@ class Router(EventMixin):
                 
                 for address in new_x_set:
                     if address in igmp_record_addresses:
-                        new_x_source_records.append([address, self.castflow_manager.igmp_group_membership_interval])
+                        new_x_source_records.append([address, self.igmp_manager.igmp_group_membership_interval])
                     else:
                         new_x_source_records.append([address, router_group_record.get_curr_source_timer(address)])
                 for address in new_y_set:
@@ -608,7 +591,7 @@ class Router(EventMixin):
         """
         
         router_group_record = self.create_group_record(event, igmp_group_record,
-                    self.castflow_manager.igmp_group_membership_interval)
+                    self.igmp_manager.igmp_group_membership_interval)
         new_x_source_records = []
         new_y_source_records = []
         igmp_record_addresses = igmp_group_record.get_addr_set()
@@ -620,7 +603,7 @@ class Router(EventMixin):
                 new_x_set = router_group_record.get_x_addr_set() | igmp_record_addresses
                 for address in new_x_set:
                     if address in igmp_record_addresses:
-                        new_x_source_records.append([address, self.castflow_manager.igmp_group_membership_interval])
+                        new_x_source_records.append([address, self.igmp_manager.igmp_group_membership_interval])
                     else:
                         new_x_source_records.append([address, router_group_record.get_curr_source_timer(address)])
                 
@@ -634,7 +617,7 @@ class Router(EventMixin):
                     new_x_source_records.append([address, router_group_record.get_curr_source_timer(address)])
                 for address in new_y_set:
                     new_y_source_records.append([address, 0])
-                router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
+                router_group_record.group_timer = self.igmp_manager.igmp_group_membership_interval
                 
         elif router_group_record.filter_mode == MODE_IS_EXCLUDE:
             if igmp_group_record.record_type == MODE_IS_INCLUDE:
@@ -644,7 +627,7 @@ class Router(EventMixin):
                 
                 for address in new_x_set:
                     if address in igmp_record_addresses:
-                        new_x_source_records.append([address, self.castflow_manager.igmp_group_membership_interval])
+                        new_x_source_records.append([address, self.igmp_manager.igmp_group_membership_interval])
                     else:
                         new_x_source_records.append([address, router_group_record.get_curr_source_timer(address)])
                 for address in new_y_set:
@@ -660,14 +643,14 @@ class Router(EventMixin):
                 
                 for address in new_x_set:
                     if address in gmi_set:
-                        new_x_source_records.append([address, self.castflow_manager.igmp_group_membership_interval])
+                        new_x_source_records.append([address, self.igmp_manager.igmp_group_membership_interval])
                     else:
                         new_x_source_records.append([address, router_group_record.get_curr_source_timer(address)])
                 
                 for address in new_y_set:
                     new_y_source_records.append([address, 0])
                 
-                router_group_record.group_timer = self.castflow_manager.igmp_group_membership_interval
+                router_group_record.group_timer = self.igmp_manager.igmp_group_membership_interval
 
         # Prune any INCLUDE_MODE records which do not specify any sources
         if router_group_record.filter_mode == MODE_IS_INCLUDE and len(new_x_source_records) == 0:
@@ -708,14 +691,14 @@ class Router(EventMixin):
             # For a group specific query, reset the group timer for the group to LMQT
             if igmp_pkt.num_sources == 0:
                 log.debug(str(self) + ':' + str(event.port) + '| Got group specific query for ' + str(igmp_group_record.multicast_address))
-                router_group_record.group_timer = self.castflow_manager.igmp_last_member_query_time
+                router_group_record.group_timer = self.igmp_manager.igmp_last_member_query_time
             # For a group and source specific query, reset the source timer for each included
             # source to LMQT
             else:
                 log.debug(str(self) + ':' + str(event.port) + '| Got group and source specific query for ' + str(igmp_group_record.multicast_address))
                 for source_record in router_group_record.x_source_records:
                     if source_record[0] in igmp_pkt.source_addresses:
-                        source_record[1] = self.castflow_manager.igmp_last_member_query_time / 10
+                        source_record[1] = self.igmp_manager.igmp_last_member_query_time / 10
                 source_records_to_move = []
                 for source_record in router_group_record.y_source_records:
                     if source_record[0] in igmp_pkt.source_addresses:
@@ -723,12 +706,12 @@ class Router(EventMixin):
                 for source_record in source_records_to_move:
                     router_group_record.y_source_records.remove(source_record)
                     router_group_record.x_source_records.append([source_record[0], 
-                            self.castflow_manager.igmp_last_member_query_time / 10])
+                            self.igmp_manager.igmp_last_member_query_time / 10])
         
         
 
 
-class CastflowManager(EventMixin):
+class IGMPManager(EventMixin):
     _eventMixin_events = set([
         MulticastGroupEvent
     ])
@@ -863,12 +846,7 @@ class CastflowManager(EventMixin):
                 # log.debug('Router ' + str(sending_router) + ' sending IGMP query on port: ' + str(port_num))
         
     def launch_igmp_general_query(self):
-        """Generates an IGMP general query, broadcasts it from all ports on all routers
-        
-        TODO: This could be improved by only broadcasting the query on ports which are not
-        connected to an adjacent router in the same control domain, as these queries will
-        be discarded by the adjacent routers anyway.
-        """
+        """Generates an IGMP general query, broadcasts it from all ports on all routers"""
         log.debug('Launching IGMP general query from all routers')
         
         # Build the IGMP payload for the message
@@ -949,7 +927,7 @@ class CastflowManager(EventMixin):
         router = self.routers.get(event.dpid)
         if router is None:
             # New router
-            router = Router(self)
+            router = IGMPv3Router(self)
             router.dpid = event.dpid
             self.routers[event.dpid] = router
             log.info('Learned new router: ' + str(router))
@@ -1056,10 +1034,8 @@ class CastflowManager(EventMixin):
                 msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
                 event.connection.send(msg)
                 log.info(str(receiving_router) + ':' + str(event.port) + '| Installed flow to flood all packets for multicast group: ' + str(ipv4_pkt.dstip))
-                
-        
-        
+
+
+
 def launch():
-    core.registerNew(CastflowManager)
-
-
+    core.registerNew(IGMPManager)
