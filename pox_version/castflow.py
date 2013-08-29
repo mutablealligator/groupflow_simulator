@@ -743,7 +743,7 @@ class CastflowManager(EventMixin):
         self.igmp_robustness = 2
         self.igmp_query_interval = 125               # Seconds
         # Debug: Make the IGMP query interval shorter than default to aid testing
-        self.igmp_query_interval = 20
+        # self.igmp_query_interval = 20
         self.igmp_query_response_interval = 100     # Tenths of a second
         self.igmp_group_membership_interval = (self.igmp_robustness * self.igmp_query_interval) \
                 + (self.igmp_query_response_interval * 0.1)             # Seconds
@@ -772,8 +772,8 @@ class CastflowManager(EventMixin):
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
     
     def decrement_all_timers(self):
-        """Decrements the source and group timers for all group_records in the network. As long as this is
-        always called from a recoco Timer, mutual exclusion should not be an issue.
+        """Decrements the source and group timers for all group_records in the network, and transitions any state
+        as necessary. As long as this is always called from a recoco Timer, mutual exclusion should not be an issue.
         """
         for router_dpid in self.routers:
             router = self.routers[router_dpid]
@@ -855,8 +855,6 @@ class CastflowManager(EventMixin):
         # Send out the packet
         for router_dpid in self.routers:
             sending_router = self.routers[router_dpid]
-            # for neighbour in self.adjacency[sending_router]:  # Debug, send to neighbouring routers only
-            #    port_num = self.adjacency[sending_router][neighbour]
             for port_num in sending_router.igmp_ports:
                 output = of.ofp_packet_out(action = of.ofp_action_output(port=port_num))
                 output.data = eth_pkt.pack()
@@ -893,7 +891,6 @@ class CastflowManager(EventMixin):
         msg.in_port = packet_in_event.port
         msg.actions = []    # No actions = drop packet
         packet_in_event.connection.send(msg)
-        # log.debug('Packet dropped')
         
 
     def _handle_LinkEvent(self, event):
@@ -901,14 +898,6 @@ class CastflowManager(EventMixin):
 
         def flip(link):
             return Discovery.Link(link[2], link[3], link[0], link[1])
-
-        # log.info('Handling LinkEvent: ' + str(event.link)
-        #          + ' - State: ' + str(event.added))
-        # if event.added:
-        #    self.links.append(event.link)
-        # else:
-        #    self.links.remove(event.link)
-        # log.debug(self.links)
 
         l = event.link
         router1 = self.routers[l.dpid1]
@@ -954,18 +943,6 @@ class CastflowManager(EventMixin):
                     log.info('Added adjacency: ' + str(router1) + '.'
                              + str(l.port1) + ' <-> ' + str(router2) + '.'
                              + str(l.port2))
-
-                    # Remove router IPs that have been previously identified as hosts
-                    #if l.port1 in router1.connected_hosts:
-                    #    log.debug('Deleted connected host (' + str(router1.connected_hosts[l.port1]) + ') on port ' + str(l.port1) + ' (host is actually a router)')
-                    #    del router1.connected_hosts[l.port1]
-                    #if l.port2 in router2.connected_hosts:
-                    #    log.debug('Deleted connected host (' + str(router2.connected_hosts[l.port2]) + ') on port ' + str(l.port2) + ' (host is actually a router)')
-                    #    del router2.connected_hosts[l.port2]
-
-                    # While it is tempting to add a flow table entry to block IGMP messages from being transmitted between
-                    # adjoining routers, this would also cause IGMP packets to be dropped silently without processing
-                    # by the controller.
 
     def _handle_ConnectionUp(self, event):
         """Handler for ConnectionUp from the discovery module, which represent new routers joining the network."""
@@ -1039,12 +1016,6 @@ class CastflowManager(EventMixin):
                     self.drop_packet(event)
                     return
             
-            # The host must be directly connected to this router (or it is a router in an adjoining
-            # network outside the controllers administrative domain), learn its IP and port
-            # if not event.port in receiving_router.connected_hosts:
-            #    receiving_router.connected_hosts[event.port] = ipv4_pkt.srcip
-            #    log.info('Learned new host (IGMP packet): ' + str(ipv4_pkt.srcip) + ':' + str(event.port))
-            
             # Have the receiving router process the IGMP packet accordingly
             receiving_router.process_igmp_event(event)
             
@@ -1064,12 +1035,6 @@ class CastflowManager(EventMixin):
                     if self.adjacency[receiving_router][neighbour] == event.port:
                         from_neighbour_router = True
                         break
-                
-                #if not from_neighbour_router:
-                    # This packet must be from a connected host (more specifically, a multicast sender)
-                    # if not event.port in receiving_router.connected_hosts:
-                    #    receiving_router.connected_hosts[event.port] = ipv4_pkt.srcip
-                    #    log.info('Learned new host (multicast packet): ' + str(ipv4_pkt.srcip) + ':' + str(event.port))
                 
                 # For now, just flood all packets from this multicast group
                 # TODO: This will completely break in the presence of loops, make sure that testing uses loop free
