@@ -30,6 +30,9 @@ To start POX with GroupFlow functionality, POX must be launched with the "openfl
 The modules can be tested with the provided Mininet automation script, which will generate a simple topology with multicast senders and receivers. Note that as this script invoke Mininet, it must be run as root. For example:
 
     ./sudo python mininet_multicast_pox.py
+    
+MulticastGroupEvents
+--------------------
 
 The IGMPManager module is designed to provide information to a multicast routing module by raising MulticastGroupEvents whenever the desired multicast reception state changes. These events consist of the following information:
 
