@@ -15,6 +15,8 @@ Development thus far has focused on the OpenFlow IGMP v3 controller which is now
 
 The multicast controller module is not yet implemented, and for testing purposes the IGMP v3 module simply installs flows to flood any multicast packets throughout the network. Because of this, the module should only be tested with loop free topologies at this point.
 
+Testing automation using BRITE topologies is not yet implemented.
+
 Installation
 ------------
 
