@@ -748,7 +748,7 @@ class IGMPManager(EventMixin):
         
         # Known routers:  [dpid] -> Router
         self.routers = {}
-        # Adjacency map:  [router1][router2] -> port from router1 to router2
+        # Adjacency map:  [router_dpid_1][router_dpid_2] -> port from router1 to router2
         self.adjacency = defaultdict(lambda : defaultdict(lambda : \
                 None))
 
@@ -884,10 +884,10 @@ class IGMPManager(EventMixin):
 
         if event.removed:
             # This link no longer up
-            if router2 in self.adjacency[router1]:
-                del self.adjacency[router1][router2]
-            if router1 in self.adjacency[router2]:
-                del self.adjacency[router2][router1]
+            if router2 in self.adjacency[l.dpid1]:
+                del self.adjacency[l.dpid1][l.dpid2]
+            if router1 in self.adjacency[l.dpid2]:
+                del self.adjacency[l.dpid2][l.dpid1]
             router1.igmp_ports.append(l.port1)
             router2.igmp_ports.append(l.port2)
                 
@@ -901,23 +901,23 @@ class IGMPManager(EventMixin):
                     if flip(ll) in core.openflow_discovery.adjacency:
                         # Yup, link goes both ways
                         log.info('Found parallel adjacency');
-                        self.adjacency[router1][router2] = ll.port1
+                        self.adjacency[l.dpid1][l.dpid2] = ll.port1
                         router1.igmp_ports.remove(ll.port1)
-                        self.adjacency[router2][router1] = ll.port2
+                        self.adjacency[l.dpid2][l.dpid1] = ll.port2
                         router2.igmp_ports.remove(ll.port2)
                         # Fixed -- new link chosen to connect these
                         break
         else:
             # If we already consider these nodes connected, we can ignore this link up.
             # Otherwise, we might be interested...
-            if self.adjacency[router1][router2] is None:
+            if self.adjacency[l.dpid1][l.dpid2] is None:
                 # These previously weren't connected.  If the link
                 # exists in both directions, we consider them connected now.
                 if flip(l) in core.openflow_discovery.adjacency:
                     # Link goes both ways -- connected!
-                    self.adjacency[router1][router2] = l.port1
+                    self.adjacency[l.dpid1][l.dpid2] = l.port1
                     router1.igmp_ports.remove(l.port1)
-                    self.adjacency[router2][router1] = l.port2
+                    self.adjacency[l.dpid2][l.dpid1] = l.port2
                     router2.igmp_ports.remove(l.port2)
                     log.info('Added adjacency: ' + str(router1) + '.'
                              + str(l.port1) + ' <-> ' + str(router2) + '.'
@@ -966,7 +966,8 @@ class IGMPManager(EventMixin):
         if not event.connection.dpid in self.routers:
             log.debug('Got packet from unrecognized router: ' + str(event.connection.dpid))
             return
-        receiving_router = self.routers[event.connection.dpid]
+        router_dpid = event.connection.dpid
+        receiving_router = self.routers[router_dpid]
         
         igmp_pkt = event.parsed.find(pkt.igmp)
         if not igmp_pkt is None:
@@ -978,8 +979,8 @@ class IGMPManager(EventMixin):
             
             # Check to see if this IGMP message was received from a neighbouring router, and if so
             # add a rule to drop additional IGMP packets on this port
-            for neighbour in self.adjacency[receiving_router]:
-                if self.adjacency[receiving_router][neighbour] == event.port:
+            for neighbour in self.adjacency[router_dpid]:
+                if self.adjacency[router_dpid][neighbour] == event.port:
                     log.debug(str(receiving_router) + ':' + str(event.port) + '| IGMP packet received from neighbouring router.')
                     
                     # TODO: This doesn't appear to actually be working with mininet, just drop individual IGMP packets without installing a flow for now
@@ -1010,8 +1011,8 @@ class IGMPManager(EventMixin):
                 log.debug(str(receiving_router) + ':' + str(event.port) + '| Received non-IGMP multicast packet')
             
                 from_neighbour_router = False
-                for neighbour in self.adjacency[receiving_router]:
-                    if self.adjacency[receiving_router][neighbour] == event.port:
+                for neighbour in self.adjacency[router_dpid]:
+                    if self.adjacency[router_dpid][neighbour] == event.port:
                         from_neighbour_router = True
                         break
                 
