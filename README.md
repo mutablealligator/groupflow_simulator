@@ -3,6 +3,8 @@ GroupFlow
 
 This project aims to create a POX fork of the NOX-Classic Castflow implementation, supplemented with full IGMP v3 support implemented in the controller. This will allow the Castflow multicast proposals to be used in a live OpenFlow SDN network with standard IGMP v3 hosts. The end goal of this project is to provide a testbed for developers aiming to test new multicast ideas in a software defined network.
 
+![GroupFlow deployment](https://github.com/alexcraig/GroupFlow/blob/master/docs/CastflowDeploymentDiagram.png?raw=true)
+
 Development Progress
 --------------------
 Development thus far has focused on the OpenFlow IGMP v3 controller which is now functionally complete, with the following exceptions:
