@@ -62,15 +62,15 @@ def mcastTest():
     
     net.start()
     mcastConfig(net)
-    # net.get('h2').cmd('python ~/pythontest/multicast_receiver.py &');
-    # net.get('h3').cmd('python ~/pythontest/multicast_receiver.py &');
-    # net.get('h4').cmd('python ~/pythontest/multicast_receiver.py &');
+    # net.get('h2').cmd('python ./multicast_receiver.py &');
+    # net.get('h3').cmd('python ./multicast_receiver.py &');
+    # net.get('h4').cmd('python ./multicast_receiver.py &');
     sleep(8)   # Allow time for the controller to detect the topology
-    net.get('h6').cmd('python ~/pythontest/multicast_receiver.py &');
+    net.get('h6').cmd('python ./multicast_receiver.py &');
     sleep(2)
-    net.get('h1').cmd('python ~/pythontest/multicast_sender.py &');
+    net.get('h1').cmd('python ./multicast_sender.py &');
     sleep(5)
-    net.get('h5').cmd('python ~/pythontest/ss_multicast_receiver.py &');
+    net.get('h5').cmd('python ./ss_multicast_receiver.py &');
     CLI(net)
     net.stop()
 
