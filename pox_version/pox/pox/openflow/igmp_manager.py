@@ -21,7 +21,7 @@ from pox.core import core
 from pox.lib.revent import *
 from pox.lib.util import dpid_to_str
 import pox.lib.packet as pkt
-from pox.lib.packet.igmp import *   # Required for various IGMP variable constants
+from pox.lib.packet.igmpv3 import *   # Required for various IGMP variable constants
 from pox.lib.packet.ethernet import *
 import pox.openflow.libopenflow_01 as of
 from pox.lib.addresses import IPAddr, EthAddr
@@ -51,9 +51,10 @@ class MulticastGroupEvent(Event):
     """
     Event which represents the desired reception state for all interfaces/multicast groups on a single router
     """
-    def __init__ (self, router_dpid, desired_reception):
+    def __init__ (self, router_dpid, adjacency_map, desired_reception):
         Event.__init__(self)
         self.router_dpid = router_dpid
+        self.adjacency_map = adjacency_map
 
         # self.receiving_interfaces[multicast_address][port_index] = [list of desired sources]
         # An empty list indicates reception from all sources is desired
@@ -235,14 +236,14 @@ class IGMPv3Router(EventMixin):
                         desired_reception[mcast_address][port_index].append(source_record[0])
         
         if self.prev_desired_reception == None:
-            event = MulticastGroupEvent(self.dpid, desired_reception)
+            event = MulticastGroupEvent(self.dpid, self.igmp_manager.adjacency, desired_reception)
             event.debug_print()
             self.igmp_manager.raiseEvent(event)
         else:
             if desired_reception == self.prev_desired_reception:
                 log.debug('No change in reception state.')
             else:
-                event = MulticastGroupEvent(self.dpid, desired_reception)
+                event = MulticastGroupEvent(self.dpid, self.igmp_manager.adjacency, desired_reception)
                 event.debug_print()
                 self.igmp_manager.raiseEvent(event)
             
