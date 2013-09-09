@@ -40,6 +40,8 @@ class GroupFlowManager(EventMixin):
             core.openflow.addListeners(self)
             core.openflow_igmp_manager.addListeners(self)
 
+        self.topology_graph = []
+        
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager'))
     
@@ -52,7 +54,19 @@ class GroupFlowManager(EventMixin):
         msg.actions = []    # No actions = drop packet
         packet_in_event.connection.send(msg)
 
+    def get_topo_debug_str(self):
+        debug_str = '\n===== GroupFlow Learned Topology'
+        for edge in self.topology_graph:
+            debug_str += '\n(' + dpid_to_str(edge[0]) + ',' + dpid_to_str(edge[1]) + ')'
+        return debug_str + '\n===== GroupFlow Learned Topology'
         
+    def parse_topology_graph(self, adjacency_map):
+        new_topo_graph = []
+        for router1 in adjacency_map:
+            for router2 in adjacency_map[router1]:
+                new_topo_graph.append((router1, router2))
+        self.topology_graph = new_topo_graph
+    
     def _handle_PacketIn(self, event):
         """Handler for OpenFlow PacketIn events."""
         return
@@ -61,7 +75,9 @@ class GroupFlowManager(EventMixin):
         log.info(event.debug_str())
     
     def _handle_MulticastTopoEvent(self, event):
-        log.info(event.debug_str())
+        # log.info(event.debug_str())
+        self.parse_topology_graph(event.adjacency_map)
+        log.info(self.get_topo_debug_str())
 
 def launch():
     core.registerNew(GroupFlowManager)
