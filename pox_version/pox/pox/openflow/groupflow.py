@@ -33,6 +33,27 @@ import time
 
 log = core.getLogger()
 
+# Implementation taken directly from the Castflow implementation
+def prim(self, nodes, edges ):
+    conn = defaultdict( list )
+    for n1,n2,c in edges:
+        conn[ n1 ].append( (c, n1, n2) )
+        conn[ n2 ].append( (c, n2, n1) )
+    mst = []
+    used = set( nodes[ 0 ] )
+    usable_edges = conn[ nodes[0] ][:]
+    heapify( usable_edges )
+
+    while usable_edges:
+        cost, n1, n2 = heappop( usable_edges )
+        if n2 not in used:
+            used.add( n2 )
+            mst.append( ( n1, n2, cost ) )
+            for e in conn[ n2 ]:
+                if e[ 2 ] not in used:
+                    heappush( usable_edges, e )
+    return mst
+
 class GroupFlowManager(EventMixin):
     def __init__(self):
         # Listen to dependencies
@@ -41,6 +62,10 @@ class GroupFlowManager(EventMixin):
             core.openflow_igmp_manager.addListeners(self)
 
         self.topology_graph = []
+        
+        # Desired reception state as delivered by the IGMP manager, keyed by the dpid of the router for which
+        # the reception state applies
+        self.desired_reception_state = defaultdict(lambda : None)
         
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager'))
@@ -72,12 +97,16 @@ class GroupFlowManager(EventMixin):
         return
     
     def _handle_MulticastGroupEvent(self, event):
-        log.info(event.debug_str())
+        # log.info(event.debug_str())
+        self.desired_reception_state[event.router_dpid] = event.desired_reception
+        log.info('Set new reception state for router: ' + dpid_to_str(event.router_dpid))
+        # TODO: Rebuild multicast trees for relevant multicast groups
     
     def _handle_MulticastTopoEvent(self, event):
         # log.info(event.debug_str())
         self.parse_topology_graph(event.adjacency_map)
         log.info(self.get_topo_debug_str())
+        # TODO: Rebuild multicast trees for all multicast groups.
 
 def launch():
     core.registerNew(GroupFlowManager)
