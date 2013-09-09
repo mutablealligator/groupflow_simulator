@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-A POX module implementation provided IGMP v3 Multicast Router functionality.
+A POX module implementation providing IGMP v3 Multicast Router functionality.
 
 Depends on openflow.discovery
 
@@ -58,23 +58,21 @@ class MulticastGroupEvent(Event):
         # self.receiving_interfaces[multicast_address][port_index] = [list of desired sources]
         # An empty list indicates reception from all sources is desired
         self.desired_reception = desired_reception
-        self.debug_print()
         
-    def debug_print(self):
-        log.debug(' ')
-        log.debug('===== MulticastGroupEvent: Router: ' + dpid_to_str(self.router_dpid))
+    def debug_str(self):
+        debug_str = '\n===== MulticastGroupEvent: Router: ' + dpid_to_str(self.router_dpid)
         for mcast_address in self.desired_reception:
-            log.debug('Multicast Group: ' + str(mcast_address))
+            debug_str += '\nMulticast Group: ' + str(mcast_address)
             for port_index in self.desired_reception[mcast_address]:
-                log.debug('Port: ' + str(port_index))
+                debug_str += '\nPort: ' + str(port_index)
                 if len(self.desired_reception[mcast_address][port_index]) == 0:
-                    log.debug('Reception from all sources requested.')
+                    debug_str += ' - Reception from all sources requested.'
                     continue
                     
                 for address in self.desired_reception[mcast_address][port_index]:
-                    log.debug('Desired Source: ' + str(address))
-        log.debug('===== MulticastGroupEvent')
-        log.debug(' ')
+                    debug_str += '\nDesired Source: ' + str(address)
+        return debug_str + '\n===== MulticastGroupEvent'
+        
     
 class MulticastTopoEvent(Event):
     """
@@ -83,18 +81,14 @@ class MulticastTopoEvent(Event):
     def __init__ (self, adjacency_map):
         Event.__init__(self)
         self.adjacency_map = adjacency_map
-        self.debug_print()
     
-    def debug_print(self):
-        log.debug(' ')
-        log.debug('===== MulticastTopoEvent')
+    def debug_str(self):
+        debug_str = '\n===== MulticastTopoEvent'
         for router1 in self.adjacency_map:
-            print_string = 'Router ' + dpid_to_str(router1) + ':'
+            debug_str += '\nRouter ' + dpid_to_str(router1) + ':'
             for router2 in self.adjacency_map[router1]:
-                print_string += ' ' + dpid_to_str(router2)
-            log.debug(print_string)
-        log.debug('===== MulticastTopoEvent')
-        log.debug(' ')
+                debug_str += ' ' + dpid_to_str(router2)
+        return debug_str + '\n===== MulticastTopoEvent'
     
     
 class MulticastMembershipRecord:
@@ -738,6 +732,8 @@ class IGMPManager(EventMixin):
         MulticastGroupEvent,
         MulticastTopoEvent
     ])
+    
+    _core_name = "openflow_igmp_manager"
 
     def __init__(self):
         # Listen to dependencies
