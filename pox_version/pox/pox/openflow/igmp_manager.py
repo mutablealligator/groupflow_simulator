@@ -51,28 +51,51 @@ class MulticastGroupEvent(Event):
     """
     Event which represents the desired reception state for all interfaces/multicast groups on a single router
     """
-    def __init__ (self, router_dpid, adjacency_map, desired_reception):
+    def __init__ (self, router_dpid, desired_reception):
         Event.__init__(self)
         self.router_dpid = router_dpid
-        self.adjacency_map = adjacency_map
 
         # self.receiving_interfaces[multicast_address][port_index] = [list of desired sources]
         # An empty list indicates reception from all sources is desired
         self.desired_reception = desired_reception
+        self.debug_print()
         
     def debug_print(self):
-        log.info('BEGIN===== MulticastGroupEvent: Router: ' + dpid_to_str(self.router_dpid))
+        log.debug(' ')
+        log.debug('===== MulticastGroupEvent: Router: ' + dpid_to_str(self.router_dpid))
         for mcast_address in self.desired_reception:
-            log.info('Multicast Group: ' + str(mcast_address))
+            log.debug('Multicast Group: ' + str(mcast_address))
             for port_index in self.desired_reception[mcast_address]:
-                log.info('Port: ' + str(port_index))
+                log.debug('Port: ' + str(port_index))
                 if len(self.desired_reception[mcast_address][port_index]) == 0:
-                    log.info('Reception from all sources requested.')
+                    log.debug('Reception from all sources requested.')
                     continue
                     
                 for address in self.desired_reception[mcast_address][port_index]:
-                    log.info('Desired Source: ' + str(address))
-        log.info('END=======')
+                    log.debug('Desired Source: ' + str(address))
+        log.debug('===== MulticastGroupEvent')
+        log.debug(' ')
+    
+class MulticastTopoEvent(Event):
+    """
+    Event which signifies a change in topology that will be relevant to the multicast routing module
+    """
+    def __init__ (self, adjacency_map):
+        Event.__init__(self)
+        self.adjacency_map = adjacency_map
+        self.debug_print()
+    
+    def debug_print(self):
+        log.debug(' ')
+        log.debug('===== MulticastTopoEvent')
+        for router1 in self.adjacency_map:
+            print_string = 'Router ' + dpid_to_str(router1) + ':'
+            for router2 in self.adjacency_map[router1]:
+                print_string += ' ' + dpid_to_str(router2)
+            log.debug(print_string)
+        log.debug('===== MulticastTopoEvent')
+        log.debug(' ')
+    
     
 class MulticastMembershipRecord:
     """Class representing the group record state maintained by an IGMPv3 multicast router
@@ -189,7 +212,7 @@ class IGMPv3Router(EventMixin):
     def _handle_ConnectionDown(self, event):
         self.disconnect()
         
-    def print_group_records(self):
+    def debug_print_group_records(self):
         log.debug(' ')
         log.debug('== Router ' + str(self) + ' Group Membership State ==')
         for port in self.multicast_records:
@@ -236,15 +259,13 @@ class IGMPv3Router(EventMixin):
                         desired_reception[mcast_address][port_index].append(source_record[0])
         
         if self.prev_desired_reception == None:
-            event = MulticastGroupEvent(self.dpid, self.igmp_manager.adjacency, desired_reception)
-            event.debug_print()
+            event = MulticastGroupEvent(self.dpid, desired_reception)
             self.igmp_manager.raiseEvent(event)
         else:
             if desired_reception == self.prev_desired_reception:
                 log.debug('No change in reception state.')
             else:
-                event = MulticastGroupEvent(self.dpid, self.igmp_manager.adjacency, desired_reception)
-                event.debug_print()
+                event = MulticastGroupEvent(self.dpid, desired_reception)
                 self.igmp_manager.raiseEvent(event)
             
         self.prev_desired_reception = desired_reception
@@ -679,7 +700,7 @@ class IGMPv3Router(EventMixin):
                     
                 # Debug - Print a listing of the current group membership state after
                 # each group record is processed
-                self.print_group_records()
+                self.debug_print_group_records()
                 self.get_desired_reception_state()
                 
         elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
@@ -714,7 +735,8 @@ class IGMPv3Router(EventMixin):
 
 class IGMPManager(EventMixin):
     _eventMixin_events = set([
-        MulticastGroupEvent
+        MulticastGroupEvent,
+        MulticastTopoEvent
     ])
 
     def __init__(self):
@@ -808,7 +830,7 @@ class IGMPManager(EventMixin):
                 del router.multicast_records[port]
             
             if records_modified:
-                router.print_group_records()
+                router.debug_print_group_records()
         
     def encapsulate_igmp_packet(self, igmp_pkt):
         """Encapsulates the provided IGMP packet into IP and Ethernet packets, and returns the
@@ -907,6 +929,7 @@ class IGMPManager(EventMixin):
                         router2.igmp_ports.remove(ll.port2)
                         # Fixed -- new link chosen to connect these
                         break
+            
         else:
             # If we already consider these nodes connected, we can ignore this link up.
             # Otherwise, we might be interested...
@@ -922,16 +945,22 @@ class IGMPManager(EventMixin):
                     log.info('Added adjacency: ' + str(router1) + '.'
                              + str(l.port1) + ' <-> ' + str(router2) + '.'
                              + str(l.port2))
+                             
+        event = MulticastTopoEvent(self.adjacency)
+        self.raiseEvent(event)
 
     def _handle_ConnectionUp(self, event):
-        """Handler for ConnectionUp from the discovery module, which represent new routers joining the network."""
+        """Handler for ConnectionUp from the discovery module, which represent new routers joining the network.
+        
+        TODO: Investigate whether this should throw MulticastTopoEvents (LinkEvents should cover the same information)
+        """
         router = self.routers.get(event.dpid)
         if router is None:
             # New router
             router = IGMPv3Router(self)
             router.dpid = event.dpid
             self.routers[event.dpid] = router
-            log.info('Learned new router: ' + str(router))
+            log.info('Learned new router: ' + dpid_to_str(router.dpid))
             router.connect(event.connection)
         
         if not self.got_first_connection_up:
@@ -943,13 +972,23 @@ class IGMPManager(EventMixin):
             self.timer_decrementing_timer = Timer(1, self.decrement_all_timers, recurring = True)
             
     def _handle_ConnectionDown (self, event):
-        """Handler for ConnectionUp from the discovery module, which represent a router leaving the network."""
+        """Handler for ConnectionUp from the discovery module, which represent a router leaving the network.
+        """
         router = self.routers.get(event.dpid)
         if router is None:
             log.warn('Got ConnectionDown for unrecognized router')
         else:
-            log.info('Router down: ' + str(self.routers[event.dpid]))
+            log.info('Router down: ' + dpid_to_str(event.dpid))
+            # Remove any adjacency information stored for this router
+            if event.dpid in self.adjacency:
+                del self.adjacency[event.dpid]
+            for router in self.adjacency:
+                if event.dpid in self.adjacency[router]:
+                    del self.adjacency[router][event.dpid]
             del self.routers[event.dpid]
+            
+            event = MulticastTopoEvent(self.adjacency)
+            self.raiseEvent(event)
     
     def _handle_PacketIn(self, event):
         """Handler for OpenFlow PacketIn events.
