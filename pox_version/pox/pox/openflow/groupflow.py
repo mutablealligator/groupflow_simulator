@@ -88,18 +88,22 @@ class MulticastPath:
         for edge in curr_topo_graph:
             if edge[0] == node:
                 if edge[1] == prev_node:
+                    # Don't bother trying to calculate a weight for the return link (weights are bidirectional,
+                    # so this has already been calculated
                     continue;
                     
                 updated_existing = False
                 found_lower_weight = False
                 for weighted_edge in weighted_topo_graph:
-                    if weighted_edge[0] == node and weighted_edge[2] <= weight:
+                    if weighted_edge[0] == node and weighted_edge[1] == edge[1] and weighted_edge[2] <= weight:
                         found_lower_weight = True
                         break
-                    elif weighted_edge[0] == node and weighted_edge[2] > weight:
+                    elif weighted_edge[0] == node and weighted_edge[1] == edge[1] and weighted_edge[2] > weight:
                         weighted_edge[2] = weight
                         updated_existing = True
-                if not updated_existing:
+                        break
+                        
+                if not updated_existing and not found_lower_weight:
                     weighted_topo_graph.append([edge[0], edge[1], weight])
                 
                 if not found_lower_weight:
@@ -114,9 +118,9 @@ class MulticastPath:
         self.weighted_topo_graph = self.update_node_weight(self.src_router_dpid, curr_topo_graph, \
                 self.weighted_topo_graph, 0)
         
-        #log.debug('Calculated link weights for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
-        #for edge in self.weighted_topo_graph:
-        #    log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' W: ' + str(edge[2]))
+        # log.debug('Calculated link weights for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
+        # for edge in self.weighted_topo_graph:
+        #     log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' W: ' + str(edge[2]))
     
     def install_openflow_rules(self):
         self.calc_mst()
