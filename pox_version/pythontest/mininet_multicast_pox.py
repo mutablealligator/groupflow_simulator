@@ -21,19 +21,30 @@ class MulticastTestTopo( Topo ):
         h4 = self.addHost('h4')
         h5 = self.addHost('h5')
         h6 = self.addHost('h6')
+        h7 = self.addHost('h7')
+        h8 = self.addHost('h8')
+        h9 = self.addHost('h9')
+        h10 = self.addHost('h10')
         
         s1 = self.addSwitch('s1')
         s2 = self.addSwitch('s2')
         s3 = self.addSwitch('s3')
         s4 = self.addSwitch('s4')
         s5 = self.addSwitch('s5')
+        s6 = self.addSwitch('s6')
+        s7 = self.addSwitch('s7')
+        
         
         # Add links
         self.addLink(s1, s2)
         self.addLink(s1, s3)
         self.addLink(s2, s4)
-        # self.addLink(s3, s4) # Disable when using default controller
         self.addLink(s4, s5)
+        self.addLink(s2, s5)
+        self.addLink(s2, s6)
+        self.addLink(s6, s3)
+        self.addLink(s3, s7)
+        self.addLink(s7, s5)
         
         self.addLink(s2, h1)
         self.addLink(s3, h2)
@@ -41,6 +52,10 @@ class MulticastTestTopo( Topo ):
         self.addLink(s5, h4)
         self.addLink(s5, h5)
         self.addLink(s5, h6)
+        self.addLink(s2, h7)
+        self.addLink(s6, h8)
+        self.addLink(s7, h9)
+        self.addLink(s4, h10)
 
 def mcastConfig(net):
     # Configure hosts for multicast support
@@ -50,6 +65,10 @@ def mcastConfig(net):
     net.get('h4').cmd('route add -net 224.0.0.0/4 h4-eth0')
     net.get('h5').cmd('route add -net 224.0.0.0/4 h5-eth0')
     net.get('h6').cmd('route add -net 224.0.0.0/4 h6-eth0')
+    net.get('h7').cmd('route add -net 224.0.0.0/4 h7-eth0')
+    net.get('h8').cmd('route add -net 224.0.0.0/4 h8-eth0')
+    net.get('h9').cmd('route add -net 224.0.0.0/4 h9-eth0')
+    net.get('h10').cmd('route add -net 224.0.0.0/4 h10-eth0')
 
 def mcastTest():
     topo = MulticastTestTopo()

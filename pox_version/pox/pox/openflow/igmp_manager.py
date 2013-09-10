@@ -197,7 +197,7 @@ class IGMPv3Router(EventMixin):
                     continue
                 self.igmp_ports.append(port.port_no)
             # log.debug(self.ports) # Debug
-        self.disconnect()
+        # self.disconnect()
         log.debug('Connect %s' % (connection, ))
         self.connection = connection
         self._listeners = self.listenTo(connection)
@@ -1037,40 +1037,6 @@ class IGMPManager(EventMixin):
             # Drop the IGMP packet to prevent it from being uneccesarily forwarded to neighbouring routers
             self.drop_packet(event)
             return
-            
-        ipv4_pkt = event.parsed.find(pkt.ipv4)
-        if not ipv4_pkt is None:
-            # ==== IPv4 Packet ====
-            # Check the destination address to see if this is a multicast packet
-            if ipv4_pkt.dstip.inNetwork('224.0.0.0/4'):
-                log.debug(str(receiving_router) + ':' + str(event.port) + '| Received non-IGMP multicast packet')
-            
-                from_neighbour_router = False
-                for neighbour in self.adjacency[router_dpid]:
-                    if self.adjacency[router_dpid][neighbour] == event.port:
-                        from_neighbour_router = True
-                        break
-                
-                # For now, just flood all packets from this multicast group
-                # TODO: This will completely break in the presence of loops, make sure that testing uses loop free
-                #       topologies until the actual multicast protocol is in place
-                
-                # TODO: Does a separate ofp_packet_out msg actually need to be send to forward this particular packet,
-                #       or is the flow mod sufficient?
-                msg = of.ofp_packet_out()
-                msg.data = event.ofp
-                msg.buffer_id = event.ofp.buffer_id
-                msg.in_port = event.port
-                msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
-                event.connection.send(msg)
-        
-                msg = of.ofp_flow_mod()
-                msg.match.dl_type = 0x800   # IPV4
-                msg.match.nw_dst = ipv4_pkt.dstip
-                msg.match.in_port = event.port
-                msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
-                event.connection.send(msg)
-                log.info(str(receiving_router) + ':' + str(event.port) + '| Installed flow to flood all packets for multicast group: ' + str(ipv4_pkt.dstip))
 
 
 
