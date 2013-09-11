@@ -258,18 +258,18 @@ class GroupFlowManager(EventMixin):
         core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager'))
     
     def get_reception_state(self, mcast_group, src_ip):
-        log.debug('Calculating reception state for mcast group: ' + str(mcast_group) + ' Source: ' + str(src_ip))
+        # log.debug('Calculating reception state for mcast group: ' + str(mcast_group) + ' Source: ' + str(src_ip))
         reception_state = []
         for router_dpid in self.desired_reception_state:
-            log.debug('Considering router: ' + dpid_to_str(router_dpid))
+            # log.debug('Considering router: ' + dpid_to_str(router_dpid))
             if mcast_group in self.desired_reception_state[router_dpid]:
                 for port in self.desired_reception_state[router_dpid][mcast_group]:
-                    if len(self.desired_reception_state[router_dpid][mcast_group][port]) == 0:
+                    if not self.desired_reception_state[router_dpid][mcast_group][port]:
                         reception_state.append((router_dpid, port))
-                        log.debug('Reception from all sources desired on port: ' + str(port))
+                        # log.debug('Reception from all sources desired on port: ' + str(port))
                     elif src_ip in self.desired_reception_state[router_dpid][mcast_group][port]:
                         reception_state.append((router_dpid, port))
-                        log.debug('Reception from specific source desired on port: ' + str(port))
+                        # log.debug('Reception from specific source desired on port: ' + str(port))
         else:
             return reception_state
 
@@ -317,15 +317,20 @@ class GroupFlowManager(EventMixin):
             # ==== IPv4 Packet ====
             # Check the destination address to see if this is a multicast packet
             if ipv4_pkt.dstip.inNetwork('224.0.0.0/4'):
-                log.info('Got multicast packet from new source. Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
-                log.info('Reception state for this group:')
+                # Ignore multicast packets from adjacent routers
                 group_reception = self.get_reception_state(ipv4_pkt.dstip, ipv4_pkt.srcip)
-                for receiver in group_reception:
-                    log.info('Multicast Receiver: ' + dpid_to_str(receiver[0]) + ':' + str(receiver[1]))
+                if group_reception:
+                    log.info('Got multicast packet from new source. Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
+                    log.info('Reception state for this group:')
+                    
+                    for receiver in group_reception:
+                        log.info('Multicast Receiver: ' + dpid_to_str(receiver[0]) + ':' + str(receiver[1]))
 
-                path_setup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self)
-                path_setup.install_openflow_rules()
-                self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] = path_setup
+                    path_setup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self)
+                    path_setup.install_openflow_rules()
+                    
+                    # TODO: This will cause memory leaks, figure out how to properly reuse existing MulticastPath objects
+                    self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] = path_setup
     
     def _handle_MulticastGroupEvent(self, event):
         # log.info(event.debug_str())
@@ -364,7 +369,7 @@ class GroupFlowManager(EventMixin):
         self.parse_topology_graph(event.adjacency_map)
         # log.info(self.get_topo_debug_str())
 
-        if len(self.multicast_paths) > 0:
+        if self.multicast_paths:
             log.info('Multicast topology changed, recalculating all paths.')
             for multicast_addr in self.multicast_paths:
                 for source in self.multicast_paths[multicast_addr]:
