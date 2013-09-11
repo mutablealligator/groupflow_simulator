@@ -41,20 +41,16 @@ class MulticastPath:
         self.src_router_dpid = src_router_dpid
         self.dst_mcast_address = dst_mcast_address
         self.mst = None
-        self.last_installed_mst = None
-        self.last_installed_receivers = None
-        
-        self.rules_installed = False
-        self.latest_rules_installed = False
-        
         self.weighted_topo_graph = []
-        self.node_list = []
+        self.node_list = []                 # List of all managed router dpids
+        self.installed_node_list = []       # List of all router dpids with rules currently installed
         self.receivers = []                 # Tuples of (router_dpid, port)
         self.groupflow_manager = groupflow_manager
-    
-    # Implementation taken directly from the Castflow implementation
+        self.calc_mst()
+
+        
     def calc_mst(self):
-        self.calc_link_weights()
+        self._calc_link_weights()
         nodes = self.node_list
         edges = self.weighted_topo_graph
         
@@ -72,24 +68,21 @@ class MulticastPath:
             cost, n1, n2 = heappop( usable_edges )
             if n2 not in used:
                 used.add( n2 )
-                mst.append( ( n1, n2) )
+                mst.append( ( n1, n2, cost) )
                 for e in conn[ n2 ]:
                     if e[ 2 ] not in used:
                         heappush( usable_edges, e )
-                        
         self.mst = mst
-        self.latest_rules_installed = False
         
         log.debug('Calculated MST for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
         for edge in self.mst:
             log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]))
     
-    def update_node_weight(self, node, curr_topo_graph, weighted_topo_graph, weight, prev_node = None):
+    def _update_node_weight(self, node, curr_topo_graph, weighted_topo_graph, weight, prev_node = None):
         for edge in curr_topo_graph:
             if edge[0] == node:
                 if edge[1] == prev_node:
-                    # Don't bother trying to calculate a weight for the return link (weights are bidirectional,
-                    # so this has already been calculated
+                    # Don't bother trying to calculate a weight for the return link
                     continue;
                     
                 updated_existing = False
@@ -107,33 +100,58 @@ class MulticastPath:
                     weighted_topo_graph.append([edge[0], edge[1], weight])
                 
                 if not found_lower_weight:
-                    weighted_topo_graph = self.update_node_weight(edge[1], curr_topo_graph, weighted_topo_graph, weight + 1, edge[0])
+                    weighted_topo_graph = self._update_node_weight(edge[1], curr_topo_graph, weighted_topo_graph, weight + 1, edge[0])
         
         return weighted_topo_graph
     
-    # Implementation taken directly from the Castflow implementation
-    def calc_link_weights(self):
+    def _calc_link_weights(self):
         curr_topo_graph = self.groupflow_manager.topology_graph
         self.node_list = list(self.groupflow_manager.node_set)
-        self.weighted_topo_graph = self.update_node_weight(self.src_router_dpid, curr_topo_graph, [], 0)
+        self.weighted_topo_graph = self._update_node_weight(self.src_router_dpid, curr_topo_graph, [], 0)
         
         # log.debug('Calculated link weights for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
         # for edge in self.weighted_topo_graph:
         #     log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' W: ' + str(edge[2]))
     
     def install_openflow_rules(self):
-        self.calc_mst()
-        
-        if self.latest_rules_installed:
-            return
-            
-        if self.rules_installed:
-            self.remove_openflow_rules()
-        
         reception_state = self.groupflow_manager.get_reception_state(self.dst_mcast_address, self.src_ip)
         outgoing_rules = defaultdict(lambda : None)
         
-        for edge in self.mst:
+        # Calculate the paths for the specific receivers that are currently active from the previously
+        # calculated mst
+        edges_to_install = []
+        calculated_path_router_dpids = []
+        for receiver in reception_state:
+            if receiver[0] in calculated_path_router_dpids:
+                continue
+            log.info('Building path for receiver on router: ' + dpid_to_str(receiver[0]))
+            got_complete_path = False
+            cur_node = receiver[0]
+            while got_complete_path == False:
+                edge_to_add = None
+                min_weight = None
+                for edge in self.mst:
+                    if edge[1] == cur_node:
+                        if min_weight is None:
+                            edge_to_add = edge
+                            min_weight = edge[2]
+                        elif edge[2] < min_weight:
+                            edge_to_add = edge
+                            min_weight = edge[2]
+                edges_to_install.append(edge_to_add)
+                log.info('Added edge: ' + dpid_to_str(edge_to_add[0]) + ' -> ' + dpid_to_str(edge_to_add[1]))
+                cur_node = edge_to_add[0]
+                if cur_node == self.src_router_dpid:
+                    got_complete_path = True
+                    calculated_path_router_dpids.append(receiver[0])
+                    
+        # Get rid of duplicates in the edge list (must be a more efficient way to do this, find it eventually)
+        edges_to_install = list(Set(edges_to_install))
+        log.info('Installing edges:')
+        log.info(edges_to_install)
+                
+        
+        for edge in edges_to_install:
             if edge[0] in outgoing_rules:
                 # Add the output action to an existing rule if it has already been generated
                 output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
@@ -167,13 +185,6 @@ class MulticastPath:
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
-                
-                # TODO - Figure this... port matching is just ignored for now
-                #if(edge[0] == self.src_router_dpid):
-                #    msg.match.in_port = self.ingress_port
-                #else:
-                #    # TODO - Determine the ingress port for this edge
-                
                 output_port = receiver[1]
                 msg.actions.append(of.ofp_action_output(port = output_port))
                 outgoing_rules[receiver[0]] = msg
@@ -182,30 +193,28 @@ class MulticastPath:
         
         # Setup empty rules for any router not involved in this path
         for router_dpid in self.node_list:
-            if not router_dpid in outgoing_rules:
+            if not router_dpid in outgoing_rules and router_dpid in self.installed_node_list:
                 msg = of.ofp_flow_mod()
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
+                msg.command = of.OFPFC_DELETE
                 outgoing_rules[router_dpid] = msg
-                log.info('NR: Configured router ' + dpid_to_str(router_dpid) + ' to ignore traffic for group ' + str(self.dst_mcast_address))
+                log.info('Removed rule on router ' + dpid_to_str(router_dpid) + ' for group ' + str(self.dst_mcast_address))
         
         for router_dpid in outgoing_rules:
             connection = core.openflow.getConnection(router_dpid)
             if connection is not None:
                 connection.send(outgoing_rules[router_dpid])
+                if not outgoing_rules[router_dpid].command == of.OFPFC_DELETE:
+                    self.installed_node_list.append(router_dpid)
+                else:
+                    self.installed_node_list.remove(router_dpid)
             else:
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
-        
-        self.last_installed_mst = self.mst
-        self.last_installed_receivers = reception_state
-        self.rules_installed = True
-        self.latest_rules_installed = True
-            
+
+                
     def remove_openflow_rules(self):
-        if not self.rules_installed:
-            return
-        
         log.info('Removing rules on all routers for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip))
         for router_dpid in self.node_list:
             msg = of.ofp_flow_mod()
@@ -220,11 +229,9 @@ class MulticastPath:
             else:
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         
-        self.rules_installed = False
-        self.latest_rules_installed = False
-        
-    def calculate_mst(self):
-        return
+    def handle_topology_change(self):
+        self.calc_mst()
+        self.install_openflow_rules()
     
 
 
@@ -361,7 +368,7 @@ class GroupFlowManager(EventMixin):
             log.info('Multicast topology changed, recalculating all paths.')
             for multicast_addr in self.multicast_paths:
                 for source in self.multicast_paths[multicast_addr]:
-                    self.multicast_paths[multicast_addr][source].install_openflow_rules()
+                    self.multicast_paths[multicast_addr][source].handle_topology_change()
         
         # TODO: This doesn't currently handle routers going offline, only links
 
