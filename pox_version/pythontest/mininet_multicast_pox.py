@@ -25,6 +25,7 @@ class MulticastTestTopo( Topo ):
         h8 = self.addHost('h8')
         h9 = self.addHost('h9')
         h10 = self.addHost('h10')
+        h11 = self.addHost('h11')
         
         s1 = self.addSwitch('s1')
         s2 = self.addSwitch('s2')
@@ -56,6 +57,7 @@ class MulticastTestTopo( Topo ):
         self.addLink(s6, h8)
         self.addLink(s7, h9)
         self.addLink(s4, h10)
+        self.addLink(s1, h11)
 
 def mcastConfig(net):
     # Configure hosts for multicast support
@@ -69,12 +71,13 @@ def mcastConfig(net):
     net.get('h8').cmd('route add -net 224.0.0.0/4 h8-eth0')
     net.get('h9').cmd('route add -net 224.0.0.0/4 h9-eth0')
     net.get('h10').cmd('route add -net 224.0.0.0/4 h10-eth0')
+    net.get('h11').cmd('route add -net 224.0.0.0/4 h11-eth0')
 
 def mcastTest():
     topo = MulticastTestTopo()
 
     # External controller
-    # ./pox.py samples.pretty_log openflow.discovery openflow.igmp_manager forwarding.l3_learning log.level --WARNING --openflow.igmp_manager=INFO
+    # ./pox.py samples.pretty_log openflow.discovery openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG
     net = Mininet(topo, controller=RemoteController, build=False)
     pox = RemoteController('pox', '127.0.0.1', 6633)
     net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
