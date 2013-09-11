@@ -902,9 +902,9 @@ class IGMPManager(EventMixin):
 
         if event.removed:
             # This link no longer up
-            if router2 in self.adjacency[l.dpid1]:
+            if l.dpid2 in self.adjacency[l.dpid1]:
                 del self.adjacency[l.dpid1][l.dpid2]
-            if router1 in self.adjacency[l.dpid2]:
+            if l.dpid1 in self.adjacency[l.dpid2]:
                 del self.adjacency[l.dpid2][l.dpid1]
             router1.igmp_ports.append(l.port1)
             router2.igmp_ports.append(l.port2)
