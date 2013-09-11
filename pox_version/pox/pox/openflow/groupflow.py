@@ -115,8 +115,7 @@ class MulticastPath:
     def calc_link_weights(self):
         curr_topo_graph = self.groupflow_manager.topology_graph
         self.node_list = list(self.groupflow_manager.node_set)
-        self.weighted_topo_graph = self.update_node_weight(self.src_router_dpid, curr_topo_graph, \
-                self.weighted_topo_graph, 0)
+        self.weighted_topo_graph = self.update_node_weight(self.src_router_dpid, curr_topo_graph, [], 0)
         
         # log.debug('Calculated link weights for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
         # for edge in self.weighted_topo_graph:
@@ -148,7 +147,6 @@ class MulticastPath:
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
-                msg.match.in_port = None
                 output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
                 msg.actions.append(of.ofp_action_output(port = output_port))
                 outgoing_rules[edge[0]] = msg
@@ -169,7 +167,6 @@ class MulticastPath:
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
-                msg.match.in_port = None
                 
                 # TODO - Figure this... port matching is just ignored for now
                 #if(edge[0] == self.src_router_dpid):
@@ -190,12 +187,15 @@ class MulticastPath:
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
-                msg.match.in_port = None
                 outgoing_rules[router_dpid] = msg
                 log.info('NR: Configured router ' + dpid_to_str(router_dpid) + ' to ignore traffic for group ' + str(self.dst_mcast_address))
         
         for router_dpid in outgoing_rules:
-            core.openflow.getConnection(router_dpid).send(outgoing_rules[router_dpid])
+            connection = core.openflow.getConnection(router_dpid)
+            if connection is not None:
+                connection.send(outgoing_rules[router_dpid])
+            else:
+                log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         
         self.last_installed_mst = self.mst
         self.last_installed_receivers = reception_state
@@ -214,7 +214,11 @@ class MulticastPath:
             msg.match.nw_src = self.src_ip
             msg.match.in_port = None
             msg.command = of.OFPFC_DELETE
-            core.openflow.getConnection(router_dpid).send(msg)
+            connection = core.openflow.getConnection(router_dpid)
+            if connection is not None:
+                connection.send(msg)
+            else:
+                log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         
         self.rules_installed = False
         self.latest_rules_installed = False
@@ -312,18 +316,33 @@ class GroupFlowManager(EventMixin):
                 for receiver in group_reception:
                     log.info('Multicast Receiver: ' + dpid_to_str(receiver[0]) + ':' + str(receiver[1]))
 
-                pathSetup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self)
-                pathSetup.install_openflow_rules()
-                self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] = pathSetup
+                path_setup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self)
+                path_setup.install_openflow_rules()
+                self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] = path_setup
     
     def _handle_MulticastGroupEvent(self, event):
         # log.info(event.debug_str())
+        # Save a copy of the old reception state to account for members which left a group
+        old_reception_state = None
+        if event.router_dpid in self.desired_reception_state:
+            old_reception_state = self.desired_reception_state[event.router_dpid]
+        
+        # Set the new reception state
         self.desired_reception_state[event.router_dpid] = event.desired_reception
         log.info('Set new reception state for router: ' + dpid_to_str(event.router_dpid))
         
-        # TODO: Rebuild multicast trees for relevant multicast groups
-        log.info('Recalculating paths due to new receiver')
+        # Build a list of all multicast groups that may be impacted by this change
+        mcast_addr_list = []
         for multicast_addr in self.desired_reception_state[event.router_dpid]:
+            mcast_addr_list.append(multicast_addr)
+        if not old_reception_state is None:
+            for multicast_addr in old_reception_state:
+                if not multicast_addr in mcast_addr_list:
+                    mcast_addr_list.append(multicast_addr)
+        
+        # Rebuild multicast trees for relevant multicast groups
+        log.info('Recalculating paths due to new receiver')
+        for multicast_addr in mcast_addr_list:
             if multicast_addr in self.multicast_paths:
                 log.info('Recalculating paths for group ' + str(multicast_addr))
                 for source in self.multicast_paths[multicast_addr]:
@@ -337,7 +356,14 @@ class GroupFlowManager(EventMixin):
         self.adjacency = event.adjacency_map
         self.parse_topology_graph(event.adjacency_map)
         # log.info(self.get_topo_debug_str())
-        # TODO: Rebuild multicast trees for all multicast groups.
+
+        if len(self.multicast_paths) > 0:
+            log.info('Multicast topology changed, recalculating all paths.')
+            for multicast_addr in self.multicast_paths:
+                for source in self.multicast_paths[multicast_addr]:
+                    self.multicast_paths[multicast_addr][source].install_openflow_rules()
+        
+        # TODO: This doesn't currently handle routers going offline, only links
 
 def launch():
     core.registerNew(GroupFlowManager)
