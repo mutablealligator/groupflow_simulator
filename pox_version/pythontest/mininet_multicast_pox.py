@@ -3,8 +3,75 @@ from mininet.topo import Topo
 from mininet.log import setLogLevel
 from mininet.cli import CLI
 from mininet.node import RemoteController
+import sys
 from time import sleep
 
+class BriteTopo(Topo):
+    def __init__(self, brite_filepath):
+        # Initialize topology
+        Topo.__init__( self )
+        
+        self.hostnames = []
+        self.routers = []
+        
+        print 'Parsing BRITE topology at filepath: ' + str(brite_filepath)
+        file = open(brite_filepath, 'r')
+        line = file.readline()
+        print 'BRITE ' + line
+        
+        # Skip ahead until the nodes section is reached
+        in_node_section = False
+        while not in_node_section:
+            line = file.readline()
+            if 'Nodes:' in line:
+                in_node_section = True
+                break
+        
+        # In the nodes section now, generate a switch and host for each node
+        while in_node_section:
+            line = file.readline().strip()
+            if not line:
+                in_node_section = False
+                print 'Finished parsing nodes'
+                break
+            
+            line_split = line.split('\t')
+            node_id = int(line_split[0])
+            print 'Generating switch and host for ID: ' + str(node_id)
+            switch = self.addSwitch('s' + str(node_id))
+            host = self.addHost('h' + str(node_id))
+            self.addLink(switch, host)
+            self.routers.append(switch)
+            self.hostnames.append('h' + str(node_id))
+            
+        # Skip ahead to the edges section
+        in_edge_section = False
+        while not in_edge_section:
+            line = file.readline()
+            if 'Edges:' in line:
+                in_edge_section = True
+                break
+        
+        # In the edges section now, add all required links
+        while in_edge_section:
+            line = file.readline().strip()
+            if not line:    # Empty string
+                in_edge_section = False
+                print 'Finished parsing edges'
+                break
+                
+            line_split = line.split('\t')
+            switch_id_1 = int(line_split[1])
+            switch_id_2 = int(line_split[2])
+            print 'Adding link between switch ' + str(switch_id_1) + ' and ' + str(switch_id_2)
+            self.addLink(self.routers[switch_id_1], self.routers[switch_id_2])
+        
+        file.close()
+    
+    def mcastConfig(self, net):
+        for hostname in self.hostnames:
+            net.get(hostname).cmd('route add -net 224.0.0.0/4 ' + hostname + '-eth0')
+        
 class MulticastTestTopo( Topo ):
     "Simple multicast testing example"
     
@@ -59,23 +126,21 @@ class MulticastTestTopo( Topo ):
         self.addLink(s4, h10)
         self.addLink(s1, h11)
 
-def mcastConfig(net):
-    # Configure hosts for multicast support
-    net.get('h1').cmd('route add -net 224.0.0.0/4 h1-eth0')
-    net.get('h2').cmd('route add -net 224.0.0.0/4 h2-eth0')
-    net.get('h3').cmd('route add -net 224.0.0.0/4 h3-eth0')
-    net.get('h4').cmd('route add -net 224.0.0.0/4 h4-eth0')
-    net.get('h5').cmd('route add -net 224.0.0.0/4 h5-eth0')
-    net.get('h6').cmd('route add -net 224.0.0.0/4 h6-eth0')
-    net.get('h7').cmd('route add -net 224.0.0.0/4 h7-eth0')
-    net.get('h8').cmd('route add -net 224.0.0.0/4 h8-eth0')
-    net.get('h9').cmd('route add -net 224.0.0.0/4 h9-eth0')
-    net.get('h10').cmd('route add -net 224.0.0.0/4 h10-eth0')
-    net.get('h11').cmd('route add -net 224.0.0.0/4 h11-eth0')
+    def mcastConfig(self, net):
+        # Configure hosts for multicast support
+        net.get('h1').cmd('route add -net 224.0.0.0/4 h1-eth0')
+        net.get('h2').cmd('route add -net 224.0.0.0/4 h2-eth0')
+        net.get('h3').cmd('route add -net 224.0.0.0/4 h3-eth0')
+        net.get('h4').cmd('route add -net 224.0.0.0/4 h4-eth0')
+        net.get('h5').cmd('route add -net 224.0.0.0/4 h5-eth0')
+        net.get('h6').cmd('route add -net 224.0.0.0/4 h6-eth0')
+        net.get('h7').cmd('route add -net 224.0.0.0/4 h7-eth0')
+        net.get('h8').cmd('route add -net 224.0.0.0/4 h8-eth0')
+        net.get('h9').cmd('route add -net 224.0.0.0/4 h9-eth0')
+        net.get('h10').cmd('route add -net 224.0.0.0/4 h10-eth0')
+        net.get('h11').cmd('route add -net 224.0.0.0/4 h11-eth0')
 
-def mcastTest():
-    topo = MulticastTestTopo()
-
+def mcastTest(topo):
     # External controller
     # ./pox.py samples.pretty_log openflow.discovery openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG
     net = Mininet(topo, controller=RemoteController, build=False)
@@ -83,16 +148,16 @@ def mcastTest():
     net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
     
     net.start()
-    mcastConfig(net)
+    topo.mcastConfig(net)
     # net.get('h2').cmd('python ./multicast_receiver.py &');
     # net.get('h3').cmd('python ./multicast_receiver.py &');
     # net.get('h4').cmd('python ./multicast_receiver.py &');
-    sleep(8)   # Allow time for the controller to detect the topology
-    net.get('h6').cmd('python ./multicast_receiver.py &');
-    sleep(2)
-    net.get('h1').cmd('python ./multicast_sender.py &');
-    sleep(5)
-    net.get('h5').cmd('python ./ss_multicast_receiver.py &');
+    # sleep(8)   # Allow time for the controller to detect the topology
+    # net.get('h6').cmd('python ./multicast_receiver.py &');
+    # sleep(2)
+    # net.get('h1').cmd('python ./multicast_sender.py &');
+    # sleep(5)
+    # net.get('h5').cmd('python ./ss_multicast_receiver.py &');
     CLI(net)
     net.stop()
 
@@ -100,4 +165,10 @@ topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-    mcastTest()
+    if len(sys.argv) >= 2:
+        print 'Launching BRITE defined multicast test topology'
+        topo = BriteTopo(sys.argv[1])
+        mcastTest(topo)
+    else:
+        print 'Launching default multicast test topology'
+        mcastTest(MulticastTestTopo())
