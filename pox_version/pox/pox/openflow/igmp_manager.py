@@ -901,7 +901,23 @@ class IGMPManager(EventMixin):
         msg.in_port = packet_in_event.port
         msg.actions = []    # No actions = drop packet
         packet_in_event.connection.send(msg)
+    
+    def add_igmp_router(self, router_dpid, connection):
+        if not router_dpid in self.routers:
+            # New router
+            router = IGMPv3Router(self)
+            router.dpid = router_dpid
+            self.routers[router_dpid] = router
+            log.info('Learned new router: ' + dpid_to_str(router.dpid))
+            router.connect(connection)
         
+        if not self.got_first_connection_up:
+            self.got_first_connection_up = True
+            # Setup the Timer to send periodic general queries
+            self.general_query_timer = Timer(self.igmp_query_interval, self.launch_igmp_general_query, recurring = True)
+            log.debug('Launching IGMP general query timer with interval ' + str(self.igmp_query_interval) + ' seconds')
+            # Setup the timer to handle group and source timers
+            self.timer_decrementing_timer = Timer(1, self.decrement_all_timers, recurring = True)
 
     def _handle_LinkEvent(self, event):
         """Handler for LinkEvents from the discovery module, which are used to learn the network topology."""
@@ -910,7 +926,11 @@ class IGMPManager(EventMixin):
             return Discovery.Link(link[2], link[3], link[0], link[1])
 
         l = event.link
+        if not l.dpid1 in self.routers:
+            self.add_igmp_router(l.dpid1, core.getConnection(l.dpid1))
         router1 = self.routers[l.dpid1]
+        if not l.dpid2 in self.routers:
+            self.add_igmp_router(l.dpid2, core.getConnection(l.dpid2))
         router2 = self.routers[l.dpid2]
 
         if event.removed:
@@ -980,22 +1000,7 @@ class IGMPManager(EventMixin):
         
         TODO: Investigate whether this should throw MulticastTopoEvents (LinkEvents should cover the same information)
         """
-        router = self.routers.get(event.dpid)
-        if router is None:
-            # New router
-            router = IGMPv3Router(self)
-            router.dpid = event.dpid
-            self.routers[event.dpid] = router
-            log.info('Learned new router: ' + dpid_to_str(router.dpid))
-            router.connect(event.connection)
-        
-        if not self.got_first_connection_up:
-            self.got_first_connection_up = True
-            # Setup the Timer to send periodic general queries
-            self.general_query_timer = Timer(self.igmp_query_interval, self.launch_igmp_general_query, recurring = True)
-            log.debug('Launching IGMP general query timer with interval ' + str(self.igmp_query_interval) + ' seconds')
-            # Setup the timer to handle group and source timers
-            self.timer_decrementing_timer = Timer(1, self.decrement_all_timers, recurring = True)
+        self.add_igmp_router(event.dpid, event.connection)
             
     def _handle_ConnectionDown (self, event):
         """Handler for ConnectionUp from the discovery module, which represent a router leaving the network.
