@@ -75,19 +75,32 @@ class MulticastGroupEvent(Event):
         
     
 class MulticastTopoEvent(Event):
+    LINK_UP     = 0
+    LINK_DOWN   = 1
+    
     """
     Event which signifies a change in topology that will be relevant to the multicast routing module
     """
-    def __init__ (self, adjacency_map):
+    def __init__ (self, event_type, link_changes, adjacency_map):
         Event.__init__(self)
+        self.event_type = event_type
+        self.link_changes = link_changes
         self.adjacency_map = adjacency_map
     
     def debug_str(self):
-        debug_str = '\n===== MulticastTopoEvent'
-        for router1 in self.adjacency_map:
-            debug_str += '\nRouter ' + dpid_to_str(router1) + ':'
-            for router2 in self.adjacency_map[router1]:
-                debug_str += ' ' + dpid_to_str(router2)
+        debug_str = '\n===== MulticastTopoEvent - Type: '
+        if self.event_type == MulticastTopoEvent.LINK_UP:
+            debug_str += 'LINK_UP'
+        elif self.event_type == MulticastTopoEvent.LINK_DOWN:
+            debug_str += 'LINK_DOWN'
+        
+        debug_str += '\nChanged Links:'
+        for link in self.link_changes:
+            debug_str += '\n' + dpid_to_str(link[0]) + ' -> ' + dpid_to_str(link[1]) + ' Port: ' + str(link[2])
+        #for router1 in self.adjacency_map:
+        #    debug_str += '\nRouter ' + dpid_to_str(router1) + ':'
+        #    for router2 in self.adjacency_map[router1]:
+        #        debug_str += ' ' + dpid_to_str(router2)
         return debug_str + '\n===== MulticastTopoEvent'
     
     
@@ -902,9 +915,12 @@ class IGMPManager(EventMixin):
 
         if event.removed:
             # This link no longer up
+            link_changes = []
             if l.dpid2 in self.adjacency[l.dpid1]:
+                link_changes.append((l.dpid1, l.dpid2, self.adjacency[l.dpid1][l.dpid2]))
                 del self.adjacency[l.dpid1][l.dpid2]
             if l.dpid1 in self.adjacency[l.dpid2]:
+                link_changes.append((l.dpid2, l.dpid1, self.adjacency[l.dpid2][l.dpid1]))
                 del self.adjacency[l.dpid2][l.dpid1]
             router1.igmp_ports.append(l.port1)
             router2.igmp_ports.append(l.port2)
@@ -912,38 +928,52 @@ class IGMPManager(EventMixin):
             log.info('Removed adjacency: ' + str(router1) + '.'
                  + str(l.port1) + ' <-> ' + str(router2) + '.'
                  + str(l.port2))
+            
+            self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
 
+            # TODO: Check if this is actually neccesary...
             # These routers may still be adjacent through a different link
             for ll in core.openflow_discovery.adjacency:
                 if ll.dpid1 == l.dpid1 and ll.dpid2 == l.dpid2:
                     if flip(ll) in core.openflow_discovery.adjacency:
+                        link_changes = []
+                        
                         # Yup, link goes both ways
                         log.info('Found parallel adjacency');
                         self.adjacency[l.dpid1][l.dpid2] = ll.port1
+                        link_changes.append((l.dpid1, l.dpid2, l1.port1))
                         router1.igmp_ports.remove(ll.port1)
                         self.adjacency[l.dpid2][l.dpid1] = ll.port2
+                        link_changes.append((l.dpid2, l.dpid1, l1.port2))
                         router2.igmp_ports.remove(ll.port2)
                         # Fixed -- new link chosen to connect these
+                        
+                        self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_UP, link_changes, self.adjacency))
                         break
             
         else:
+            link_event = MulticastTopoEvent.LINK_UP
             # If we already consider these nodes connected, we can ignore this link up.
             # Otherwise, we might be interested...
             if self.adjacency[l.dpid1][l.dpid2] is None:
                 # These previously weren't connected.  If the link
                 # exists in both directions, we consider them connected now.
                 if flip(l) in core.openflow_discovery.adjacency:
+                    link_changes = []
                     # Link goes both ways -- connected!
                     self.adjacency[l.dpid1][l.dpid2] = l.port1
+                    link_changes.append((l.dpid1, l.dpid2, l.port1))
                     router1.igmp_ports.remove(l.port1)
                     self.adjacency[l.dpid2][l.dpid1] = l.port2
+                    link_changes.append((l.dpid2, l.dpid1, l.port2))
                     router2.igmp_ports.remove(l.port2)
                     log.info('Added adjacency: ' + str(router1) + '.'
                              + str(l.port1) + ' <-> ' + str(router2) + '.'
                              + str(l.port2))
                              
-        event = MulticastTopoEvent(self.adjacency)
-        self.raiseEvent(event)
+                    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_UP, link_changes, self.adjacency))
+                    
+                    
 
     def _handle_ConnectionUp(self, event):
         """Handler for ConnectionUp from the discovery module, which represent new routers joining the network.
@@ -975,15 +1005,18 @@ class IGMPManager(EventMixin):
             log.warn('Got ConnectionDown for unrecognized router')
         else:
             log.info('Router down: ' + dpid_to_str(event.dpid))
+            link_changes = []
             # Remove any adjacency information stored for this router
             if event.dpid in self.adjacency:
+                for router_dpid in self.adjacency[event.dpid]:
+                    link_changes.append((event.dpid, router_dpid, self.adjacency[event.dpid][router_dpid]))
                 del self.adjacency[event.dpid]
             for router in self.adjacency:
                 if event.dpid in self.adjacency[router]:
+                    link_changes.append((event.dpid, router_dpid, self.adjacency[router][event.dpid]))
                     del self.adjacency[router][event.dpid]
             del self.routers[event.dpid]
-            
-            event = MulticastTopoEvent(self.adjacency)
+            event = MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency)
             self.raiseEvent(event)
     
     def _handle_PacketIn(self, event):

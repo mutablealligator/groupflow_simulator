@@ -374,8 +374,6 @@ class GroupFlowManager(EventMixin):
             for multicast_addr in self.multicast_paths:
                 for source in self.multicast_paths[multicast_addr]:
                     self.multicast_paths[multicast_addr][source].handle_topology_change()
-        
-        # TODO: This doesn't currently handle routers going offline, only links
 
 def launch():
     core.registerNew(GroupFlowManager)
