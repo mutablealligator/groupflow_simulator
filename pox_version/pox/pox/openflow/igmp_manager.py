@@ -927,10 +927,10 @@ class IGMPManager(EventMixin):
 
         l = event.link
         if not l.dpid1 in self.routers:
-            self.add_igmp_router(l.dpid1, core.getConnection(l.dpid1))
+            self.add_igmp_router(l.dpid1, core.openflow.getConnection(l.dpid1))
         router1 = self.routers[l.dpid1]
         if not l.dpid2 in self.routers:
-            self.add_igmp_router(l.dpid2, core.getConnection(l.dpid2))
+            self.add_igmp_router(l.dpid2, core.openflow.getConnection(l.dpid2))
         router2 = self.routers[l.dpid2]
 
         if event.removed:
