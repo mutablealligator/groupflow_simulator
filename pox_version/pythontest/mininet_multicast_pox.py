@@ -1,5 +1,6 @@
-from mininet.net import Mininet
-from mininet.topo import Topo
+from mininet.net import *
+from mininet.topo import *
+from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
 from mininet.node import RemoteController
@@ -40,7 +41,7 @@ class BriteTopo(Topo):
             print 'Generating switch and host for ID: ' + str(node_id)
             switch = self.addSwitch('s' + str(node_id))
             host = self.addHost('h' + str(node_id))
-            self.addLink(switch, host)
+            self.addLink(switch, host, bw=10)	# TODO: Better define link parameters for hosts
             self.routers.append(switch)
             self.hostnames.append('h' + str(node_id))
             
@@ -63,8 +64,13 @@ class BriteTopo(Topo):
             line_split = line.split('\t')
             switch_id_1 = int(line_split[1])
             switch_id_2 = int(line_split[2])
-            print 'Adding link between switch ' + str(switch_id_1) + ' and ' + str(switch_id_2)
-            self.addLink(self.routers[switch_id_1], self.routers[switch_id_2])
+            delay_ms = str(float(line_split[4])) + 'ms'
+            bandwidth_Mbps = float(line_split[5])
+            print 'Adding link between switch ' + str(switch_id_1) + ' and ' + str(switch_id_2) + '\n\tRate: ' \
+                + str(bandwidth_Mbps) + ' Mbps\tDelay: ' + delay_ms
+            # params = {'bw':bandwidth_Mbps, 'delay':delay_ms}]
+            # TODO: Figure out why setting the delay won't work
+            self.addLink(self.routers[switch_id_1], self.routers[switch_id_2], bw=bandwidth_Mbps, delay=delay_ms)
         
         file.close()
     
@@ -143,7 +149,7 @@ class MulticastTestTopo( Topo ):
 def mcastTest(topo):
     # External controller
     # ./pox.py samples.pretty_log openflow.discovery openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG
-    net = Mininet(topo, controller=RemoteController, build=False)
+    net = Mininet(topo, controller=RemoteController, link=TCLink, build=False)
     pox = RemoteController('pox', '127.0.0.1', 6633)
     net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
     
