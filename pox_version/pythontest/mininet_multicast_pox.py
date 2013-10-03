@@ -41,7 +41,7 @@ class BriteTopo(Topo):
             print 'Generating switch and host for ID: ' + str(node_id)
             switch = self.addSwitch('s' + str(node_id))
             host = self.addHost('h' + str(node_id))
-            self.addLink(switch, host, bw=10)	# TODO: Better define link parameters for hosts
+            self.addLink(switch, host, bw=10, use_htb=True)	# TODO: Better define link parameters for hosts
             self.routers.append(switch)
             self.hostnames.append('h' + str(node_id))
             
@@ -70,7 +70,7 @@ class BriteTopo(Topo):
                 + str(bandwidth_Mbps) + ' Mbps\tDelay: ' + delay_ms
             # params = {'bw':bandwidth_Mbps, 'delay':delay_ms}]
             # TODO: Figure out why setting the delay won't work
-            self.addLink(self.routers[switch_id_1], self.routers[switch_id_2], bw=bandwidth_Mbps, delay=delay_ms)
+            self.addLink(self.routers[switch_id_1], self.routers[switch_id_2], bw=bandwidth_Mbps, delay=delay_ms, use_htb=True)
         
         file.close()
     
@@ -110,27 +110,27 @@ class MulticastTestTopo( Topo ):
         
         
         # Add links
-        self.addLink(s1, s2)
-        self.addLink(s1, s3)
-        self.addLink(s2, s4)
-        self.addLink(s4, s5)
-        self.addLink(s2, s5)
-        self.addLink(s2, s6)
-        self.addLink(s6, s3)
-        self.addLink(s3, s7)
-        self.addLink(s7, s5)
+        self.addLink(s1, s2, bw = 10, use_htb = True)
+        self.addLink(s1, s3, bw = 10, use_htb = True)
+        self.addLink(s2, s4, bw = 10, use_htb = True)
+        self.addLink(s4, s5, bw = 10, use_htb = True)
+        self.addLink(s2, s5, bw = 10, use_htb = True)
+        self.addLink(s2, s6, bw = 10, use_htb = True)
+        self.addLink(s6, s3, bw = 10, use_htb = True)
+        self.addLink(s3, s7, bw = 10, use_htb = True)
+        self.addLink(s7, s5, bw = 10, use_htb = True)
         
-        self.addLink(s2, h1)
-        self.addLink(s3, h2)
-        self.addLink(s3, h3)
-        self.addLink(s5, h4)
-        self.addLink(s5, h5)
-        self.addLink(s5, h6)
-        self.addLink(s2, h7)
-        self.addLink(s6, h8)
-        self.addLink(s7, h9)
-        self.addLink(s4, h10)
-        self.addLink(s1, h11)
+        self.addLink(s2, h1, bw = 10, use_htb = True)
+        self.addLink(s3, h2, bw = 10, use_htb = True)
+        self.addLink(s3, h3, bw = 10, use_htb = True)
+        self.addLink(s5, h4, bw = 10, use_htb = True)
+        self.addLink(s5, h5, bw = 10, use_htb = True)
+        self.addLink(s5, h6, bw = 10, use_htb = True)
+        self.addLink(s2, h7, bw = 10, use_htb = True)
+        self.addLink(s6, h8, bw = 10, use_htb = True)
+        self.addLink(s7, h9, bw = 10, use_htb = True)
+        self.addLink(s4, h10, bw = 10, use_htb = True)
+        self.addLink(s1, h11, bw = 10, use_htb = True)
 
     def mcastConfig(self, net):
         # Configure hosts for multicast support
