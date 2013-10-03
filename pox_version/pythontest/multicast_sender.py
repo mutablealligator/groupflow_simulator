@@ -23,8 +23,11 @@ def send_multicast_packet():
 	send_string = str(send_packet_index).zfill(128)
 	print 'Send String: ' + str(send_string)
 	send_packet_times[send_packet_index] = time.time()
-	bytes = send_socket.sendto(send_string, (multicast_group, multicast_port))
-	print 'Sent multicast packet ' + str(send_packet_index) + ' at: ' + str(send_packet_times[send_packet_index]) + ' (' + str(bytes) + ' bytes)'
+	try:
+		bytes = send_socket.sendto(send_string, (multicast_group, multicast_port))
+		print 'Sent multicast packet ' + str(send_packet_index) + ' at: ' + str(send_packet_times[send_packet_index]) + ' (' + str(bytes) + ' bytes)'
+	except:
+		print 'Socket error occurred, skipped sending packet: ' + str(send_packet_index)
 	send_packet_index += 1
 	if not quit_flag:
 		threading.Timer(1, send_multicast_packet).start()
@@ -40,6 +43,7 @@ def main():
 	
 	send_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 	send_socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
+	send_socket.setblocking(False)
 	
 	print 'Starting multicast on group: ' + multicast_group + ':' + str(multicast_port)
 	threading.Timer(1, send_multicast_packet).start()
