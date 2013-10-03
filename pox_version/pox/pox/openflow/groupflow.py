@@ -147,9 +147,10 @@ class MulticastPath:
                     
         # Get rid of duplicates in the edge list (must be a more efficient way to do this, find it eventually)
         edges_to_install = list(Set(edges_to_install))
-        log.info('Installing edges:')
-        log.info(edges_to_install)
-                
+        if not edges_to_install is None:
+            log.info('Installing edges:')
+            for edge in edges_to_install:
+                log.info(dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]) + ' (Weight: ' + str(edge[2]) + ')')
         
         for edge in edges_to_install:
             if edge[0] in outgoing_rules:
