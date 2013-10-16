@@ -1,5 +1,6 @@
 from mininet.net import *
 from mininet.topo import *
+from mininet.node import OVSSwitch
 from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
@@ -149,7 +150,7 @@ class MulticastTestTopo( Topo ):
 def mcastTest(topo):
     # External controller
     # ./pox.py samples.pretty_log openflow.discovery openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG
-    net = Mininet(topo, controller=RemoteController, link=TCLink, build=False)
+    net = Mininet(topo, controller=RemoteController, switch=OVSSwitch, link=TCLink, build=False, autoSetMacs=True)
     pox = RemoteController('pox', '127.0.0.1', 6633)
     net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
     
@@ -161,7 +162,7 @@ def mcastTest(topo):
     # sleep(8)   # Allow time for the controller to detect the topology
     # net.get('h6').cmd('python ./multicast_receiver.py &');
     # sleep(2)
-    # net.get('h1').cmd('python ./multicast_sender.py &');
+    net.get('h1').cmd('python ./multicast_sender.py &');
     # sleep(5)
     # net.get('h5').cmd('python ./ss_multicast_receiver.py &');
     CLI(net)
