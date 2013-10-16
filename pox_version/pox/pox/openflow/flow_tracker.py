@@ -120,7 +120,7 @@ class FlowTrackedSwitch(EventMixin):
         log.info('Num Flows: ' + str(self.num_flows))
         for port_num in self.flow_interval_bandwidth_Mbps:
             if self.flow_interval_bandwidth_Mbps[port_num] > 0 or self.flow_average_bandwidth_Mbps[port_num] > 0:
-                log.info('Port ' + str(port_num) + ' - ' + str(self.flow_average_bandwidth_Mbps[port_num]) + ' Mbps - Bytes This Interval: ' + str(self.flow_total_byte_count[port_num]))
+                log.info('Port ' + str(port_num) + ' - ' + str(self.flow_average_bandwidth_Mbps[port_num]) + ' Mbps - Bytes This Interval: ' + str(self.flow_interval_byte_count[port_num]))
 
 
 class FlowTracker(EventMixin):
