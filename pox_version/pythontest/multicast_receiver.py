@@ -11,7 +11,7 @@ import binascii
 
 multicast_group = '224.1.1.1'
 multicast_port = 5007
-packets_to_receive = 30
+packets_to_receive = 30000
 echo_port = 5008
 
 def main():

@@ -30,7 +30,7 @@ def send_multicast_packet():
 		print 'Socket error occurred, skipped sending packet: ' + str(send_packet_index)
 	send_packet_index += 1
 	if not quit_flag:
-		threading.Timer(1, send_multicast_packet).start()
+		threading.Timer(0.01, send_multicast_packet).start()
 	
 def main():
 	global multicast_group, multicast_port, send_socket
