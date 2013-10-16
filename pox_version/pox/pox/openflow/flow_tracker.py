@@ -77,11 +77,11 @@ class FlowTrackedSwitch(EventMixin):
         self.ignore_connection()
     
     def process_flow_stats(self, stats, reception_time):
-        log.info(' ')
-        log.info('Got FlowStatsReceived event from switch: ' + dpid_to_str(self.dpid) + ' at time: ' + str(reception_time))
+        log.info('== FlowStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
         
         # Clear byte counts for this interval
-        self.flow_interval_byte_count = {}
+        for port in self.flow_interval_byte_count:
+            self.flow_interval_byte_count[port] = 0
         self.num_flows = 0
         
         # Record the number of bytes transmitted through each port for this monitoring interval
@@ -117,10 +117,10 @@ class FlowTrackedSwitch(EventMixin):
         self._last_query_response_time = reception_time
         
         # Print debug information
+        log.info('Num Flows: ' + str(self.num_flows))
         for port_num in self.flow_interval_bandwidth_Mbps:
             if self.flow_interval_bandwidth_Mbps[port_num] > 0 or self.flow_average_bandwidth_Mbps[port_num] > 0:
-                log.info('Port: ' + str(port_num) + ' Bandwidth Usage: ' + str(self.flow_interval_bandwidth_Mbps[port_num]) + \
-                        ' Mbps (Average: ' + str(self.flow_average_bandwidth_Mbps[port_num]) + ' Mbps)')
+                log.info('Port ' + str(port_num) + ' - ' + str(self.flow_average_bandwidth_Mbps[port_num]) + ' Mbps - Bytes This Interval: ' + str(self.flow_total_byte_count[port_num]))
 
 
 class FlowTracker(EventMixin):
