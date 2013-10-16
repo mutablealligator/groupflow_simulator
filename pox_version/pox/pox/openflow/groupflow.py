@@ -328,10 +328,9 @@ class GroupFlowManager(EventMixin):
                         log.info('Multicast Receiver: ' + dpid_to_str(receiver[0]) + ':' + str(receiver[1]))
 
                     path_setup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self)
-                    path_setup.install_openflow_rules()
-                    
-                    # TODO: This will cause memory leaks, figure out how to properly reuse existing MulticastPath objects
+                    # TODO: This may cause memory leaks, figure out how to properly reuse existing MulticastPath objects
                     self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] = path_setup
+                    path_setup.install_openflow_rules()
     
     def _handle_MulticastGroupEvent(self, event):
         # log.info(event.debug_str())
