@@ -192,14 +192,14 @@ class IGMPv3Router(EventMixin):
     def __repr__(self):
         return dpid_to_str(self.dpid)
 
-    def disconnect(self):
+    def ignore_connection(self):
         if self.connection is not None:
             log.debug('Disconnect %s' % (self.connection, ))
             self.connection.removeListeners(self._listeners)
             self.connection = None
             self._listeners = None
 
-    def connect(self, connection):
+    def listen_on_connection(self, connection):
         if self.dpid is None:
             self.dpid = connection.dpid
         assert self.dpid == connection.dpid
@@ -217,7 +217,7 @@ class IGMPv3Router(EventMixin):
         self._connected_at = time.time()
 
     def _handle_ConnectionDown(self, event):
-        self.disconnect()
+        self.ignore_connection()
         
     def debug_print_group_records(self):
         log.debug(' ')
@@ -909,7 +909,7 @@ class IGMPManager(EventMixin):
             router.dpid = router_dpid
             self.routers[router_dpid] = router
             log.info('Learned new router: ' + dpid_to_str(router.dpid))
-            router.connect(connection)
+            router.listen_on_connection(connection)
         
         if not self.got_first_connection_up:
             self.got_first_connection_up = True
