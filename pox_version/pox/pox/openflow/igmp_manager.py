@@ -290,7 +290,11 @@ class IGMPv3Router(EventMixin):
         
         return self.multicast_records[event.port][igmp_group_record.multicast_address]
     
-    def send_group_specific_query(self, port, multicast_address, group_record, retransmissions = -1): 
+    def send_group_specific_query(self, port, multicast_address, group_record, retransmissions = -1):
+        if self.connection is None:
+            log.warn('Unable to access connection with switch: ' + dpid_to_str(self.dpid))
+            return
+            
         if retransmissions == -1:
             retransmissions = self.igmp_manager.igmp_last_member_query_count - 1
             
@@ -322,6 +326,9 @@ class IGMPv3Router(EventMixin):
     def send_group_and_source_specific_query(self, port, multicast_address, group_record, sources, retransmissions = -1):
         # TODO: Retransmissions may not properly handle the source timers, as they will be based on the timers
         # at the time of retransmission
+        if self.connection is None:
+            log.warn('Unable to access connection with switch: ' + dpid_to_str(self.dpid))
+            return
         
         if retransmissions == -1:
             retransmissions = self.igmp_manager.igmp_last_member_query_count - 1
@@ -870,6 +877,10 @@ class IGMPManager(EventMixin):
         # Send out the packet
         for router_dpid in self.routers:
             sending_router = self.routers[router_dpid]
+            if sending_router.connection is None:
+                log.warn('Unable to access connection with switch: ' + dpid_to_str(self.dpid))
+                continue
+                
             for port_num in sending_router.igmp_ports:
                 output = of.ofp_packet_out(action = of.ofp_action_output(port=port_num))
                 output.data = eth_pkt.pack()

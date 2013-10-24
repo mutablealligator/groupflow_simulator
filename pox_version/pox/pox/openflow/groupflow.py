@@ -139,7 +139,7 @@ class MulticastPath:
                             edge_to_add = edge
                             min_weight = edge[2]
                 if edge_to_add is None:
-                    log.warning('Path could not be determined for receiver ' + dpid_to_str(receiver[0]))
+                    log.warning('Path could not be determined for receiver ' + dpid_to_str(receiver[0]) + ' (network is not fully connected)')
                     break
                 edges_to_install.append(edge_to_add)
                 log.info('Added edge: ' + dpid_to_str(edge_to_add[0]) + ' -> ' + dpid_to_str(edge_to_add[1]))
