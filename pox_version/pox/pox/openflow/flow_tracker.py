@@ -31,13 +31,14 @@ import time
 
 log = core.getLogger()
 
-AVERAGE_SMOOTHING_FACTOR = 0.6
+AVERAGE_SMOOTHING_FACTOR = 0.8
 
 class FlowTrackedSwitch(EventMixin):
     def __init__(self):
         self.connection = None
         self.is_connected = False
         self.dpid = None
+        self.flow_removed_curr_interval = False
         self._listeners = None
         self._connection_time = None
         self._last_query_response_time = None
@@ -84,43 +85,60 @@ class FlowTrackedSwitch(EventMixin):
             self.flow_interval_byte_count[port] = 0
         self.num_flows = 0
         
+        curr_event_byte_count = {}
+        
         # Record the number of bytes transmitted through each port for this monitoring interval
         for flow_stat in stats:
             self.num_flows = self.num_flows + 1
             for action in flow_stat.actions:
                 if isinstance(action, of.ofp_action_output):
-                    if action.port in self.flow_interval_byte_count:
-                        self.flow_interval_byte_count[action.port] = self.flow_interval_byte_count[action.port] + flow_stat.byte_count
+                    if action.port in curr_event_byte_count:
+                        curr_event_byte_count[action.port] = curr_event_byte_count[action.port] + flow_stat.byte_count
                     else:
-                        self.flow_interval_byte_count[action.port] = flow_stat.byte_count
+                        curr_event_byte_count[action.port] = flow_stat.byte_count
                         
-                    if action.port in self.flow_total_byte_count:
-                        self.flow_total_byte_count[action.port] = self.flow_total_byte_count[action.port] + flow_stat.byte_count
-                    else:
-                        self.flow_total_byte_count[action.port] = flow_stat.byte_count
-                    
-                    # log.debug('Added ' + str(self.flow_interval_byte_count[action.port]) + ' byte flow on port ' + str(action.port))
+        # Determine the number of new bytes that appeared this interval, and set the flow removed flag to true if
+        # any port count is lower than in the previous interval
+        for port_num in curr_event_byte_count:
+            if not port_num in self.flow_total_byte_count:
+                self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
+                self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num]
+                continue
+                
+            if curr_event_byte_count[port_num] < self.flow_total_byte_count[port_num]:
+                self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
+                self.flow_interval_byte_count[port_num] = 0
+                self.flow_removed_curr_interval = True
+                continue
+            
+            self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num] - self.flow_total_byte_count[port_num]
+            self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
         
-        # Update bandwidth estimates
-        for port_num in self.flow_interval_byte_count:
-            # Update instant bandwidth
-            self.flow_interval_bandwidth_Mbps[port_num] = ((self.flow_interval_byte_count[port_num] * 8.0) / 1048576.0) / (reception_time - self._last_query_response_time)
-            # log.debug('Port: ' + str(port_num) + ' ' + str(self.flow_interval_bandwidth_Mbps[port_num]))
-            # Update running average bandwidth
-            if port_num in self.flow_average_bandwidth_Mbps:
-                self.flow_average_bandwidth_Mbps[port_num] = (AVERAGE_SMOOTHING_FACTOR * self.flow_interval_bandwidth_Mbps[port_num]) + \
-                    ((1 - AVERAGE_SMOOTHING_FACTOR) * self.flow_average_bandwidth_Mbps[port_num])
-            else:
-                self.flow_average_bandwidth_Mbps[port_num] = self.flow_interval_bandwidth_Mbps[port_num]
+        # Update bandwidth estimates if no flows were removed
+        if not self.flow_removed_curr_interval:
+            for port_num in self.flow_interval_byte_count:
+                # Update instant bandwidth
+                self.flow_interval_bandwidth_Mbps[port_num] = ((self.flow_interval_byte_count[port_num] * 8.0) / 1048576.0) / (reception_time - self._last_query_response_time)
+                # log.debug('Port: ' + str(port_num) + ' ' + str(self.flow_interval_bandwidth_Mbps[port_num]))
+                # Update running average bandwidth
+                if port_num in self.flow_average_bandwidth_Mbps:
+                    self.flow_average_bandwidth_Mbps[port_num] = (AVERAGE_SMOOTHING_FACTOR * self.flow_interval_bandwidth_Mbps[port_num]) + \
+                        ((1 - AVERAGE_SMOOTHING_FACTOR) * self.flow_average_bandwidth_Mbps[port_num])
+                else:
+                    self.flow_average_bandwidth_Mbps[port_num] = self.flow_interval_bandwidth_Mbps[port_num]
         
         # Update last response time
         self._last_query_response_time = reception_time
         
         # Print debug information
         log.info('Num Flows: ' + str(self.num_flows))
+        if(self.flow_removed_curr_interval):
+            log.info('Removed flows detected')
         for port_num in self.flow_interval_bandwidth_Mbps:
             if self.flow_interval_bandwidth_Mbps[port_num] > 0 or self.flow_average_bandwidth_Mbps[port_num] > 0:
                 log.info('Port ' + str(port_num) + ' - ' + str(self.flow_average_bandwidth_Mbps[port_num]) + ' Mbps - Bytes This Interval: ' + str(self.flow_interval_byte_count[port_num]))
+        
+        self.flow_removed_curr_interval = False
 
 
 class FlowTracker(EventMixin):
@@ -135,7 +153,7 @@ class FlowTracker(EventMixin):
         
         self._got_first_connection = False  # Flag used to start the periodic query thread when the first ConnectionUp is received
         self._periodic_query_timer = None
-        self.periodic_query_interval_seconds = 10
+        self.periodic_query_interval_seconds = 2
         
         self._module_init_time = 0
         
