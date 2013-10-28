@@ -23,6 +23,7 @@ from heapq import heapify, heappop, heappush
 from pox.openflow.discovery import Discovery
 from pox.core import core
 from pox.lib.revent import *
+from pox.lib.event_trace.groupflow_trace import *
 from pox.lib.util import dpid_to_str
 import pox.lib.packet as pkt
 from pox.lib.packet.igmp import *   # Required for various IGMP variable constants
@@ -35,7 +36,7 @@ import time
 log = core.getLogger()
 
 class MulticastPath(object):
-    def __init__(self, src_ip, src_router_dpid, ingress_port, dst_mcast_address, groupflow_manager):
+    def __init__(self, src_ip, src_router_dpid, ingress_port, dst_mcast_address, groupflow_manager, groupflow_trace_event = None):
         self.src_ip = src_ip
         self.ingress_port = ingress_port
         self.src_router_dpid = src_router_dpid
@@ -46,10 +47,13 @@ class MulticastPath(object):
         self.installed_node_list = []       # List of all router dpids with rules currently installed
         self.receivers = []                 # Tuples of (router_dpid, port)
         self.groupflow_manager = groupflow_manager
-        self.calc_mst()
+        self.calc_mst(groupflow_trace_event)
 
         
-    def calc_mst(self):
+    def calc_mst(self, groupflow_trace_event = None):
+        if not groupflow_trace_event is None:
+            groupflow_trace_event.set_tree_calc_start_time(self.dst_mcast_address, self.src_ip)
+    
         self._calc_link_weights()
         nodes = self.node_list
         edges = self.weighted_topo_graph
@@ -77,6 +81,9 @@ class MulticastPath(object):
         log.debug('Calculated MST for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
         for edge in self.mst:
             log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]))
+        
+        if not groupflow_trace_event is None:
+            groupflow_trace_event.set_tree_calc_end_time()
     
     def _update_node_weight(self, node, curr_topo_graph, weighted_topo_graph, weight, prev_node = None):
         for edge in curr_topo_graph:
@@ -113,10 +120,13 @@ class MulticastPath(object):
         # for edge in self.weighted_topo_graph:
         #     log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' W: ' + str(edge[2]))
     
-    def install_openflow_rules(self):
+    def install_openflow_rules(self, groupflow_trace_event = None):
         reception_state = self.groupflow_manager.get_reception_state(self.dst_mcast_address, self.src_ip)
         outgoing_rules = defaultdict(lambda : None)
         
+        if not groupflow_trace_event is None:
+            groupflow_trace_event.set_route_processing_start_time(self.dst_mcast_address, self.src_ip)
+            
         # Calculate the paths for the specific receivers that are currently active from the previously
         # calculated mst
         edges_to_install = []
@@ -154,6 +164,10 @@ class MulticastPath(object):
             log.info('Installing edges:')
             for edge in edges_to_install:
                 log.info(dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]) + ' (Weight: ' + str(edge[2]) + ')')
+        
+        if not groupflow_trace_event is None:
+            groupflow_trace_event.set_route_processing_end_time()
+            groupflow_trace_event.set_flow_installation_start_time()
         
         for edge in edges_to_install:
             if edge[0] in outgoing_rules:
@@ -216,6 +230,10 @@ class MulticastPath(object):
                     self.installed_node_list.remove(router_dpid)
             else:
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
+        
+        if not groupflow_trace_event is None:
+            groupflow_trace_event.set_flow_installation_end_time()
+            groupflow_trace_event.debug_print(log)
 
                 
     def remove_openflow_rules(self):
@@ -233,9 +251,9 @@ class MulticastPath(object):
             else:
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         
-    def handle_topology_change(self):
-        self.calc_mst()
-        self.install_openflow_rules()
+    def handle_topology_change(self, groupflow_trace_event = None):
+        self.calc_mst(groupflow_trace_event)
+        self.install_openflow_rules(groupflow_trace_event)
     
 
 
@@ -330,10 +348,11 @@ class GroupFlowManager(EventMixin):
                     for receiver in group_reception:
                         log.info('Multicast Receiver: ' + dpid_to_str(receiver[0]) + ':' + str(receiver[1]))
 
-                    path_setup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self)
+                    groupflow_trace_event = GroupFlowTraceEvent()
+                    path_setup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self, groupflow_trace_event)
                     # TODO: This may cause memory leaks, figure out how to properly reuse existing MulticastPath objects
                     self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] = path_setup
-                    path_setup.install_openflow_rules()
+                    path_setup.install_openflow_rules(groupflow_trace_event)
     
     def _handle_MulticastGroupEvent(self, event):
         # log.info(event.debug_str())
@@ -360,9 +379,10 @@ class GroupFlowManager(EventMixin):
         for multicast_addr in mcast_addr_list:
             if multicast_addr in self.multicast_paths:
                 log.info('Recalculating paths for group ' + str(multicast_addr))
+                groupflow_trace_event = GroupFlowTraceEvent(event.igmp_trace_event)
                 for source in self.multicast_paths[multicast_addr]:
                     log.info('Recalculating paths for group ' + str(multicast_addr) + ' Source: ' + str(source))
-                    self.multicast_paths[multicast_addr][source].install_openflow_rules()
+                    self.multicast_paths[multicast_addr][source].install_openflow_rules(groupflow_trace_event)
             else:
                 log.info('No existing sources for group ' + str(multicast_addr)) 
     
@@ -376,7 +396,8 @@ class GroupFlowManager(EventMixin):
             log.info('Multicast topology changed, recalculating all paths.')
             for multicast_addr in self.multicast_paths:
                 for source in self.multicast_paths[multicast_addr]:
-                    self.multicast_paths[multicast_addr][source].handle_topology_change()
+                    groupflow_trace_event = GroupFlowTraceEvent()
+                    self.multicast_paths[multicast_addr][source].handle_topology_change(groupflow_trace_event)
 
 def launch():
     core.registerNew(GroupFlowManager)

@@ -19,6 +19,7 @@ from heapq import heapify, heappop, heappush
 from pox.openflow.discovery import Discovery
 from pox.core import core
 from pox.lib.revent import *
+from pox.lib.event_trace.groupflow_trace import *
 from pox.lib.util import dpid_to_str
 import pox.lib.packet as pkt
 from pox.lib.packet.igmpv3 import *   # Required for various IGMP variable constants
@@ -51,10 +52,11 @@ class MulticastGroupEvent(Event):
     """
     Event which represents the desired reception state for all interfaces/multicast groups on a single router
     """
-    def __init__ (self, router_dpid, desired_reception):
+    def __init__ (self, router_dpid, desired_reception, igmp_trace_event = None):
         Event.__init__(self)
         self.router_dpid = router_dpid
-
+        self.igmp_trace_event = igmp_trace_event
+        
         # self.receiving_interfaces[multicast_address][port_index] = [list of desired sources]
         # An empty list indicates reception from all sources is desired
         self.desired_reception = desired_reception
@@ -243,7 +245,7 @@ class IGMPv3Router(EventMixin):
         log.debug('=====================================================')
         log.debug(' ')
     
-    def get_desired_reception_state(self):
+    def get_desired_reception_state(self, igmp_trace_event = None):
         desired_reception = defaultdict(lambda : defaultdict(lambda : None))
         
         for port_index in self.multicast_records:
@@ -265,14 +267,17 @@ class IGMPv3Router(EventMixin):
                             desired_reception[mcast_address][port_index] = []
                         desired_reception[mcast_address][port_index].append(source_record[0])
         
+        if not igmp_trace_event is None:
+                igmp_trace_event.set_igmp_end_time()
+        
         if self.prev_desired_reception == None:
-            event = MulticastGroupEvent(self.dpid, desired_reception)
+            event = MulticastGroupEvent(self.dpid, desired_reception, igmp_trace_event)
             self.igmp_manager.raiseEvent(event)
         else:
             if desired_reception == self.prev_desired_reception:
                 log.debug('No change in reception state.')
             else:
-                event = MulticastGroupEvent(self.dpid, desired_reception)
+                event = MulticastGroupEvent(self.dpid, desired_reception, igmp_trace_event)
                 self.igmp_manager.raiseEvent(event)
             
         self.prev_desired_reception = desired_reception
@@ -695,12 +700,15 @@ class IGMPv3Router(EventMixin):
             router_group_record.x_source_records = new_x_source_records
             router_group_record.y_source_records = new_y_source_records
     
-    def process_igmp_event(self, event):
+    def process_igmp_event(self, event, igmp_trace_event = None):
         """Processes any IGMP event received by the router."""
         
         igmp_pkt = event.parsed.find(pkt.igmp)
         
         if igmp_pkt.msg_type == MEMBERSHIP_REPORT_V3:
+            if not igmp_trace_event is None:
+                igmp_trace_event.set_igmp_start_time(event)
+                
             for igmp_group_record in igmp_pkt.group_records:                
                 if igmp_group_record.record_type == MODE_IS_INCLUDE or \
                         igmp_group_record.record_type == MODE_IS_EXCLUDE:
@@ -712,10 +720,10 @@ class IGMPv3Router(EventMixin):
                         igmp_group_record.record_type == BLOCK_OLD_SOURCES:
                     self.process_state_change_record(event, igmp_group_record)
                     
-                # Debug - Print a listing of the current group membership state after
-                # each group record is processed
-                self.debug_print_group_records()
-                self.get_desired_reception_state()
+            # Debug - Print a listing of the current group membership state after
+            # all group records are processed
+            self.debug_print_group_records()
+            self.get_desired_reception_state()
                 
         elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
                 and igmp_pkt.address != IPAddr("0.0.0.0"):
@@ -1080,8 +1088,11 @@ class IGMPManager(EventMixin):
                     self.drop_packet(event)
                     return
             
+            # Create a new trace event for benchmarking purposes
+            igmp_trace_event = IGMPTraceEvent(router_dpid)
+            
             # Have the receiving router process the IGMP packet accordingly
-            receiving_router.process_igmp_event(event)
+            receiving_router.process_igmp_event(event, igmp_trace_event)
             
             # Drop the IGMP packet to prevent it from being uneccesarily forwarded to neighbouring routers
             self.drop_packet(event)
