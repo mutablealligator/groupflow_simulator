@@ -34,7 +34,7 @@ import time
 
 log = core.getLogger()
 
-class MulticastPath:
+class MulticastPath(object):
     def __init__(self, src_ip, src_router_dpid, ingress_port, dst_mcast_address, groupflow_manager):
         self.src_ip = src_ip
         self.ingress_port = ingress_port
