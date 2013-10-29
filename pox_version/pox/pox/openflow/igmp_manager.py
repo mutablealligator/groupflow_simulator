@@ -304,7 +304,7 @@ class IGMPv3Router(EventMixin):
             retransmissions = self.igmp_manager.igmp_last_member_query_count - 1
             
         # Build the IGMP payload for the message
-        igmp_pkt = pkt.igmp()
+        igmp_pkt = pkt.igmpv3()
         igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
         igmp_pkt.max_response_time = self.igmp_manager.igmp_query_response_interval
         igmp_pkt.address = multicast_address
@@ -339,7 +339,7 @@ class IGMPv3Router(EventMixin):
             retransmissions = self.igmp_manager.igmp_last_member_query_count - 1
             
         # Build and send the IGMP packet for sources whose source timer is greater than LMQT
-        igmp_pkt = pkt.igmp()
+        igmp_pkt = pkt.igmpv3()
         igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
         igmp_pkt.max_response_time = self.igmp_manager.igmp_query_response_interval
         igmp_pkt.address = multicast_address
@@ -362,7 +362,7 @@ class IGMPv3Router(EventMixin):
                 log.info('Source: ' + str(source))
                 
         # Build and send the IGMP packet for sources whose source timer is less than LMQT
-        igmp_pkt = pkt.igmp()
+        igmp_pkt = pkt.igmpv3()
         igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
         igmp_pkt.max_response_time = self.igmp_manager.igmp_query_response_interval
         igmp_pkt.address = multicast_address
@@ -703,7 +703,7 @@ class IGMPv3Router(EventMixin):
     def process_igmp_event(self, event, igmp_trace_event = None):
         """Processes any IGMP event received by the router."""
         
-        igmp_pkt = event.parsed.find(pkt.igmp)
+        igmp_pkt = event.parsed.find(pkt.igmpv3)
         
         if igmp_pkt.msg_type == MEMBERSHIP_REPORT_V3:
             if not igmp_trace_event is None:
@@ -901,7 +901,7 @@ class IGMPManager(EventMixin):
         log.debug('Launching IGMP general query from all routers')
         
         # Build the IGMP payload for the message
-        igmp_pkt = pkt.igmp()
+        igmp_pkt = pkt.igmpv3()
         igmp_pkt.ver_and_type = MEMBERSHIP_QUERY
         igmp_pkt.max_response_time = self.igmp_query_response_interval
         igmp_pkt.address = IPAddr("0.0.0.0")
@@ -1061,7 +1061,7 @@ class IGMPManager(EventMixin):
         router_dpid = event.connection.dpid
         receiving_router = self.routers[router_dpid]
         
-        igmp_pkt = event.parsed.find(pkt.igmp)
+        igmp_pkt = event.parsed.find(pkt.igmpv3)
         if not igmp_pkt is None:
             # ==== IGMP packet - IPv4 Network ====
             # Determine the source IP of the packet

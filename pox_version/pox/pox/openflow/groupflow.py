@@ -330,7 +330,7 @@ class GroupFlowManager(EventMixin):
             # log.debug('Got packet from unrecognized router.')
             return  # Ignore packets from unrecognized routers
             
-        igmp_pkt = event.parsed.find(pkt.igmp)
+        igmp_pkt = event.parsed.find(pkt.igmpv3)
         if not igmp_pkt is None:
             return # IGMP packets should be ignored by this module
             

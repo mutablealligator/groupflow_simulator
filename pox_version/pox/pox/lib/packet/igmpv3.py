@@ -201,7 +201,7 @@ class igmpv3_group_record:
         return s
 
 
-class igmp (packet_base):
+class igmpv3 (packet_base):
     """
     IGMP Message
     """

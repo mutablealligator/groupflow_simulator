@@ -47,7 +47,7 @@ class IGMPTraceEvent(TraceEvent):
         self._processing_complete = False
     
     def set_igmp_start_time(self, igmp_packet_in_event):
-        igmp_pkt = igmp_packet_in_event.parsed.find(pkt.igmp)
+        igmp_pkt = igmp_packet_in_event.parsed.find(pkt.igmpv3)
         self.igmp_msg_type = igmp_pkt.msg_type
         for igmp_group_record in igmp_pkt.group_records:
             self.igmp_group_records.append((igmp_group_record.record_type ,igmp_group_record.multicast_address))
