@@ -203,7 +203,10 @@ class GroupFlowEventTracer(EventMixin):
     
     def init_groupflow_event_trace(self, igmp_trace_event = None):
         groupflow_trace_event = GroupFlowTraceEvent(self._next_event_id, igmp_trace_event)
-        log.debug('Initialized GroupFlowTraceEvent with id: ' + str(self._next_event_id))
+        if igmp_trace_event is None:
+            log.debug('Initialized GroupFlowTraceEvent with id: ' + str(self._next_event_id))
+        else:
+            log.debug('Initialized GroupFlowTraceEvent with id: ' + str(self._next_event_id) + ' (triggered by event: ' + str(igmp_trace_event.event_id) + ')')
         self._groupflow_trace_events.append(groupflow_trace_event)
         self._next_event_id = self._next_event_id + 1
         return groupflow_trace_event
