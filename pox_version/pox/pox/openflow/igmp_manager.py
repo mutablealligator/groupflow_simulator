@@ -855,7 +855,8 @@ class IGMPManager(EventMixin):
                 del router.multicast_records[port]
             
             if records_modified:
-                router.debug_print_group_records()
+                router.get_desired_reception_state()
+
         
     def encapsulate_igmp_packet(self, igmp_pkt):
         """Encapsulates the provided IGMP packet into IP and Ethernet packets, and returns the
