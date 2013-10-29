@@ -4,7 +4,7 @@
 '''
 A POX module implementation providing IGMP v3 Multicast Router functionality.
 
-Depends on openflow.discovery
+Depends on openflow.discovery, misc.groupflow_event_tracer
 
 WARNING: This module is not complete, and should currently only be tested on loop free topologies
 
@@ -19,7 +19,7 @@ from heapq import heapify, heappop, heappush
 from pox.openflow.discovery import Discovery
 from pox.core import core
 from pox.lib.revent import *
-from pox.lib.event_trace.groupflow_trace import *
+from pox.misc.groupflow_event_tracer import *
 from pox.lib.util import dpid_to_str
 import pox.lib.packet as pkt
 from pox.lib.packet.igmpv3 import *   # Required for various IGMP variable constants
@@ -269,6 +269,7 @@ class IGMPv3Router(EventMixin):
         
         if not igmp_trace_event is None:
                 igmp_trace_event.set_igmp_end_time()
+                core.groupflow_event_tracer.archive_trace_event(igmp_trace_event)
         
         if self.prev_desired_reception == None:
             event = MulticastGroupEvent(self.dpid, desired_reception, igmp_trace_event)
@@ -723,7 +724,7 @@ class IGMPv3Router(EventMixin):
             # Debug - Print a listing of the current group membership state after
             # all group records are processed
             self.debug_print_group_records()
-            self.get_desired_reception_state()
+            self.get_desired_reception_state(igmp_trace_event)
                 
         elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
                 and igmp_pkt.address != IPAddr("0.0.0.0"):
@@ -799,7 +800,7 @@ class IGMPManager(EventMixin):
                 None))
 
         # Setup listeners
-        core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
+        core.call_when_ready(startup, ('openflow', 'openflow_discovery', 'groupflow_event_tracer'))
     
     def decrement_all_timers(self):
         """Decrements the source and group timers for all group_records in the network, and transitions any state
@@ -1089,7 +1090,7 @@ class IGMPManager(EventMixin):
                     return
             
             # Create a new trace event for benchmarking purposes
-            igmp_trace_event = IGMPTraceEvent(router_dpid)
+            igmp_trace_event = core.groupflow_event_tracer.init_igmp_event_trace(router_dpid)
             
             # Have the receiving router process the IGMP packet accordingly
             receiving_router.process_igmp_event(event, igmp_trace_event)

@@ -27,9 +27,9 @@ The "pythontest" directory contains test scripts which are capable of sending an
 Usage
 -----
 
-To start POX with GroupFlow functionality, POX must be launched with the "openflow.discovery", "openflow.igmp_manager", and "openflow.groupflow" modules enabled. For example:
+To start POX with GroupFlow functionality, POX must be launched with the "openflow.discovery", "misc.groupflow_event_tracer", "openflow.igmp_manager", and "openflow.groupflow" modules enabled. For example:
 
-    ./pox.py samples.pretty_log openflow.discovery openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG    
+    ./pox.py samples.pretty_log openflow.discovery misc.groupflow_event_tracer openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=INFO --openflow.groupflow=INFO --misc.groupow_event_tracer=INFO   
 
 The modules can be tested with the provided Mininet automation script, which will generate a simple topology with multicast senders and receivers. Note that as this script invoke Mininet, it must be run as root. For example:
 

@@ -7,7 +7,7 @@ management of group state using an IGMP manager module.
 
 Implementation adapted from NOX-Classic CastFlow implementation provided by caioviel.
 
-Depends on openflow.igmp_manager
+Depends on openflow.igmp_manager, misc.groupflow_event_tracer
 
 WARNING: This module is not complete, and should currently only be tested on loop free topologies
 
@@ -23,7 +23,7 @@ from heapq import heapify, heappop, heappush
 from pox.openflow.discovery import Discovery
 from pox.core import core
 from pox.lib.revent import *
-from pox.lib.event_trace.groupflow_trace import *
+from pox.misc.groupflow_event_tracer import *
 from pox.lib.util import dpid_to_str
 import pox.lib.packet as pkt
 from pox.lib.packet.igmp import *   # Required for various IGMP variable constants
@@ -233,7 +233,7 @@ class MulticastPath(object):
         
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_flow_installation_end_time()
-            groupflow_trace_event.debug_print(log)
+            core.groupflow_event_tracer.archive_trace_event(groupflow_trace_event)
 
                 
     def remove_openflow_rules(self):
@@ -277,7 +277,7 @@ class GroupFlowManager(EventMixin):
         self.desired_reception_state = defaultdict(lambda : None)
         
         # Setup listeners
-        core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager'))
+        core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager', 'groupflow_event_tracer'))
     
     def get_reception_state(self, mcast_group, src_ip):
         # log.debug('Calculating reception state for mcast group: ' + str(mcast_group) + ' Source: ' + str(src_ip))
@@ -348,7 +348,7 @@ class GroupFlowManager(EventMixin):
                     for receiver in group_reception:
                         log.info('Multicast Receiver: ' + dpid_to_str(receiver[0]) + ':' + str(receiver[1]))
 
-                    groupflow_trace_event = GroupFlowTraceEvent()
+                    groupflow_trace_event = core.groupflow_event_tracer.init_groupflow_event_trace()
                     path_setup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self, groupflow_trace_event)
                     # TODO: This may cause memory leaks, figure out how to properly reuse existing MulticastPath objects
                     self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] = path_setup
@@ -379,7 +379,7 @@ class GroupFlowManager(EventMixin):
         for multicast_addr in mcast_addr_list:
             if multicast_addr in self.multicast_paths:
                 log.info('Recalculating paths for group ' + str(multicast_addr))
-                groupflow_trace_event = GroupFlowTraceEvent(event.igmp_trace_event)
+                groupflow_trace_event = core.groupflow_event_tracer.init_groupflow_event_trace(event.igmp_trace_event)
                 for source in self.multicast_paths[multicast_addr]:
                     log.info('Recalculating paths for group ' + str(multicast_addr) + ' Source: ' + str(source))
                     self.multicast_paths[multicast_addr][source].install_openflow_rules(groupflow_trace_event)
@@ -396,7 +396,7 @@ class GroupFlowManager(EventMixin):
             log.info('Multicast topology changed, recalculating all paths.')
             for multicast_addr in self.multicast_paths:
                 for source in self.multicast_paths[multicast_addr]:
-                    groupflow_trace_event = GroupFlowTraceEvent()
+                    groupflow_trace_event = core.groupflow_event_tracer.init_groupflow_event_trace()
                     self.multicast_paths[multicast_addr][source].handle_topology_change(groupflow_trace_event)
 
 def launch():
