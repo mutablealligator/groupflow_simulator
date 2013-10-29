@@ -4,7 +4,7 @@
 '''
 A POX module implementation providing IGMP v3 Multicast Router functionality.
 
-Depends on openflow.discovery, misc.groupflow_event_tracer
+Depends on openflow.discovery, misc.groupflow_event_tracer (optional)
 
 WARNING: This module is not complete, and should currently only be tested on loop free topologies
 
@@ -800,7 +800,7 @@ class IGMPManager(EventMixin):
                 None))
 
         # Setup listeners
-        core.call_when_ready(startup, ('openflow', 'openflow_discovery', 'groupflow_event_tracer'))
+        core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
     
     def decrement_all_timers(self):
         """Decrements the source and group timers for all group_records in the network, and transitions any state
@@ -1091,7 +1091,11 @@ class IGMPManager(EventMixin):
                     return
             
             # Create a new trace event for benchmarking purposes
-            igmp_trace_event = core.groupflow_event_tracer.init_igmp_event_trace(router_dpid)
+            igmp_trace_event = None
+            try:
+                igmp_trace_event = core.groupflow_event_tracer.init_igmp_event_trace(router_dpid)
+            except:
+                pass
             
             # Have the receiving router process the IGMP packet accordingly
             receiving_router.process_igmp_event(event, igmp_trace_event)
