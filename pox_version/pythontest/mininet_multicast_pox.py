@@ -4,9 +4,28 @@ from mininet.node import OVSSwitch
 from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
-from mininet.node import RemoteController
+from mininet.node import Node, RemoteController
 import sys
 from time import sleep
+
+HOST_MACHINE_IP = '192.168.198.129'
+
+def connectToRootNS( network, switch, ip, prefixLen, routes ):
+    """Connect hosts to root namespace via switch. Starts network.
+      network: Mininet() network object
+      switch: switch to connect to root namespace
+      ip: IP address for root namespace node
+      prefixLen: IP address prefix length (e.g. 8, 16, 24)
+      routes: host networks to route to"""
+    # Create a node in root namespace and link to switch 0
+    root = Node( 'root', inNamespace=False )
+    intf = Link( root, switch ).intf1
+    root.setIP( ip, prefixLen, intf )
+    # Start network that now includes link to root namespace
+    network.start()
+    # Add routes from root ns to hosts
+    for route in routes:
+        root.cmd( 'route add -net ' + route + ' dev ' + str( intf ) )
 
 class BriteTopo(Topo):
     def __init__(self, brite_filepath):
@@ -155,6 +174,22 @@ def mcastTest(topo):
     net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
     
     net.start()
+    
+    # Setup ssh access so that VLC can be run on hosts
+    #cmd='/usr/sbin/sshd'
+    #opts='-D'
+    #switch = net.switches[ 0 ]  # switch to use
+    #ip = HOST_MACHINE_IP  # our IP address on host network
+    #routes = [ '10.0.0.0/8' ]  # host networks to route to
+    #connectToRootNS( net, switch, ip, 8, routes )
+    #for host in net.hosts:
+    #    host.cmd( cmd + ' ' + opts + '&' )
+    #print
+    #print "*** Hosts are running sshd at the following addresses:"
+    #print
+    #for host in net.hosts:
+    #    print host.name, host.IP()
+    
     topo.mcastConfig(net)
     # net.get('h2').cmd('python ./multicast_receiver.py &');
     # net.get('h3').cmd('python ./multicast_receiver.py &');
@@ -166,6 +201,9 @@ def mcastTest(topo):
     # sleep(5)
     # net.get('h5').cmd('python ./ss_multicast_receiver.py &');
     CLI(net)
+    
+    #for host in net.hosts:
+    #    host.cmd( 'kill %' + cmd )
     net.stop()
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
