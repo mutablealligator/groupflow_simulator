@@ -181,8 +181,6 @@ class GroupFlowEventTracer(EventMixin):
         self._igmp_trace_events = []
         self._groupflow_trace_events = []
         
-        signal.signal(signal.SIGINT, self.termination_handler)
-        
         # Setup listeners
         core.call_when_ready(startup, ('openflow'))
     
@@ -191,8 +189,6 @@ class GroupFlowEventTracer(EventMixin):
             self._log_file.close()
             self._log_file = None
             log.info('Termination signalled, closed log file: ' + str(self._log_file_name))
-            signal.signal(signal, signal.SIG_DFL)
-            os.kill(os.getpid(), signal)
     
     def init_igmp_event_trace(self, router_dpid):
         igmp_trace_event = IGMPTraceEvent(self._next_event_id, router_dpid)

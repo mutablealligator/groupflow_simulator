@@ -28,13 +28,15 @@ import pox.openflow.libopenflow_01 as of
 from pox.lib.addresses import IPAddr, EthAddr
 from pox.lib.recoco import Timer
 import time
+import datetime
 
 log = core.getLogger()
 
 AVERAGE_SMOOTHING_FACTOR = 0.8
 
 class FlowTrackedSwitch(EventMixin):
-    def __init__(self):
+    def __init__(self, flow_tracker):
+        self.flow_tracker = flow_tracker
         self.connection = None
         self.is_connected = False
         self.dpid = None
@@ -87,6 +89,18 @@ class FlowTrackedSwitch(EventMixin):
         
         curr_event_byte_count = {}
         
+        # Check for new ports on the switch
+        ports = self.connection.features.ports
+        for port in ports:
+            if port.port_no == of.OFPP_LOCAL:
+                continue
+                
+            if not port.port_no in self.flow_total_byte_count:
+                self.flow_total_byte_count[port.port_no] = 0
+                self.flow_interval_byte_count[port.port_no] = 0
+                self.flow_interval_bandwidth_Mbps[port.port_no] = 0
+                self.flow_average_bandwidth_Mbps[port.port_no] = 0
+        
         # Record the number of bytes transmitted through each port for this monitoring interval
         for flow_stat in stats:
             self.num_flows = self.num_flows + 1
@@ -131,12 +145,20 @@ class FlowTrackedSwitch(EventMixin):
         self._last_query_response_time = reception_time
         
         # Print debug information
-        log.info('Num Flows: ' + str(self.num_flows))
-        if(self.flow_removed_curr_interval):
-            log.info('Removed flows detected')
-        for port_num in self.flow_interval_bandwidth_Mbps:
-            if self.flow_interval_bandwidth_Mbps[port_num] > 0 or self.flow_average_bandwidth_Mbps[port_num] > 0:
-                log.info('Port ' + str(port_num) + ' - ' + str(self.flow_average_bandwidth_Mbps[port_num]) + ' Mbps - Bytes This Interval: ' + str(self.flow_interval_byte_count[port_num]))
+        # log.info('Num Flows: ' + str(self.num_flows))
+        # if(self.flow_removed_curr_interval):
+        #     log.info('Removed flows detected')
+        # for port_num in self.flow_interval_bandwidth_Mbps:
+        #    if self.flow_interval_bandwidth_Mbps[port_num] > 0 or self.flow_average_bandwidth_Mbps[port_num] > 0:
+        #        log.info('Port ' + str(port_num) + ' - ' + str(self.flow_average_bandwidth_Mbps[port_num]) + ' Mbps - Bytes This Interval: ' + str(self.flow_interval_byte_count[port_num]))
+        
+        # Print log information to file
+        if not self.flow_tracker._log_file is None:
+            self.flow_tracker._log_file.write('Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + '\n')
+            for port_num in self.flow_interval_bandwidth_Mbps:
+                self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisInterval: ' + str(self.flow_interval_byte_count[port_num])
+                       + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
+            self.flow_tracker._log_file.write('\n')
         
         self.flow_removed_curr_interval = False
 
@@ -150,18 +172,29 @@ class FlowTracker(EventMixin):
             core.openflow.addListeners(self)
             core.openflow_discovery.addListeners(self)
             self._module_init_time = time.time()
+            self._log_file_name = datetime.datetime.now().strftime("flowtracker_%H-%M-%S_%B-%d_%Y.txt")
+            log.info('Writing flow tracker info to file: ' + str(self._log_file_name))
+            self._log_file = open(self._log_file_name, 'w') # TODO: Figure out how to properly close this on shutdown
         
         self._got_first_connection = False  # Flag used to start the periodic query thread when the first ConnectionUp is received
         self._periodic_query_timer = None
         self.periodic_query_interval_seconds = 2
         
         self._module_init_time = 0
+        self._log_file = None
+        self._log_file_name = None
         
         # Map is keyed by dpid
         self.switches = {}
         
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
+    
+    def termination_handler(self, signal, frame):
+        if not self._log_file is None:
+            self._log_file.close()
+            self._log_file = None
+            log.info('Termination signalled, closed log file: ' + str(self._log_file_name))
     
     def launch_stats_query(self):
         for switch_dpid in self.switches:
@@ -174,7 +207,7 @@ class FlowTracker(EventMixin):
         """
         if not event.dpid in self.switches:
             # New switch
-            switch = FlowTrackedSwitch()
+            switch = FlowTrackedSwitch(self)
             switch.dpid = event.dpid
             self.switches[event.dpid] = switch
             log.debug('Learned new switch: ' + dpid_to_str(switch.dpid))
