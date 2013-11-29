@@ -42,6 +42,7 @@ class MulticastPath(object):
         self.src_router_dpid = src_router_dpid
         self.dst_mcast_address = dst_mcast_address
         self.mst = None
+        self.mst_map = defaultdict(lambda : None)     # self.mst_map[router_dpid] = [incoming edge to this router dpid]
         self.weighted_topo_graph = []
         self.node_list = []                 # List of all managed router dpids
         self.installed_node_list = []       # List of all router dpids with rules currently installed
@@ -49,7 +50,6 @@ class MulticastPath(object):
         self.groupflow_manager = groupflow_manager
         self.calc_mst(groupflow_trace_event)
 
-        
     def calc_mst(self, groupflow_trace_event = None):
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_tree_calc_start_time(self.dst_mcast_address, self.src_ip)
@@ -61,8 +61,8 @@ class MulticastPath(object):
         conn = defaultdict( list )
         for n1,n2,c in edges:
             conn[ n1 ].append( (c, n1, n2) )
-            conn[ n2 ].append( (c, n2, n1) )
         mst = []
+        mst_map = defaultdict(lambda : None)
         used = set([self.src_router_dpid])
         usable_edges = conn[self.src_router_dpid][:]
         heapify( usable_edges )
@@ -73,10 +73,12 @@ class MulticastPath(object):
             if n2 not in used:
                 used.add( n2 )
                 mst.append( ( n1, n2, cost) )
+                mst_map[n2] = (n1, n2, cost)
                 for e in conn[ n2 ]:
                     if e[ 2 ] not in used:
                         heappush( usable_edges, e )
         self.mst = mst
+        self.mst_map = mst_map
         
         log.debug('Calculated MST for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
         for edge in self.mst:
@@ -85,36 +87,16 @@ class MulticastPath(object):
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_tree_calc_end_time()
     
-    def _update_node_weight(self, node, curr_topo_graph, weighted_topo_graph, weight, prev_node = None):
-        for edge in curr_topo_graph:
-            if edge[0] == node:
-                if edge[1] == prev_node:
-                    # Don't bother trying to calculate a weight for the return link
-                    continue;
-                    
-                updated_existing = False
-                found_lower_weight = False
-                for weighted_edge in weighted_topo_graph:
-                    if weighted_edge[0] == node and weighted_edge[1] == edge[1] and weighted_edge[2] <= weight:
-                        found_lower_weight = True
-                        break
-                    elif weighted_edge[0] == node and weighted_edge[1] == edge[1] and weighted_edge[2] > weight:
-                        weighted_edge[2] = weight
-                        updated_existing = True
-                        break
-                        
-                if not updated_existing and not found_lower_weight:
-                    weighted_topo_graph.append([edge[0], edge[1], weight])
-                
-                if not found_lower_weight:
-                    weighted_topo_graph = self._update_node_weight(edge[1], curr_topo_graph, weighted_topo_graph, weight + 1, edge[0])
-        
-        return weighted_topo_graph
-    
     def _calc_link_weights(self):
         curr_topo_graph = self.groupflow_manager.topology_graph
         self.node_list = list(self.groupflow_manager.node_set)
-        self.weighted_topo_graph = self._update_node_weight(self.src_router_dpid, curr_topo_graph, [], 0)
+        
+        # Note: At this point all link weights are set to 1 to enable minimum hop routing. In the future these
+        # weights should be adjusted based on available link bandwidth
+        weighted_topo_graph = []
+        for edge in curr_topo_graph:
+            weighted_topo_graph.append([edge[0], edge[1], 1])
+        self.weighted_topo_graph = weighted_topo_graph
         
         # log.debug('Calculated link weights for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
         # for edge in self.weighted_topo_graph:
@@ -138,16 +120,7 @@ class MulticastPath(object):
             got_complete_path = False
             cur_node = receiver[0]
             while got_complete_path == False:
-                edge_to_add = None
-                min_weight = None
-                for edge in self.mst:
-                    if edge[1] == cur_node:
-                        if min_weight is None:
-                            edge_to_add = edge
-                            min_weight = edge[2]
-                        elif edge[2] < min_weight:
-                            edge_to_add = edge
-                            min_weight = edge[2]
+                edge_to_add = self.mst_map[cur_node]
                 if edge_to_add is None:
                     log.warning('Path could not be determined for receiver ' + dpid_to_str(receiver[0]) + ' (network is not fully connected)')
                     break
@@ -342,6 +315,10 @@ class GroupFlowManager(EventMixin):
                 # Ignore multicast packets from adjacent routers
                 group_reception = self.get_reception_state(ipv4_pkt.dstip, ipv4_pkt.srcip)
                 if group_reception:
+                    if not self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] is None:
+                        log.warning('Got multicast packet from source which should already be configured Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
+                        return
+                        
                     log.info('Got multicast packet from new source. Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
                     log.info('Reception state for this group:')
                     
