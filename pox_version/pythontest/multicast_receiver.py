@@ -14,6 +14,8 @@ multicast_port = 5007
 packets_to_receive = 30000
 echo_port = 5008
 
+PACKET_SIZE = 512
+
 def main():
     global multicast_group, multicast_port, packets_to_receive, echo_port
     
@@ -42,7 +44,7 @@ def main():
     recv_packets = 0
     while True:
         try:
-            data, addr = multicast_socket.recvfrom(128)
+            data, addr = multicast_socket.recvfrom(PACKET_SIZE)
             echo_socket.sendto(data, (addr[0], echo_port))
             print 'Echo packet ' + str(int(data)) + ' to ' + str(addr[0]) + ':' + str(echo_port)
             recv_packets += 1

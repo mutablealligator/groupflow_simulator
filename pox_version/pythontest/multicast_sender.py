@@ -18,9 +18,12 @@ send_packet_index = 1
 send_packet_times = {}
 echo_packet_times = {}
 
+PACKET_INTERVAL = 0.001
+PACKET_SIZE = 512
+
 def send_multicast_packet():
     global send_packet_index, send_packet_times
-    send_string = str(send_packet_index).zfill(128)
+    send_string = str(send_packet_index).zfill(PACKET_SIZE)
     print 'Send String: ' + str(send_string)
     send_packet_times[send_packet_index] = time.time()
     try:
@@ -30,7 +33,7 @@ def send_multicast_packet():
         print 'Socket error occurred, skipped sending packet: ' + str(send_packet_index)
     send_packet_index += 1
     if not quit_flag:
-        threading.Timer(0.005, send_multicast_packet).start()
+        threading.Timer(PACKET_INTERVAL, send_multicast_packet).start()
     
 def main():
     global multicast_group, multicast_port, send_socket, echo_port
@@ -57,7 +60,7 @@ def main():
     
     last_echo_index = 1
     while True:
-        data, addr = echo_socket.recvfrom(128)
+        data, addr = echo_socket.recvfrom(PACKET_SIZE)
         echo_time = time.time() - send_packet_times[int(data)]
         echo_index = str(int(data))
         if echo_index != last_echo_index:
