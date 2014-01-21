@@ -35,6 +35,9 @@ import time
 
 log = core.getLogger()
 
+STATIC_LINK_WEIGHT = 1    # Scaling factor for link weight which is statically assigned (implements shortest hop routing if no dynamic link weight is set)
+UTILIZATION_LINK_WEIGHT = 10   # Scaling factor for link weight which is determined by current link utilization
+
 class MulticastPath(object):
     def __init__(self, src_ip, src_router_dpid, ingress_port, dst_mcast_address, groupflow_manager, groupflow_trace_event = None):
         self.src_ip = src_ip
@@ -95,12 +98,17 @@ class MulticastPath(object):
         # weights should be adjusted based on available link bandwidth
         weighted_topo_graph = []
         for edge in curr_topo_graph:
-            weighted_topo_graph.append([edge[0], edge[1], 1])
+            output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
+            link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
+            if(link_util > 0):
+                log.info(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' Util: ' + str(link_util))
+            link_weight = STATIC_LINK_WEIGHT + (UTILIZATION_LINK_WEIGHT * link_util)
+            weighted_topo_graph.append([edge[0], edge[1], link_weight])
         self.weighted_topo_graph = weighted_topo_graph
         
         # log.debug('Calculated link weights for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
-        # for edge in self.weighted_topo_graph:
-        #     log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' W: ' + str(edge[2]))
+        for edge in self.weighted_topo_graph:
+            log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' W: ' + str(edge[2]))
     
     def install_openflow_rules(self, groupflow_trace_event = None):
         reception_state = self.groupflow_manager.get_reception_state(self.dst_mcast_address, self.src_ip)
@@ -250,7 +258,7 @@ class GroupFlowManager(EventMixin):
         self.desired_reception_state = defaultdict(lambda : None)
         
         # Setup listeners
-        core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager'))
+        core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager', 'openflow_flow_tracker'))
     
     def get_reception_state(self, mcast_group, src_ip):
         # log.debug('Calculating reception state for mcast group: ' + str(mcast_group) + ' Source: ' + str(src_ip))

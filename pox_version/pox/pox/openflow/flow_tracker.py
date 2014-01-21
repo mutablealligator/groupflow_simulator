@@ -33,6 +33,7 @@ import datetime
 log = core.getLogger()
 
 AVERAGE_SMOOTHING_FACTOR = 0.8
+LINK_MAX_BANDWIDTH_MBPS = 10 # MegaBits per second
 
 class FlowTrackedSwitch(EventMixin):
     def __init__(self, flow_tracker):
@@ -155,6 +156,10 @@ class FlowTrackedSwitch(EventMixin):
         # Print log information to file
         if not self.flow_tracker._log_file is None:
             self.flow_tracker._log_file.write('Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + '\n')
+            #for port_num in curr_event_byte_count:
+            #    self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]) + '\n')
+            #    log.info('Switch:' + dpid_to_str(self.dpid) + 'Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]))
+            
             for port_num in self.flow_interval_bandwidth_Mbps:
                 self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisInterval: ' + str(self.flow_interval_byte_count[port_num])
                        + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
@@ -233,7 +238,20 @@ class FlowTracker(EventMixin):
     def _handle_FlowStatsReceived(self, event):
         if event.connection.dpid in self.switches:
             self.switches[event.connection.dpid].process_flow_stats(event.stats, time.time())
+            
+    def get_link_utilization_mbps(self, switch_dpid, output_port):
+        if switch_dpid in self.switches:
+            if output_port in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
+                return self.switches[switch_dpid].flow_average_bandwidth_Mbps[output_port]
+            else:
+                return 0    # TODO: May want to throw exception here
+        else:
+            return 0    # TODO: May want to throw exception here
     
+    def get_link_utilization_normalized(self, switch_dpid, output_port):
+        ''' Note: Current implementation assumes all links have equal maximum bandwidth
+            which is defined by LINK_MAX_BANDWIDTH_MBPS'''
+        return self.get_link_utilization_mbps(switch_dpid, output_port) / LINK_MAX_BANDWIDTH_MBPS
     
 def launch():
     core.registerNew(FlowTracker)
