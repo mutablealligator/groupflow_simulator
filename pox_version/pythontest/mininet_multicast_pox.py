@@ -6,6 +6,7 @@ from mininet.log import setLogLevel
 from mininet.cli import CLI
 from mininet.node import Node, RemoteController
 import sys
+import signal
 from time import sleep
 
 HOST_MACHINE_IP = '192.168.198.129'
@@ -193,20 +194,23 @@ def mcastTest(topo):
     topo.mcastConfig(net)
     sleep(8)   # Allow time for the controller to detect the topology
     
-    net.get('h1').cmd('python ./multicast_sender.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &');
-    net.get('h5').cmd('python ./multicast_receiver.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &');
-    net.get('h7').cmd('python ./multicast_receiver.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &');
+    processes = []
     
+    processes.append(net.get('h1').popen(['python ./multicast_sender.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &'], shell=True))
+    processes.append(net.get('h5').popen(['python ./multicast_receiver.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &'], shell=True))
+    processes.append(net.get('h7').popen(['python ./multicast_receiver.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &'], shell=True))
+
     sleep(15)
     
-    net.get('h1').cmd('python ./multicast_sender.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &');
-    net.get('h3').cmd('python ./multicast_receiver.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &');
-    net.get('h8').cmd('python ./multicast_receiver.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &');
+    processes.append(net.get('h1').popen(['python ./multicast_sender.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &'], shell=True))
+    processes.append(net.get('h3').popen(['python ./multicast_receiver.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &'], shell=True))
+    processes.append(net.get('h8').popen(['python ./multicast_receiver.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &'], shell=True))
 
     CLI(net)
     
-    #for host in net.hosts:
-    #    host.cmd( 'kill %' + cmd )
+    for proc in processes:
+        print 'Killing process with PID: ' + str(proc.pid)
+        proc.send_signal(signal.SIGTERM)
     net.stop()
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
