@@ -15,16 +15,19 @@ packets_to_receive = 30000
 echo_port = 5008
 
 def main():
-    global multicast_group, multicast_port, packets_to_receive
+    global multicast_group, multicast_port, packets_to_receive, echo_port
     
     if len(sys.argv) > 1:
         multicast_group = sys.argv[1]
     
     if len(sys.argv) > 2:
-        multicast_port = sys.argv[2]
-        
+        multicast_port = int(sys.argv[2])
+    
     if len(sys.argv) > 3:
-        packets_to_receive = int(sys.argv[3])
+        echo_port = int(sys.argv[3])
+        
+    if len(sys.argv) > 4:
+        packets_to_receive = int(sys.argv[4])
     
     # Setup the socket for receive multicast traffic
     multicast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
