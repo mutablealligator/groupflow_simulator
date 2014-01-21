@@ -11,7 +11,7 @@ import binascii
 
 multicast_group = '224.1.1.1'
 multicast_port = 5007
-packets_to_receive = 30000
+packets_to_receive = 0  # 0 specifies no limit to packet reception
 echo_port = 5008
 
 PACKET_SIZE = 512
@@ -51,7 +51,7 @@ def main():
         except socket.error, e:
             print 'Exception'
         
-        if recv_packets > packets_to_receive:
+        if packets_to_receive != 0 and recv_packets > packets_to_receive:
             break
     
     multicast_socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)
