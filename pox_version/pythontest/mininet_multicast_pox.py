@@ -193,22 +193,16 @@ def mcastTest(topo):
     topo.mcastConfig(net)
     sleep(8)   # Allow time for the controller to detect the topology
     
-    net.get('h1').cmd('python ./multicast_sender.py 224.1.1.1 5010 5011 &');
-    net.get('h5').cmd('python ./multicast_receiver.py 224.1.1.1 5010 5011 &');
-    net.get('h7').cmd('python ./multicast_receiver.py 224.1.1.1 5010 5011 &');
+    net.get('h1').cmd('python ./multicast_sender.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &');
+    net.get('h5').cmd('python ./multicast_receiver.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &');
+    net.get('h7').cmd('python ./multicast_receiver.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &');
     
     sleep(15)
     
-    net.get('h1').cmd('python ./multicast_sender.py 224.1.1.2 5012 5013 &');
-    net.get('h3').cmd('python ./multicast_receiver.py 224.1.1.2 5012 5013 &');
-    net.get('h8').cmd('python ./multicast_receiver.py 224.1.1.2 5012 5013 &');
-    
-    # sleep(8)   # Allow time for the controller to detect the topology
-    # net.get('h6').cmd('python ./multicast_receiver.py &');
-    # sleep(2)
-    # net.get('h1').cmd('python ./multicast_sender.py &');
-    # sleep(5)
-    # net.get('h5').cmd('python ./ss_multicast_receiver.py &');
+    net.get('h1').cmd('python ./multicast_sender.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &');
+    net.get('h3').cmd('python ./multicast_receiver.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &');
+    net.get('h8').cmd('python ./multicast_receiver.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &');
+
     CLI(net)
     
     #for host in net.hosts:
