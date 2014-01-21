@@ -191,9 +191,18 @@ def mcastTest(topo):
     #    print host.name, host.IP()
     
     topo.mcastConfig(net)
-    # net.get('h2').cmd('python ./multicast_receiver.py &');
-    # net.get('h3').cmd('python ./multicast_receiver.py &');
-    # net.get('h4').cmd('python ./multicast_receiver.py &');
+    sleep(8)   # Allow time for the controller to detect the topology
+    
+    net.get('h1').cmd('python ./multicast_sender.py 224.1.1.1 5010 5011 &');
+    net.get('h5').cmd('python ./multicast_receiver.py 224.1.1.1 5010 5011 &');
+    net.get('h7').cmd('python ./multicast_receiver.py 224.1.1.1 5010 5011 &');
+    
+    sleep(15)
+    
+    net.get('h1').cmd('python ./multicast_sender.py 224.1.1.2 5012 5013 &');
+    net.get('h3').cmd('python ./multicast_receiver.py 224.1.1.2 5012 5013 &');
+    net.get('h8').cmd('python ./multicast_receiver.py 224.1.1.2 5012 5013 &');
+    
     # sleep(8)   # Allow time for the controller to detect the topology
     # net.get('h6').cmd('python ./multicast_receiver.py &');
     # sleep(2)
