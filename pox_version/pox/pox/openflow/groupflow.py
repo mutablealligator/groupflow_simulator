@@ -100,9 +100,9 @@ class MulticastPath(object):
         for edge in curr_topo_graph:
             output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
             link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
-            if(link_util > 0):
-                log.info(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' Util: ' + str(link_util))
             link_weight = STATIC_LINK_WEIGHT + (UTILIZATION_LINK_WEIGHT * link_util)
+            if(link_util > 0):
+                log.info(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' Util: ' + str(link_util) + ' Weight: ' + str(link_weight))
             weighted_topo_graph.append([edge[0], edge[1], link_weight])
         self.weighted_topo_graph = weighted_topo_graph
         
@@ -324,7 +324,7 @@ class GroupFlowManager(EventMixin):
                 group_reception = self.get_reception_state(ipv4_pkt.dstip, ipv4_pkt.srcip)
                 if group_reception:
                     if not self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] is None:
-                        log.warning('Got multicast packet from source which should already be configured Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
+                        log.debug('Got multicast packet from source which should already be configured Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
                         return
                         
                     log.info('Got multicast packet from new source. Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
