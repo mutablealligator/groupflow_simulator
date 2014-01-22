@@ -11,6 +11,46 @@ from time import sleep
 
 HOST_MACHINE_IP = '192.168.198.129'
 
+class MulticastGroupDefinition(object):
+    def __init__(self, src_host, dst_hosts, group_ip, mcast_port, echo_port):
+        self.src_host = src_host
+        self.dst_hosts = dst_hosts
+        self.group_ip = group_ip
+        self.mcast_port = mcast_port
+        self.echo_port = echo_port
+        
+        self.src_process = None
+        self.dst_processes = []
+    
+    def launch_mcast_applications(self, net):
+        # print 'Initializing multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
+        sender_shell_command = 'python ./multicast_sender.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1 &'
+        sender_shell_command = sender_shell_command.format(group_ip = self.group_ip, mcast_port = str(self.mcast_port), echo_port = str(self.echo_port))
+        # print 'Sender shell command: ' + str(sender_shell_command)
+        self.src_process = net.get(self.src_host).popen([sender_shell_command], shell=True)
+        
+        for dst in self.dst_hosts:
+            dst_shell_command = 'python ./multicast_receiver.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1 &'
+            dst_shell_command = dst_shell_command.format(group_ip = self.group_ip, mcast_port = str(self.mcast_port), echo_port = str(self.echo_port))
+            # print 'Receiver shell command: ' + str(dst_shell_command)
+            self.dst_processes.append(net.get(dst).popen([dst_shell_command], shell=True))
+        
+        print('Initialized multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port)
+                + ' Echo port: ' + str(self.echo_port) + ' # Receivers: ' + str(len(self.dst_processes)))
+    
+    def terminate_mcast_applications(self):
+        if self.src_process is not None:
+            print 'Killing process with PID: ' + str(self.src_process.pid)
+            self.src_process.send_signal(signal.SIGTERM)
+            self.src_process = None
+            
+        for proc in self.dst_processes:
+            print 'Killing process with PID: ' + str(proc.pid)
+            proc.send_signal(signal.SIGTERM)
+        self.dst_processes = []
+        
+        print 'Terminated multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
+
 def connectToRootNS( network, switch, ip, prefixLen, routes ):
     """Connect hosts to root namespace via switch. Starts network.
       network: Mininet() network object
@@ -191,26 +231,20 @@ def mcastTest(topo):
     #for host in net.hosts:
     #    print host.name, host.IP()
     
+    test_groups = []
+    test_groups.append(MulticastGroupDefinition('h1', ['h5', 'h7'], '224.1.1.1', 5010, 5011))
+    test_groups.append(MulticastGroupDefinition('h1', ['h3', 'h8'], '224.1.1.2', 5012, 5013))
+    
     topo.mcastConfig(net)
     sleep(8)   # Allow time for the controller to detect the topology
-    
-    processes = []
-    
-    processes.append(net.get('h1').popen(['python ./multicast_sender.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &'], shell=True))
-    processes.append(net.get('h5').popen(['python ./multicast_receiver.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &'], shell=True))
-    processes.append(net.get('h7').popen(['python ./multicast_receiver.py 224.1.1.1 5010 5011 >/dev/null 2>&1 &'], shell=True))
-
+    test_groups[0].launch_mcast_applications(net)
     sleep(15)
-    
-    processes.append(net.get('h1').popen(['python ./multicast_sender.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &'], shell=True))
-    processes.append(net.get('h3').popen(['python ./multicast_receiver.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &'], shell=True))
-    processes.append(net.get('h8').popen(['python ./multicast_receiver.py 224.1.1.2 5012 5013 >/dev/null 2>&1 &'], shell=True))
+    test_groups[1].launch_mcast_applications(net)
 
     CLI(net)
     
-    for proc in processes:
-        print 'Killing process with PID: ' + str(proc.pid)
-        proc.send_signal(signal.SIGTERM)
+    for group in test_groups:
+        group.terminate_mcast_applications()
     net.stop()
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
