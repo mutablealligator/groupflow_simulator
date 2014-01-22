@@ -126,7 +126,7 @@ class MulticastPath(object):
                 continue
             if receiver[0] in calculated_path_router_dpids:
                 continue
-            log.info('Building path for receiver on router: ' + dpid_to_str(receiver[0]))
+            # log.debug('Building path for receiver on router: ' + dpid_to_str(receiver[0]))
             got_complete_path = False
             cur_node = receiver[0]
             while got_complete_path == False:
@@ -135,7 +135,7 @@ class MulticastPath(object):
                     log.warning('Path could not be determined for receiver ' + dpid_to_str(receiver[0]) + ' (network is not fully connected)')
                     break
                 edges_to_install.append(edge_to_add)
-                log.info('Added edge: ' + dpid_to_str(edge_to_add[0]) + ' -> ' + dpid_to_str(edge_to_add[1]))
+                # log.debug('Added edge: ' + dpid_to_str(edge_to_add[0]) + ' -> ' + dpid_to_str(edge_to_add[1]))
                 cur_node = edge_to_add[0]
                 if cur_node == self.src_router_dpid:
                     got_complete_path = True
@@ -144,9 +144,9 @@ class MulticastPath(object):
         # Get rid of duplicates in the edge list (must be a more efficient way to do this, find it eventually)
         edges_to_install = list(Set(edges_to_install))
         if not edges_to_install is None:
-            log.info('Installing edges:')
+            # log.info('Installing edges:')
             for edge in edges_to_install:
-                log.info(dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]) + ' (Weight: ' + str(edge[2]) + ')')
+                log.info('Installing: ' + dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]) + ' (Weight: ' + str(edge[2]) + ')')
         
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_route_processing_end_time()
@@ -157,9 +157,9 @@ class MulticastPath(object):
                 # Add the output action to an existing rule if it has already been generated
                 output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
                 outgoing_rules[edge[0]].actions.append(of.ofp_action_output(port = output_port))
-                log.info('ER: Configured router ' + dpid_to_str(edge[0]) + ' to forward group ' + \
-                    str(self.dst_mcast_address) + ' to next router ' + \
-                    dpid_to_str(edge[1]) + ' over port: ' + str(output_port))
+                #log.debug('ER: Configured router ' + dpid_to_str(edge[0]) + ' to forward group ' + \
+                #    str(self.dst_mcast_address) + ' to next router ' + \
+                #    dpid_to_str(edge[1]) + ' over port: ' + str(output_port))
             else:
                 # Otherwise, generate a new flow mod
                 msg = of.ofp_flow_mod()
@@ -169,17 +169,17 @@ class MulticastPath(object):
                 output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
                 msg.actions.append(of.ofp_action_output(port = output_port))
                 outgoing_rules[edge[0]] = msg
-                log.info('NR: Configured router ' + dpid_to_str(edge[0]) + ' to forward group ' + \
-                    str(self.dst_mcast_address) + ' to next router ' + \
-                    dpid_to_str(edge[1]) + ' over port: ' + str(output_port))
+                #log.debug('NR: Configured router ' + dpid_to_str(edge[0]) + ' to forward group ' + \
+                #    str(self.dst_mcast_address) + ' to next router ' + \
+                #    dpid_to_str(edge[1]) + ' over port: ' + str(output_port))
         
         for receiver in reception_state:
             if receiver[0] in outgoing_rules:
                 # Add the output action to an existing rule if it has already been generated
                 output_port = receiver[1]
                 outgoing_rules[receiver[0]].actions.append(of.ofp_action_output(port = output_port))
-                log.info('ER: Configured router ' + dpid_to_str(receiver[0]) + ' to forward group ' + \
-                        str(self.dst_mcast_address) + ' to network over port: ' + str(output_port))
+                #log.debug('ER: Configured router ' + dpid_to_str(receiver[0]) + ' to forward group ' + \
+                #        str(self.dst_mcast_address) + ' to network over port: ' + str(output_port))
             else:
                 # Otherwise, generate a new flow mod
                 msg = of.ofp_flow_mod()
@@ -189,8 +189,8 @@ class MulticastPath(object):
                 output_port = receiver[1]
                 msg.actions.append(of.ofp_action_output(port = output_port))
                 outgoing_rules[receiver[0]] = msg
-                log.info('NR: Configured router ' + dpid_to_str(receiver[0]) + ' to forward group ' + \
-                        str(self.dst_mcast_address) + ' to network over port: ' + str(output_port))
+                #log.debug('NR: Configured router ' + dpid_to_str(receiver[0]) + ' to forward group ' + \
+                #        str(self.dst_mcast_address) + ' to network over port: ' + str(output_port))
         
         # Setup empty rules for any router not involved in this path
         for router_dpid in self.node_list:
@@ -201,7 +201,7 @@ class MulticastPath(object):
                 msg.match.nw_src = self.src_ip
                 msg.command = of.OFPFC_DELETE
                 outgoing_rules[router_dpid] = msg
-                log.info('Removed rule on router ' + dpid_to_str(router_dpid) + ' for group ' + str(self.dst_mcast_address))
+                #log.debug('Removed rule on router ' + dpid_to_str(router_dpid) + ' for group ' + str(self.dst_mcast_address))
         
         for router_dpid in outgoing_rules:
             connection = core.openflow.getConnection(router_dpid)
@@ -329,11 +329,11 @@ class GroupFlowManager(EventMixin):
                         log.debug('Got multicast packet from source which should already be configured Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
                         return
                         
-                    log.info('Got multicast packet from new source. Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
-                    log.info('Reception state for this group:')
+                    log.debug('Got multicast packet from new source. Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
+                    log.debug('Reception state for this group:')
                     
                     for receiver in group_reception:
-                        log.info('Multicast Receiver: ' + dpid_to_str(receiver[0]) + ':' + str(receiver[1]))
+                        log.debug('Multicast Receiver: ' + dpid_to_str(receiver[0]) + ':' + str(receiver[1]))
 
                     groupflow_trace_event = None
                     try:
@@ -360,16 +360,23 @@ class GroupFlowManager(EventMixin):
         mcast_addr_list = []
         for multicast_addr in self.desired_reception_state[event.router_dpid]:
             mcast_addr_list.append(multicast_addr)
+            
         if not old_reception_state is None:
             for multicast_addr in old_reception_state:
+                # Capture groups which were removed in this event
                 if not multicast_addr in mcast_addr_list:
                     mcast_addr_list.append(multicast_addr)
+                elif multicast_addr in self.desired_reception_state[event.router_dpid] \
+                        and set(old_reception_state[multicast_addr]) == set(self.desired_reception_state[event.router_dpid][multicast_addr]):
+                    # Prevent processing of groups that did not change
+                    mcast_addr_list.remove(multicast_addr)
+                    log.debug('Prevented redundant processing of group: ' + str(multicast_addr))
         
         # Rebuild multicast trees for relevant multicast groups
         log.info('Recalculating paths due to new receiver')
         for multicast_addr in mcast_addr_list:
             if multicast_addr in self.multicast_paths:
-                log.info('Recalculating paths for group ' + str(multicast_addr))
+                log.debug('Recalculating paths for group ' + str(multicast_addr))
                 groupflow_trace_event = None
                 try:
                     groupflow_trace_event = core.groupflow_event_tracer.init_groupflow_event_trace(event.igmp_trace_event)
