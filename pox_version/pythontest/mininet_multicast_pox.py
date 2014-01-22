@@ -6,6 +6,7 @@ from mininet.log import setLogLevel
 from mininet.cli import CLI
 from mininet.node import Node, RemoteController
 from scipy.stats import truncnorm
+from numpy.random import randint, uniform
 import sys
 import signal
 from time import sleep
@@ -68,7 +69,7 @@ def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size
     for index, host in enumerate(hosts):
         prob_tuples.append((host, rvs[index]))
     
-    return return_tuples
+    return prob_tuples
     
         
 def connectToRootNS( network, switch, ip, prefixLen, routes ):
@@ -155,6 +156,9 @@ class BriteTopo(Topo):
         
         file.close()
     
+    def get_host_list(self):
+        return self.hostnames
+    
     def mcastConfig(self, net):
         for hostname in self.hostnames:
             net.get(hostname).cmd('route add -net 224.0.0.0/4 ' + hostname + '-eth0')
@@ -227,7 +231,7 @@ class MulticastTestTopo( Topo ):
         net.get('h10').cmd('route add -net 224.0.0.0/4 h10-eth0')
         net.get('h11').cmd('route add -net 224.0.0.0/4 h11-eth0')
 
-def mcastTest(topo):
+def mcastTest(topo, hosts = []):
     # External controller
     # ./pox.py samples.pretty_log openflow.discovery openflow.flow_tracker misc.benchmark_terminator misc.groupflow_event_tracer openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG
     net = Mininet(topo, controller=RemoteController, switch=OVSSwitch, link=TCLink, build=False, autoSetMacs=True)
@@ -252,14 +256,38 @@ def mcastTest(topo):
     #    print host.name, host.IP()
     
     test_groups = []
-    test_groups.append(MulticastGroupDefinition('h1', ['h5', 'h7'], '224.1.1.1', 5010, 5011))
-    test_groups.append(MulticastGroupDefinition('h1', ['h3', 'h8'], '224.1.1.2', 5012, 5013))
+    #test_groups.append(MulticastGroupDefinition('h1', ['h5', 'h7'], '224.1.1.1', 5010, 5011))
+    #test_groups.append(MulticastGroupDefinition('h1', ['h3', 'h8'], '224.1.1.2', 5012, 5013))
     
     topo.mcastConfig(net)
-    sleep(8)   # Allow time for the controller to detect the topology
-    test_groups[0].launch_mcast_applications(net)
-    sleep(15)
-    test_groups[1].launch_mcast_applications(net)
+    sleep(10)   # Allow time for the controller to detect the topology
+    
+    mcast_group_last_octet = 1
+    mcast_port = 5010
+    
+    host_join_probabilities = generate_group_membership_probabilities(hosts, 0.25, 0.5)
+    for i in range(0,5):
+        # Choose a sending host using a uniform random distribution
+        sender_index = randint(0,len(hosts))
+        sender_host = hosts[sender_index]
+        
+        # Choose a random number of sender by comparing a uniform random variable
+        # against the previously generated group membership probabilities
+        receivers = []
+        for host_prob in host_join_probabilities:
+            p = uniform(0, 1)
+            if p >= host_prob[1]:
+                receivers.append(host_prob[0])
+        
+        # Initialize the group
+        # Note - This method of group IP generation will need to be modified slightly to support more than
+        # 255 groups
+        mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
+        test_groups.append(MulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
+        test_groups[-1].launch_mcast_applications(net)
+        mcast_group_last_octet = mcast_group_last_octet + 1
+        mcast_port = mcast_port + 2
+        sleep(15)
 
     CLI(net)
     
@@ -274,7 +302,8 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         print 'Launching BRITE defined multicast test topology'
         topo = BriteTopo(sys.argv[1])
-        mcastTest(topo)
+        hosts = topo.get_host_list()
+        mcastTest(topo, hosts)
     else:
         print 'Launching default multicast test topology'
         mcastTest(MulticastTestTopo())
