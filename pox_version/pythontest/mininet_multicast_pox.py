@@ -26,13 +26,13 @@ class MulticastGroupDefinition(object):
     
     def launch_mcast_applications(self, net):
         # print 'Initializing multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
-        sender_shell_command = 'python ./multicast_sender.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1 &'
+        sender_shell_command = 'python ./multicast_sender.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1'
         sender_shell_command = sender_shell_command.format(group_ip = self.group_ip, mcast_port = str(self.mcast_port), echo_port = str(self.echo_port))
         # print 'Sender shell command: ' + str(sender_shell_command)
         self.src_process = net.get(self.src_host).popen([sender_shell_command], shell=True)
         
         for dst in self.dst_hosts:
-            dst_shell_command = 'python ./multicast_receiver.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1 &'
+            dst_shell_command = 'python ./multicast_receiver.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1'
             dst_shell_command = dst_shell_command.format(group_ip = self.group_ip, mcast_port = str(self.mcast_port), echo_port = str(self.echo_port))
             # print 'Receiver shell command: ' + str(dst_shell_command)
             self.dst_processes.append(net.get(dst).popen([dst_shell_command], shell=True))
