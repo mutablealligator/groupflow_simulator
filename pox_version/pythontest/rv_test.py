@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import truncnorm
 from time import sleep
 
-def generate_group_membership_probabilities(num_hosts, mean, std_dev):
+def generate_group_membership_probabilities(num_hosts, mean, std_dev, group_size_bound = 0):
     a , b = a, b = (0 - mean) / std_dev, (1 - mean) / std_dev
     midpoint_ab = (b + a) / 2
     scale = 1 / (b - a)
@@ -10,7 +10,12 @@ def generate_group_membership_probabilities(num_hosts, mean, std_dev):
     print 'Mean: ' + str(mean) + ' StdDev: ' + str(std_dev)
     print 'a: ' + str(a) + ' b: ' + str(b) + ' loc: ' + str(location) + ' scale: ' + str(scale)
     rv = truncnorm(a, b, loc=location, scale=scale)
-    return rv.rvs(num_hosts)
+    rvs = rv.rvs(num_hosts)
+    if group_size_bound > 0:
+        rvs_sum = sum(rvs)
+        rvs = [p / (rvs_sum/float(group_size_bound)) for p in rvs]
+    print 'Average group size: ' + str(sum(rvs))
+    return rvs
     
-plt.hist(generate_group_membership_probabilities(500000, 0.2, 0.25), bins=1000)
+plt.hist(generate_group_membership_probabilities(500000, 0.2, 0.25, 0), bins=1000)
 plt.show()

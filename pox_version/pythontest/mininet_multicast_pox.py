@@ -52,7 +52,7 @@ class MulticastGroupDefinition(object):
         
         print 'Terminated multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
 
-def generate_group_membership_probabilities(hosts, mean, std_dev):
+def generate_group_membership_probabilities(hosts, mean, std_dev, group_size_bound = 0):
     num_hosts = len(hosts)
     a , b = a, b = (0 - mean) / std_dev, (1 - mean) / std_dev
     midpoint_ab = (b + a) / 2
@@ -60,7 +60,10 @@ def generate_group_membership_probabilities(hosts, mean, std_dev):
     location = 0.5 - (midpoint_ab * scale)
     rv = truncnorm(a, b, loc=location, scale=scale)
     rvs = rv.rvs(num_hosts)
-    
+    if group_size_bound > 0:
+        rvs_sum = sum(rvs)
+        rvs = [p / (rvs_sum/float(group_size_bound)) for p in rvs]
+        
     prob_tuples = []
     for index, host in enumerate(hosts):
         prob_tuples.append((host, rvs[index]))
