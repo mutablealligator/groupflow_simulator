@@ -5,6 +5,7 @@ from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
 from mininet.node import Node, RemoteController
+from scipy.stats import truncnorm
 import sys
 import signal
 from time import sleep
@@ -51,6 +52,22 @@ class MulticastGroupDefinition(object):
         
         print 'Terminated multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
 
+def generate_group_membership_probabilities(hosts, mean, std_dev):
+    num_hosts = len(hosts)
+    a , b = a, b = (0 - mean) / std_dev, (1 - mean) / std_dev
+    midpoint_ab = (b + a) / 2
+    scale = 1 / (b - a)
+    location = 0.5 - (midpoint_ab * scale)
+    rv = truncnorm(a, b, loc=location, scale=scale)
+    rvs = rv.rvs(num_hosts)
+    
+    prob_tuples = []
+    for index, host in enumerate(hosts):
+        prob_tuples.append((host, rvs[index]))
+    
+    return return_tuples
+    
+        
 def connectToRootNS( network, switch, ip, prefixLen, routes ):
     """Connect hosts to root namespace via switch. Starts network.
       network: Mininet() network object
