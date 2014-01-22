@@ -26,16 +26,18 @@ class MulticastGroupDefinition(object):
     
     def launch_mcast_applications(self, net):
         # print 'Initializing multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
-        sender_shell_command = 'python ./multicast_sender.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1'
+        sender_shell_command = 'python ./multicast_sender.py {group_ip} {mcast_port} {echo_port}'
         sender_shell_command = sender_shell_command.format(group_ip = self.group_ip, mcast_port = str(self.mcast_port), echo_port = str(self.echo_port))
         # print 'Sender shell command: ' + str(sender_shell_command)
-        self.src_process = net.get(self.src_host).popen([sender_shell_command], shell=True)
+        with open(os.devnull, "w") as fnull:
+            self.src_process = net.get(self.src_host).popen(['python', './multicast_sender.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True)
         
         for dst in self.dst_hosts:
             dst_shell_command = 'python ./multicast_receiver.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1'
             dst_shell_command = dst_shell_command.format(group_ip = self.group_ip, mcast_port = str(self.mcast_port), echo_port = str(self.echo_port))
             # print 'Receiver shell command: ' + str(dst_shell_command)
-            self.dst_processes.append(net.get(dst).popen([dst_shell_command], shell=True))
+            with open(os.devnull, "w") as fnull:
+                self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
         
         print('Initialized multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port)
                 + ' Echo port: ' + str(self.echo_port) + ' # Receivers: ' + str(len(self.dst_processes)))
@@ -266,7 +268,7 @@ def mcastTest(topo, hosts = []):
     mcast_port = 5010
     
     host_join_probabilities = generate_group_membership_probabilities(hosts, 0.25, 0.5)
-    for i in range(0,5):
+    for i in range(0,1):
         # Choose a sending host using a uniform random distribution
         sender_index = randint(0,len(hosts))
         sender_host = hosts[sender_index]
@@ -287,7 +289,7 @@ def mcastTest(topo, hosts = []):
         test_groups[-1].launch_mcast_applications(net)
         mcast_group_last_octet = mcast_group_last_octet + 1
         mcast_port = mcast_port + 2
-        sleep(15)
+        sleep(5)
 
     CLI(net)
     
