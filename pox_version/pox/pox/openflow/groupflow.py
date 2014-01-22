@@ -122,6 +122,8 @@ class MulticastPath(object):
         edges_to_install = []
         calculated_path_router_dpids = []
         for receiver in reception_state:
+            if receiver[0] == self.src_router_dpid:
+                continue
             if receiver[0] in calculated_path_router_dpids:
                 continue
             log.info('Building path for receiver on router: ' + dpid_to_str(receiver[0]))
