@@ -982,10 +982,10 @@ class IGMPManager(EventMixin):
                         # Yup, link goes both ways
                         log.info('Found parallel adjacency');
                         self.adjacency[l.dpid1][l.dpid2] = ll.port1
-                        link_changes.append((l.dpid1, l.dpid2, l1.port1))
+                        link_changes.append((l.dpid1, l.dpid2, ll.port1))
                         router1.igmp_ports.remove(ll.port1)
                         self.adjacency[l.dpid2][l.dpid1] = ll.port2
-                        link_changes.append((l.dpid2, l.dpid1, l1.port2))
+                        link_changes.append((l.dpid2, l.dpid1, ll.port2))
                         router2.igmp_ports.remove(ll.port2)
                         # Fixed -- new link chosen to connect these
                         
