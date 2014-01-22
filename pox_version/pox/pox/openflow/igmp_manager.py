@@ -888,7 +888,7 @@ class IGMPManager(EventMixin):
         for router_dpid in self.routers:
             sending_router = self.routers[router_dpid]
             if sending_router.connection is None:
-                log.warn('Unable to access connection with switch: ' + dpid_to_str(self.dpid))
+                log.warn('Unable to access connection with switch: ' + dpid_to_str(router_dpid))
                 continue
                 
             for port_num in sending_router.igmp_ports:
