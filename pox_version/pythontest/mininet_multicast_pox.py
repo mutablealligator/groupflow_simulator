@@ -7,9 +7,10 @@ from mininet.cli import CLI
 from mininet.node import Node, RemoteController
 from scipy.stats import truncnorm
 from numpy.random import randint, uniform
+from subprocess import *
 import sys
 import signal
-from time import sleep
+from time import sleep, time
 
 HOST_MACHINE_IP = '192.168.198.129'
 
@@ -232,8 +233,36 @@ class MulticastTestTopo( Topo ):
         net.get('h9').cmd('route add -net 224.0.0.0/4 h9-eth0')
         net.get('h10').cmd('route add -net 224.0.0.0/4 h10-eth0')
         net.get('h11').cmd('route add -net 224.0.0.0/4 h11-eth0')
+    
+    def get_host_list(self):
+        return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11']
 
 def mcastTest(topo, hosts = []):
+    # Launch the external controller
+    pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.flow_tracker', 'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 
+            'openflow.igmp_manager', 'openflow.groupflow', 'log.level', '--WARNING', '--openflow.groupflow=DEBUG']
+    print 'Launching external controller: ' + str(pox_arguments[0])
+    
+    with open(os.devnull, "w") as fnull:
+        pox_process = Popen(pox_arguments, stdout=fnull, stderr=fnull, shell=False, close_fds=True)
+        # Allow time for the log file to be generated
+        sleep(1)
+    
+    # Determine the flow tracker log file
+    pox_log_file = open('./pox.log', 'r');
+    flow_log_path = None
+    got_flow_log_path = False
+    while not got_flow_log_path:
+        pox_log = pox_log_file.readline()
+
+        if 'Writing flow tracker info to file:' in pox_log:
+            pox_log_split = pox_log.split()
+            flow_log_path = pox_log_split[-1]
+            got_flow_log_path = True
+            
+    print 'Got flow tracker log file: ' + str(flow_log_path)
+    print 'Controller initialized'
+    
     # External controller
     # ./pox.py samples.pretty_log openflow.discovery openflow.flow_tracker misc.benchmark_terminator misc.groupflow_event_tracer openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG
     net = Mininet(topo, controller=RemoteController, switch=OVSSwitch, link=TCLink, build=False, autoSetMacs=True)
@@ -258,17 +287,18 @@ def mcastTest(topo, hosts = []):
     #    print host.name, host.IP()
     
     test_groups = []
-    #test_groups.append(MulticastGroupDefinition('h1', ['h5', 'h7'], '224.1.1.1', 5010, 5011))
-    #test_groups.append(MulticastGroupDefinition('h1', ['h3', 'h8'], '224.1.1.2', 5012, 5013))
+    test_group_launch_times = []
     
     topo.mcastConfig(net)
+    print 'Waiting 10 seconds to allow for controller topology discovery'
     sleep(10)   # Allow time for the controller to detect the topology
     
     mcast_group_last_octet = 1
     mcast_port = 5010
     
     host_join_probabilities = generate_group_membership_probabilities(hosts, 0.25, 0.5)
-    for i in range(0,1):
+    for i in range(0,5):
+        print 'Generating multicast group #' + str(i)
         # Choose a sending host using a uniform random distribution
         sender_index = randint(0,len(hosts))
         sender_host = hosts[sender_index]
@@ -286,12 +316,21 @@ def mcastTest(topo, hosts = []):
         # 255 groups
         mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
         test_groups.append(MulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
+        launch_time = time()
+        test_group_launch_times.append(launch_time)
+        print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
         test_groups[-1].launch_mcast_applications(net)
         mcast_group_last_octet = mcast_group_last_octet + 1
         mcast_port = mcast_port + 2
         sleep(5)
 
     CLI(net)
+    
+    print 'Terminating controller'
+    pox_log_file.close()
+    pox_process.send_signal(signal.SIGKILL)
+    pox_process = None
+    print 'Controller terminated'
     
     for group in test_groups:
         group.terminate_mcast_applications()
@@ -308,4 +347,6 @@ if __name__ == '__main__':
         mcastTest(topo, hosts)
     else:
         print 'Launching default multicast test topology'
-        mcastTest(MulticastTestTopo())
+        topo = MulticastTestTopo()
+        hosts = topo.get_host_list()
+        mcastTest(topo, hosts)
