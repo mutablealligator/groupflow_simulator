@@ -155,13 +155,13 @@ class FlowTrackedSwitch(EventMixin):
         
         # Print log information to file
         if not self.flow_tracker._log_file is None:
-            self.flow_tracker._log_file.write('Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + '\n')
+            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + '\n')
             #for port_num in curr_event_byte_count:
             #    self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]) + '\n')
             #    log.info('Switch:' + dpid_to_str(self.dpid) + 'Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]))
             
             for port_num in self.flow_interval_bandwidth_Mbps:
-                self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisInterval: ' + str(self.flow_interval_byte_count[port_num])
+                self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisInterval:' + str(self.flow_interval_byte_count[port_num])
                        + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
             self.flow_tracker._log_file.write('\n')
         

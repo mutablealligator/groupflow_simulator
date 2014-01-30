@@ -5,7 +5,7 @@ from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
 from mininet.node import Node, RemoteController
-from scipy.stats import truncnorm
+from scipy.stats import truncnorm, tstd
 from numpy.random import randint, uniform
 from subprocess import *
 import sys
@@ -91,7 +91,82 @@ def connectToRootNS( network, switch, ip, prefixLen, routes ):
     # Add routes from root ns to hosts
     for route in routes:
         root.cmd( 'route add -net ' + route + ' dev ' + str( intf ) )
+        
+def process_flow_stats_log(flow_stats_file_path, group_launch_times):
+    switch_num_flows = {}   # Dictionary of number of currently installed flows, keyed by switch_dpid
+    total_num_flows = 0
+    link_bandwidth_usage_Mbps = {} # Dictionary of dictionaries: link_bandwidth_usage_Mbps[switch_dpid][port_no]
+    link_bandwidth_list = []
+    cur_group_index = 0
+    cur_time = 0
+    cur_switch_dpid = None
+    log_file = open(flow_stats_file_path, 'r')
+    for line in log_file:
+        # This line specifies that start of stats for a new switch and time instant
+        if 'FlowStats' in line:
+            line_split = line.split()
+            switch_dpid = line_split[1][7:]
+            num_flows = int(line_split[2][9:])
+            cur_time = float(line_split[4][16:])
+            
+            cur_switch_dpid = switch_dpid
+            
+            # print 'Got stats for switch: ' + str(switch_dpid)
+            # print 'Cur Time: ' + str(cur_time) + '    Next Group Launch: ' + str(group_launch_times[cur_group_index])
+            
+            # First, check to see if a new group has been initialized before this time, and log the current flow stats if so
+            if cur_group_index < len(group_launch_times) and cur_time > group_launch_times[cur_group_index]:
+                link_bandwidth_list = []
+                total_num_flows = 0
+                
+                for switch_dpid in link_bandwidth_usage_Mbps:
+                    for port_no in link_bandwidth_usage_Mbps[switch_dpid]:
+                        link_bandwidth_list.append(link_bandwidth_usage_Mbps[switch_dpid][port_no])
+                
+                for switch_dpid in switch_num_flows:
+                    total_num_flows += switch_num_flows[switch_dpid]
+                
+                average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
+                traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
+                link_util_std_dev = tstd(link_bandwidth_list)
+                print 'Steady state stats after group ' + str(cur_group_index) + ' init:'
+                print 'Average Link Usage (MBps): ' + str(average_link_bandwidth_usage)
+                print 'Traffic Concentration: ' + str(traffic_concentration)
+                print 'Link Usage Standard Deviation: ' + str(link_util_std_dev)
+                print ' '
+                
+                cur_group_index += 1
+            
+        # This line specifies port specific stats for the last referenced switch
+        if 'Port' in line:
+            line_split = line.split()
+            port_no = int(line_split[0][5:])
+            bandwidth_usage = float(line_split[3][13:])
+            if cur_switch_dpid not in link_bandwidth_usage_Mbps:
+                link_bandwidth_usage_Mbps[cur_switch_dpid] = {}
+            link_bandwidth_usage_Mbps[cur_switch_dpid][port_no] = bandwidth_usage
+    
+    # Print the stats for the final multicast group
+    # TODO - Move copy/pasted code into its own function
+    link_bandwidth_list = []
+    total_num_flows = 0
+    for switch_dpid in link_bandwidth_usage_Mbps:
+        for port_no in link_bandwidth_usage_Mbps[switch_dpid]:
+            link_bandwidth_list.append(link_bandwidth_usage_Mbps[switch_dpid][port_no])
+    for switch_dpid in switch_num_flows:
+        total_num_flows += switch_num_flows[switch_dpid]
+    average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
+    traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
+    link_util_std_dev = tstd(link_bandwidth_list)
+    print 'Steady state stats after group ' + str(cur_group_index) + ' init:'
+    print 'Average Link Usage (MBps): ' + str(average_link_bandwidth_usage)
+    print 'Traffic Concentration: ' + str(traffic_concentration)
+    print 'Link Usage Standard Deviation: ' + str(link_util_std_dev)
+    print ' '
+    
+    log_file.close()
 
+    
 class BriteTopo(Topo):
     def __init__(self, brite_filepath):
         # Initialize topology
@@ -322,19 +397,21 @@ def mcastTest(topo, hosts = []):
         test_groups[-1].launch_mcast_applications(net)
         mcast_group_last_octet = mcast_group_last_octet + 1
         mcast_port = mcast_port + 2
-        sleep(5)
+        sleep(10)
 
-    CLI(net)
+    # CLI(net)
     
     print 'Terminating controller'
     pox_log_file.close()
-    pox_process.send_signal(signal.SIGKILL)
+    pox_process.send_signal(signal.SIGINT)
     pox_process = None
     print 'Controller terminated'
     
     for group in test_groups:
         group.terminate_mcast_applications()
     net.stop()
+    
+    process_flow_stats_log(flow_log_path, test_group_launch_times)
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
