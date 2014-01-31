@@ -18,7 +18,7 @@ send_packet_index = 1
 send_packet_times = {}
 echo_packet_times = {}
 
-PACKET_INTERVAL = 0.001
+PACKET_INTERVAL = 0.003
 PACKET_SIZE = 512
 
 def send_multicast_packet():

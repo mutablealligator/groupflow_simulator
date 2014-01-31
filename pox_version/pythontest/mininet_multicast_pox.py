@@ -130,12 +130,18 @@ def process_flow_stats_log(flow_stats_file_path, group_launch_times):
                 traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
                 link_util_std_dev = tstd(link_bandwidth_list)
                 print 'Steady state stats after group ' + str(cur_group_index) + ' init:'
+                print 'Total number of flows: ' + str(total_num_flows)
+                print 'Max Link Usage (MBps): ' + str(max(link_bandwidth_list))
                 print 'Average Link Usage (MBps): ' + str(average_link_bandwidth_usage)
                 print 'Traffic Concentration: ' + str(traffic_concentration)
                 print 'Link Usage Standard Deviation: ' + str(link_util_std_dev)
+                if max(link_bandwidth_list) > 9.5:
+                    print 'WARNING: Congestion detected'
                 print ' '
                 
                 cur_group_index += 1
+            
+            switch_num_flows[cur_switch_dpid] = num_flows
             
         # This line specifies port specific stats for the last referenced switch
         if 'Port' in line:
@@ -159,9 +165,13 @@ def process_flow_stats_log(flow_stats_file_path, group_launch_times):
     traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
     link_util_std_dev = tstd(link_bandwidth_list)
     print 'Steady state stats after group ' + str(cur_group_index) + ' init:'
+    print 'Total number of flows: ' + str(total_num_flows)
+    print 'Max Link Usage (MBps): ' + str(max(link_bandwidth_list))
     print 'Average Link Usage (MBps): ' + str(average_link_bandwidth_usage)
     print 'Traffic Concentration: ' + str(traffic_concentration)
     print 'Link Usage Standard Deviation: ' + str(link_util_std_dev)
+    if max(link_bandwidth_list) > 9.5:
+        print 'WARNING: Congestion detected'
     print ' '
     
     log_file.close()
@@ -230,7 +240,7 @@ class BriteTopo(Topo):
                 + str(bandwidth_Mbps) + ' Mbps\tDelay: ' + delay_ms
             # params = {'bw':bandwidth_Mbps, 'delay':delay_ms}]
             # TODO: Figure out why setting the delay won't work
-            self.addLink(self.routers[switch_id_1], self.routers[switch_id_2], bw=bandwidth_Mbps, delay=delay_ms, use_htb=True)
+            self.addLink(self.routers[switch_id_1], self.routers[switch_id_2], bw=bandwidth_Mbps, delay=delay_ms, max_queue_size=1000, use_htb=True)
         
         file.close()
     
@@ -372,7 +382,7 @@ def mcastTest(topo, hosts = []):
     mcast_port = 5010
     
     host_join_probabilities = generate_group_membership_probabilities(hosts, 0.25, 0.5)
-    for i in range(0,5):
+    for i in range(0,10):
         print 'Generating multicast group #' + str(i)
         # Choose a sending host using a uniform random distribution
         sender_index = randint(0,len(hosts))
