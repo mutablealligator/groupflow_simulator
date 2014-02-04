@@ -131,7 +131,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
     final_log_file.write('FlowStatsLogFile:' + str(flow_stats_file_path) + '\n')
     final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
     final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
-    final_log_file.write('Topography NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n\n')
+    final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n\n')
     
     flow_log_file = open(flow_stats_file_path, 'r')
     for line in flow_log_file:
@@ -182,6 +182,7 @@ class BriteTopo(Topo):
         
         self.hostnames = []
         self.routers = []
+        self.file_path = brite_filepath
         
         print 'Parsing BRITE topology at filepath: ' + str(brite_filepath)
         file = open(brite_filepath, 'r')
@@ -248,6 +249,9 @@ class BriteTopo(Topo):
     def mcastConfig(self, net):
         for hostname in self.hostnames:
             net.get(hostname).cmd('route add -net 224.0.0.0/4 ' + hostname + '-eth0')
+    
+    def __str__(self):
+        return self.file_path
 
             
 class MulticastTestTopo( Topo ):
@@ -445,7 +449,7 @@ if __name__ == '__main__':
         num_iterations = int(sys.argv[2])
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
-        for i in 0:num_iterations:
+        for i in range(0,num_iterations):
             mcastTest(topo, hosts, 'test_log_' + str(i) + '.log')
     elif len(sys.argv) >= 2:
         print 'Launching BRITE defined multicast test topology'
