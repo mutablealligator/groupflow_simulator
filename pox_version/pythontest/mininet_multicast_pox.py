@@ -439,7 +439,7 @@ def mcastTest(topo, hosts = [], log_file_name = 'test_log.log'):
         group.terminate_mcast_applications()
     net.stop()
     
-    write_final_stats_log('test_log.log', flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
+    write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
