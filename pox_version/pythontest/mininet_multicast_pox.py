@@ -12,7 +12,6 @@ import sys
 import signal
 from time import sleep, time
 
-HOST_MACHINE_IP = '192.168.198.129'
 
 class MulticastGroupDefinition(object):
     def __init__(self, src_host, dst_hosts, group_ip, mcast_port, echo_port):
@@ -92,16 +91,52 @@ def connectToRootNS( network, switch, ip, prefixLen, routes ):
     for route in routes:
         root.cmd( 'route add -net ' + route + ' dev ' + str( intf ) )
         
-def process_flow_stats_log(flow_stats_file_path, group_launch_times):
+        
+def write_final_stats_log(final_log_path, flow_stats_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography):
+    def write_current_stats(log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index, group):
+        link_bandwidth_list = []
+        total_num_flows = 0
+        
+        for switch_dpid in link_bandwidth_usage_Mbps:
+            for port_no in link_bandwidth_usage_Mbps[switch_dpid]:
+                link_bandwidth_list.append(link_bandwidth_usage_Mbps[switch_dpid][port_no])
+        
+        for switch_dpid in switch_num_flows:
+            total_num_flows += switch_num_flows[switch_dpid]
+        
+        average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
+        traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
+        link_util_std_dev = tstd(link_bandwidth_list)
+        log_file.write('Group:' + str(cur_group_index) + ' NumReceivers:' + str(len(group.dst_hosts)) + '\n')
+        log_file.write('TotalNumFlows:' + str(total_num_flows) + '\n')
+        log_file.write('MaxLinkUsageMbps:' + str(max(link_bandwidth_list)) + '\n')
+        log_file.write('AvgLinkUsageMbps:' + str(average_link_bandwidth_usage) + '\n')
+        log_file.write('TrafficConcentration:' + str(traffic_concentration) + '\n')
+        log_file.write('LinkUsageStdDev:' + str(link_util_std_dev) + '\n')
+        # if max(link_bandwidth_list) > 9.5:
+        #     print 'WARNING: Congestion detected'
+        log_file.write('\n')
+ 
     switch_num_flows = {}   # Dictionary of number of currently installed flows, keyed by switch_dpid
-    total_num_flows = 0
     link_bandwidth_usage_Mbps = {} # Dictionary of dictionaries: link_bandwidth_usage_Mbps[switch_dpid][port_no]
-    link_bandwidth_list = []
     cur_group_index = 0
     cur_time = 0
     cur_switch_dpid = None
-    log_file = open(flow_stats_file_path, 'r')
-    for line in log_file:
+    
+    final_log_file = open(final_log_path, 'w')
+    # Write out scenario params
+    num_receivers_list = []
+    for group in test_groups:
+        num_receivers_list.append(len(group.dst_hosts))
+    avg_num_receivers = sum(num_receivers_list) / float(len(num_receivers_list))
+    
+    final_log_file.write('Multicast Performance Simulation\n')
+    final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
+    final_log_file.write('Topography NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n\n')
+    
+    
+    flow_log_file = open(flow_stats_file_path, 'r')
+    for line in flow_log_file:
         # This line specifies that start of stats for a new switch and time instant
         if 'FlowStats' in line:
             line_split = line.split()
@@ -116,30 +151,9 @@ def process_flow_stats_log(flow_stats_file_path, group_launch_times):
             
             # First, check to see if a new group has been initialized before this time, and log the current flow stats if so
             if cur_group_index < len(group_launch_times) and cur_time > group_launch_times[cur_group_index]:
-                link_bandwidth_list = []
-                total_num_flows = 0
-                
-                for switch_dpid in link_bandwidth_usage_Mbps:
-                    for port_no in link_bandwidth_usage_Mbps[switch_dpid]:
-                        link_bandwidth_list.append(link_bandwidth_usage_Mbps[switch_dpid][port_no])
-                
-                for switch_dpid in switch_num_flows:
-                    total_num_flows += switch_num_flows[switch_dpid]
-                
-                average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
-                traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
-                link_util_std_dev = tstd(link_bandwidth_list)
-                print 'Steady state stats after group ' + str(cur_group_index) + ' init:'
-                print 'Total number of flows: ' + str(total_num_flows)
-                print 'Max Link Usage (MBps): ' + str(max(link_bandwidth_list))
-                print 'Average Link Usage (MBps): ' + str(average_link_bandwidth_usage)
-                print 'Traffic Concentration: ' + str(traffic_concentration)
-                print 'Link Usage Standard Deviation: ' + str(link_util_std_dev)
-                if max(link_bandwidth_list) > 9.5:
-                    print 'WARNING: Congestion detected'
-                print ' '
-                
                 cur_group_index += 1
+                if(cur_group_index > 1):
+                    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index - 2, test_groups[cur_group_index - 2])
             
             switch_num_flows[cur_switch_dpid] = num_flows
             
@@ -153,28 +167,10 @@ def process_flow_stats_log(flow_stats_file_path, group_launch_times):
             link_bandwidth_usage_Mbps[cur_switch_dpid][port_no] = bandwidth_usage
     
     # Print the stats for the final multicast group
-    # TODO - Move copy/pasted code into its own function
-    link_bandwidth_list = []
-    total_num_flows = 0
-    for switch_dpid in link_bandwidth_usage_Mbps:
-        for port_no in link_bandwidth_usage_Mbps[switch_dpid]:
-            link_bandwidth_list.append(link_bandwidth_usage_Mbps[switch_dpid][port_no])
-    for switch_dpid in switch_num_flows:
-        total_num_flows += switch_num_flows[switch_dpid]
-    average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
-    traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
-    link_util_std_dev = tstd(link_bandwidth_list)
-    print 'Steady state stats after group ' + str(cur_group_index) + ' init:'
-    print 'Total number of flows: ' + str(total_num_flows)
-    print 'Max Link Usage (MBps): ' + str(max(link_bandwidth_list))
-    print 'Average Link Usage (MBps): ' + str(average_link_bandwidth_usage)
-    print 'Traffic Concentration: ' + str(traffic_concentration)
-    print 'Link Usage Standard Deviation: ' + str(link_util_std_dev)
-    if max(link_bandwidth_list) > 9.5:
-        print 'WARNING: Congestion detected'
-    print ' '
+    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index - 2, test_groups[cur_group_index - 2])
     
-    log_file.close()
+    flow_log_file.close()
+    final_log_file.close()
 
     
 class BriteTopo(Topo):
@@ -323,6 +319,10 @@ class MulticastTestTopo( Topo ):
         return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11']
 
 def mcastTest(topo, hosts = []):
+    membership_mean = 0.25
+    membership_std_dev = 0.5
+    membership_avg_bound = 0
+    
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.flow_tracker', 'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 
             'openflow.igmp_manager', 'openflow.groupflow', 'log.level', '--WARNING', '--openflow.groupflow=DEBUG']
@@ -381,14 +381,14 @@ def mcastTest(topo, hosts = []):
     mcast_group_last_octet = 1
     mcast_port = 5010
     
-    host_join_probabilities = generate_group_membership_probabilities(hosts, 0.25, 0.5)
-    for i in range(0,10):
+    host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
+    for i in range(0,5):
         print 'Generating multicast group #' + str(i)
         # Choose a sending host using a uniform random distribution
         sender_index = randint(0,len(hosts))
         sender_host = hosts[sender_index]
         
-        # Choose a random number of sender by comparing a uniform random variable
+        # Choose a random number of receivers by comparing a uniform random variable
         # against the previously generated group membership probabilities
         receivers = []
         for host_prob in host_join_probabilities:
@@ -421,7 +421,7 @@ def mcastTest(topo, hosts = []):
         group.terminate_mcast_applications()
     net.stop()
     
-    process_flow_stats_log(flow_log_path, test_group_launch_times)
+    write_final_stats_log('test_log.log', flow_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 

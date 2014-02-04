@@ -163,6 +163,9 @@ class FlowTrackedSwitch(EventMixin):
             for port_num in self.flow_interval_bandwidth_Mbps:
                 self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisInterval:' + str(self.flow_interval_byte_count[port_num])
                        + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
+                if(self.flow_average_bandwidth_Mbps[port_num] >= 9.5):
+                    log.warn('Congested link detected! Sw:' + dpid_to_str(self.dpid) + ' Port:' + str(port_num))
+                    
             self.flow_tracker._log_file.write('\n')
         
         self.flow_removed_curr_interval = False
