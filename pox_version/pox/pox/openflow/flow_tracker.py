@@ -33,7 +33,8 @@ import datetime
 log = core.getLogger()
 
 AVERAGE_SMOOTHING_FACTOR = 0.8
-LINK_MAX_BANDWIDTH_MBPS = 10 # MegaBits per second
+LINK_MAX_BANDWIDTH_MbPS = 10 # MegaBits per second
+LINK_CONGESTION_THRESHOLD_MbPS = 0.95 * LINK_MAX_BANDWIDTH_MbPS
 
 class FlowTrackedSwitch(EventMixin):
     def __init__(self, flow_tracker):
@@ -137,10 +138,10 @@ class FlowTrackedSwitch(EventMixin):
                 # log.debug('Port: ' + str(port_num) + ' ' + str(self.flow_interval_bandwidth_Mbps[port_num]))
                 # Update running average bandwidth
                 if port_num in self.flow_average_bandwidth_Mbps:
-                    self.flow_average_bandwidth_Mbps[port_num] = (AVERAGE_SMOOTHING_FACTOR * self.flow_interval_bandwidth_Mbps[port_num]) + \
-                        ((1 - AVERAGE_SMOOTHING_FACTOR) * self.flow_average_bandwidth_Mbps[port_num])
+                    self.flow_average_bandwidth_Mbps[port_num] = min((AVERAGE_SMOOTHING_FACTOR * self.flow_interval_bandwidth_Mbps[port_num]) + \
+                        ((1 - AVERAGE_SMOOTHING_FACTOR) * self.flow_average_bandwidth_Mbps[port_num]), LINK_MAX_BANDWIDTH_MbPS)
                 else:
-                    self.flow_average_bandwidth_Mbps[port_num] = self.flow_interval_bandwidth_Mbps[port_num]
+                    self.flow_average_bandwidth_Mbps[port_num] = min(self.flow_interval_bandwidth_Mbps[port_num], LINK_MAX_BANDWIDTH_MbPS)
         
         # Update last response time
         self._last_query_response_time = reception_time
@@ -163,7 +164,9 @@ class FlowTrackedSwitch(EventMixin):
             for port_num in self.flow_interval_bandwidth_Mbps:
                 self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisInterval:' + str(self.flow_interval_byte_count[port_num])
                        + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
-                if(self.flow_average_bandwidth_Mbps[port_num] >= 9.5):
+                #log.warn('Port:' + str(port_num) + ' BytesThisInterval:' + str(self.flow_interval_byte_count[port_num])
+                #       + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
+                if(self.flow_average_bandwidth_Mbps[port_num] >= (LINK_CONGESTION_THRESHOLD_MbPS)):
                     log.warn('Congested link detected! Sw:' + dpid_to_str(self.dpid) + ' Port:' + str(port_num))
                     
             self.flow_tracker._log_file.write('\n')
@@ -253,8 +256,8 @@ class FlowTracker(EventMixin):
     
     def get_link_utilization_normalized(self, switch_dpid, output_port):
         ''' Note: Current implementation assumes all links have equal maximum bandwidth
-            which is defined by LINK_MAX_BANDWIDTH_MBPS'''
-        return self.get_link_utilization_mbps(switch_dpid, output_port) / LINK_MAX_BANDWIDTH_MBPS
+            which is defined by LINK_MAX_BANDWIDTH_MbPS'''
+        return self.get_link_utilization_mbps(switch_dpid, output_port) / LINK_MAX_BANDWIDTH_MbPS
     
 def launch():
     core.registerNew(FlowTracker)

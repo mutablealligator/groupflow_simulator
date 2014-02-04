@@ -23,16 +23,19 @@ def int_to_ip(ip):
     return socket.inet_ntoa(hex(ip)[2:].zfill(8).decode('hex'))
 
 def main():
-    global multicast_group, multicast_port, packets_to_receive
+    global multicast_group, multicast_port, packets_to_receive, echo_port
     
     if len(sys.argv) > 1:
         multicast_group = sys.argv[1]
     
     if len(sys.argv) > 2:
         multicast_port = sys.argv[2]
-        
+    
     if len(sys.argv) > 3:
-        packets_to_receive = int(sys.argv[3])
+        echo_port = sys.argv[3]
+        
+    if len(sys.argv) > 4:
+        packets_to_receive = int(sys.argv[4])
     
     # Setup the socket for receive multicast traffic
     multicast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -89,7 +92,7 @@ def main():
         except socket.error, e:
             print 'Exception'
         
-        if recv_packets > packets_to_receive:
+        if packets_to_receive > 0 and recv_packets > packets_to_receive:
             break
     
     multicast_socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)

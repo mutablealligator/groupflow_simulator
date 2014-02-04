@@ -26,18 +26,14 @@ class MulticastGroupDefinition(object):
     
     def launch_mcast_applications(self, net):
         # print 'Initializing multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
-        sender_shell_command = 'python ./multicast_sender.py {group_ip} {mcast_port} {echo_port}'
-        sender_shell_command = sender_shell_command.format(group_ip = self.group_ip, mcast_port = str(self.mcast_port), echo_port = str(self.echo_port))
-        # print 'Sender shell command: ' + str(sender_shell_command)
         with open(os.devnull, "w") as fnull:
             self.src_process = net.get(self.src_host).popen(['python', './multicast_sender.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True)
-        
+            # self.src_process = net.get(self.src_host).popen(['su', '-c', "'vlc test_file.mp4 -I dummy --sout \"#rtp{access=udp, mux=ts, proto=udp, dst=224.1.1.1, port=5007}\"'", 'nonroot'], stdout=fnull, stderr=fnull, close_fds=True)
+            
         for dst in self.dst_hosts:
-            dst_shell_command = 'python ./multicast_receiver.py {group_ip} {mcast_port} {echo_port} >/dev/null 2>&1'
-            dst_shell_command = dst_shell_command.format(group_ip = self.group_ip, mcast_port = str(self.mcast_port), echo_port = str(self.echo_port))
-            # print 'Receiver shell command: ' + str(dst_shell_command)
             with open(os.devnull, "w") as fnull:
                 self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
+                # self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver_VLC.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
         
         print('Initialized multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port)
                 + ' Echo port: ' + str(self.echo_port) + ' # Receivers: ' + str(len(self.dst_processes)))
@@ -162,6 +158,10 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, membership_mean,
             line_split = line.split()
             port_no = int(line_split[0][5:])
             bandwidth_usage = float(line_split[3][13:])
+            if(port_no == 65533):
+                # Ignore connections to the controller for these calculations
+                continue
+                
             if cur_switch_dpid not in link_bandwidth_usage_Mbps:
                 link_bandwidth_usage_Mbps[cur_switch_dpid] = {}
             link_bandwidth_usage_Mbps[cur_switch_dpid][port_no] = bandwidth_usage
@@ -325,7 +325,7 @@ def mcastTest(topo, hosts = []):
     
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.flow_tracker', 'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 
-            'openflow.igmp_manager', 'openflow.groupflow', 'log.level', '--WARNING', '--openflow.groupflow=DEBUG']
+            'openflow.igmp_manager', 'openflow.groupflow', 'log.level', '--WARNING']
     print 'Launching external controller: ' + str(pox_arguments[0])
     
     with open(os.devnull, "w") as fnull:
@@ -334,7 +334,7 @@ def mcastTest(topo, hosts = []):
         sleep(1)
     
     # Determine the flow tracker log file
-    pox_log_file = open('./pox.log', 'r');
+    pox_log_file = open('./pox.log', 'r')
     flow_log_path = None
     got_flow_log_path = False
     while not got_flow_log_path:
@@ -347,6 +347,8 @@ def mcastTest(topo, hosts = []):
             
     print 'Got flow tracker log file: ' + str(flow_log_path)
     print 'Controller initialized'
+    pox_log_offset = pox_log_file.tell()
+    pox_log_file.close()
     
     # External controller
     # ./pox.py samples.pretty_log openflow.discovery openflow.flow_tracker misc.benchmark_terminator misc.groupflow_event_tracer openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG
@@ -382,7 +384,8 @@ def mcastTest(topo, hosts = []):
     mcast_port = 5010
     
     host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
-    for i in range(0,5):
+    i = 1
+    while True:
         print 'Generating multicast group #' + str(i)
         # Choose a sending host using a uniform random distribution
         sender_index = randint(0,len(hosts))
@@ -407,12 +410,30 @@ def mcastTest(topo, hosts = []):
         test_groups[-1].launch_mcast_applications(net)
         mcast_group_last_octet = mcast_group_last_octet + 1
         mcast_port = mcast_port + 2
-        sleep(10)
+        i += 1
+        sleep(15)
+        
+        # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
+        print 'Check for congested link...'
+        congested_link = False
+        pox_log_file = open('./pox.log', 'r')
+        pox_log_file.seek(pox_log_offset)
+        for line in pox_log_file:
+            # print line
+            if 'Congested link detected!' in line:
+                congested_link = True
+                break
+        pox_log_offset = pox_log_file.tell()
+        pox_log_file.close()
+        if congested_link:
+            print 'Detected congested link, terminating simulation.'
+            break
+        else:
+            print 'No congestion detected.'
 
     # CLI(net)
     
     print 'Terminating controller'
-    pox_log_file.close()
     pox_process.send_signal(signal.SIGINT)
     pox_process = None
     print 'Controller terminated'
