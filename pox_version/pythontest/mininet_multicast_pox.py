@@ -11,6 +11,7 @@ from subprocess import *
 import sys
 import signal
 from time import sleep, time
+from datetime import datetime
 
 
 class MulticastGroupDefinition(object):
@@ -40,12 +41,12 @@ class MulticastGroupDefinition(object):
     
     def terminate_mcast_applications(self):
         if self.src_process is not None:
-            print 'Killing process with PID: ' + str(self.src_process.pid)
+            # print 'Killing process with PID: ' + str(self.src_process.pid)
             self.src_process.send_signal(signal.SIGTERM)
             self.src_process = None
             
         for proc in self.dst_processes:
-            print 'Killing process with PID: ' + str(proc.pid)
+            # print 'Killing process with PID: ' + str(proc.pid)
             proc.send_signal(signal.SIGTERM)
         self.dst_processes = []
         
@@ -130,7 +131,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
     final_log_file.write('Multicast Performance Simulation\n')
     final_log_file.write('FlowStatsLogFile:' + str(flow_stats_file_path) + '\n')
     final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
-    final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
+    final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' NumGroups:' + str(len(test_groups)) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
     final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n\n')
     
     flow_log_file = open(flow_stats_file_path, 'r')
@@ -169,7 +170,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             link_bandwidth_usage_Mbps[cur_switch_dpid][port_no] = bandwidth_usage
     
     # Print the stats for the final multicast group
-    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index - 2, test_groups[cur_group_index - 2])
+    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index - 1, test_groups[cur_group_index - 1])
     
     flow_log_file.close()
     final_log_file.close()
@@ -445,12 +446,19 @@ topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-    if len(sys.argv) >= 3:
+    if len(sys.argv) >= 4:
+        log_prefix = sys.argv[3]
         num_iterations = int(sys.argv[2])
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
+        start_time = time()
         for i in range(0,num_iterations):
-            mcastTest(topo, hosts, 'test_log_' + str(i) + '.log')
+            mcastTest(topo, hosts, log_prefix + str(i) + '.log')
+        end_time = time()
+        print ' '
+        print 'Simulations completed at: ' + str(datetime.now())
+        print 'Total runtime: ' + str(end_time - start_time) + ' seconds'
+        print 'Average runtime per sim: ' + str((end_time - start_time) / num_iterations) + ' seconds'
     elif len(sys.argv) >= 2:
         print 'Launching BRITE defined multicast test topology'
         topo = BriteTopo(sys.argv[1])
