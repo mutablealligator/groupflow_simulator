@@ -51,6 +51,7 @@ class MulticastGroupDefinition(object):
         
         print 'Terminated multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
 
+
 def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size = 0):
     num_hosts = len(hosts)
     a , b = a, b = (0 - mean) / std_dev, (1 - mean) / std_dev
@@ -68,8 +69,8 @@ def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size
         prob_tuples.append((host, rvs[index]))
     
     return prob_tuples
-    
-        
+
+
 def connectToRootNS( network, switch, ip, prefixLen, routes ):
     """Connect hosts to root namespace via switch. Starts network.
       network: Mininet() network object
@@ -86,9 +87,9 @@ def connectToRootNS( network, switch, ip, prefixLen, routes ):
     # Add routes from root ns to hosts
     for route in routes:
         root.cmd( 'route add -net ' + route + ' dev ' + str( intf ) )
-        
-        
-def write_final_stats_log(final_log_path, flow_stats_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography):
+
+
+def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography):
     def write_current_stats(log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index, group):
         link_bandwidth_list = []
         total_num_flows = 0
@@ -127,9 +128,10 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, membership_mean,
     avg_num_receivers = sum(num_receivers_list) / float(len(num_receivers_list))
     
     final_log_file.write('Multicast Performance Simulation\n')
+    final_log_file.write('FlowStatsLogFile:' + str(flow_stats_file_path) + '\n')
+    final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
     final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
     final_log_file.write('Topography NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n\n')
-    
     
     flow_log_file = open(flow_stats_file_path, 'r')
     for line in flow_log_file:
@@ -172,7 +174,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, membership_mean,
     flow_log_file.close()
     final_log_file.close()
 
-    
+
 class BriteTopo(Topo):
     def __init__(self, brite_filepath):
         # Initialize topology
@@ -246,7 +248,8 @@ class BriteTopo(Topo):
     def mcastConfig(self, net):
         for hostname in self.hostnames:
             net.get(hostname).cmd('route add -net 224.0.0.0/4 ' + hostname + '-eth0')
-        
+
+            
 class MulticastTestTopo( Topo ):
     "Simple multicast testing example"
     
@@ -276,7 +279,6 @@ class MulticastTestTopo( Topo ):
         s5 = self.addSwitch('s5')
         s6 = self.addSwitch('s6')
         s7 = self.addSwitch('s7')
-        
         
         # Add links
         self.addLink(s1, s2, bw = 10, use_htb = True)
@@ -318,10 +320,13 @@ class MulticastTestTopo( Topo ):
     def get_host_list(self):
         return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11']
 
-def mcastTest(topo, hosts = []):
+        
+def mcastTest(topo, hosts = [], log_file_name = 'test_log.log'):
     membership_mean = 0.25
     membership_std_dev = 0.5
     membership_avg_bound = 0
+    test_groups = []
+    test_group_launch_times = []
     
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.flow_tracker', 'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 
@@ -336,16 +341,25 @@ def mcastTest(topo, hosts = []):
     # Determine the flow tracker log file
     pox_log_file = open('./pox.log', 'r')
     flow_log_path = None
+    event_log_path = None
     got_flow_log_path = False
-    while not got_flow_log_path:
+    got_event_log_path = False
+    while (not got_flow_log_path) or (not got_event_log_path):
         pox_log = pox_log_file.readline()
 
         if 'Writing flow tracker info to file:' in pox_log:
             pox_log_split = pox_log.split()
             flow_log_path = pox_log_split[-1]
             got_flow_log_path = True
+        
+        if 'Writing event trace info to file:' in pox_log:
+            pox_log_split = pox_log.split()
+            event_log_path = pox_log_split[-1]
+            got_event_log_path = True
+            
             
     print 'Got flow tracker log file: ' + str(flow_log_path)
+    print 'Got event trace log file: ' + str(event_log_path)
     print 'Controller initialized'
     pox_log_offset = pox_log_file.tell()
     pox_log_file.close()
@@ -355,34 +369,13 @@ def mcastTest(topo, hosts = []):
     net = Mininet(topo, controller=RemoteController, switch=OVSSwitch, link=TCLink, build=False, autoSetMacs=True)
     pox = RemoteController('pox', '127.0.0.1', 6633)
     net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
-    
     net.start()
-    
-    # Setup ssh access so that VLC can be run on hosts
-    #cmd='/usr/sbin/sshd'
-    #opts='-D'
-    #switch = net.switches[ 0 ]  # switch to use
-    #ip = HOST_MACHINE_IP  # our IP address on host network
-    #routes = [ '10.0.0.0/8' ]  # host networks to route to
-    #connectToRootNS( net, switch, ip, 8, routes )
-    #for host in net.hosts:
-    #    host.cmd( cmd + ' ' + opts + '&' )
-    #print
-    #print "*** Hosts are running sshd at the following addresses:"
-    #print
-    #for host in net.hosts:
-    #    print host.name, host.IP()
-    
-    test_groups = []
-    test_group_launch_times = []
-    
     topo.mcastConfig(net)
     print 'Waiting 10 seconds to allow for controller topology discovery'
     sleep(10)   # Allow time for the controller to detect the topology
     
     mcast_group_last_octet = 1
     mcast_port = 5010
-    
     host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
     i = 1
     while True:
@@ -442,13 +435,19 @@ def mcastTest(topo, hosts = []):
         group.terminate_mcast_applications()
     net.stop()
     
-    write_final_stats_log('test_log.log', flow_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
+    write_final_stats_log('test_log.log', flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-    if len(sys.argv) >= 2:
+    if len(sys.argv) >= 3:
+        num_iterations = int(sys.argv[2])
+        topo = BriteTopo(sys.argv[1])
+        hosts = topo.get_host_list()
+        for i in 0:num_iterations:
+            mcastTest(topo, hosts, 'test_log_' + str(i) + '.log')
+    elif len(sys.argv) >= 2:
         print 'Launching BRITE defined multicast test topology'
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
