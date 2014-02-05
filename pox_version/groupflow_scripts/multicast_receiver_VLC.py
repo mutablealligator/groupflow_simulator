@@ -15,7 +15,7 @@ import binascii
 
 multicast_group = '224.1.1.1'
 multicast_port = 5007
-packets_to_receive = 30000
+packets_to_receive = 0
 echo_port = 5008
 MPEG2_SECONDS_PER_TICK = 1.0 / (90.0 * 1000.0)  # MPEG2 uses 32 bit 90K Hz timestamps
 
@@ -29,10 +29,10 @@ def main():
         multicast_group = sys.argv[1]
     
     if len(sys.argv) > 2:
-        multicast_port = sys.argv[2]
+        multicast_port = int(sys.argv[2])
     
     if len(sys.argv) > 3:
-        echo_port = sys.argv[3]
+        echo_port = int(sys.argv[3])
         
     if len(sys.argv) > 4:
         packets_to_receive = int(sys.argv[4])

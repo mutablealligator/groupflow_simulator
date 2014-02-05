@@ -33,7 +33,7 @@ import datetime
 log = core.getLogger()
 
 AVERAGE_SMOOTHING_FACTOR = 0.8
-LINK_MAX_BANDWIDTH_MbPS = 10 # MegaBits per second
+LINK_MAX_BANDWIDTH_MbPS = 30 # MegaBits per second
 LINK_CONGESTION_THRESHOLD_MbPS = 0.95 * LINK_MAX_BANDWIDTH_MbPS
 
 class FlowTrackedSwitch(EventMixin):

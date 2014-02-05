@@ -28,13 +28,17 @@ class MulticastGroupDefinition(object):
     def launch_mcast_applications(self, net):
         # print 'Initializing multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
         with open(os.devnull, "w") as fnull:
-            self.src_process = net.get(self.src_host).popen(['python', './multicast_sender.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True)
-            # self.src_process = net.get(self.src_host).popen(['su', '-c', "'vlc test_file.mp4 -I dummy --sout \"#rtp{access=udp, mux=ts, proto=udp, dst=224.1.1.1, port=5007}\"'", 'nonroot'], stdout=fnull, stderr=fnull, close_fds=True)
+            # self.src_process = net.get(self.src_host).popen(['python', './multicast_sender.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True)
+            vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop']
+            # print 'Running: ' + ' '.join(vlc_command)
+            self.src_process = net.get(self.src_host).popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True, preexec_fn=os.setsid)
             
         for dst in self.dst_hosts:
             with open(os.devnull, "w") as fnull:
-                self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
-                # self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver_VLC.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
+                # self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
+                vlc_rcv_command = ['python', './multicast_receiver_VLC.py', self.group_ip, str(self.mcast_port), str(self.echo_port)]
+                # print 'Running: ' + ' '.join(vlc_rcv_command)
+                self.dst_processes.append(net.get(dst).popen(vlc_rcv_command, stdout=fnull, stderr=fnull, close_fds=True))
         
         print('Initialized multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port)
                 + ' Echo port: ' + str(self.echo_port) + ' # Receivers: ' + str(len(self.dst_processes)))
@@ -42,7 +46,8 @@ class MulticastGroupDefinition(object):
     def terminate_mcast_applications(self):
         if self.src_process is not None:
             # print 'Killing process with PID: ' + str(self.src_process.pid)
-            self.src_process.send_signal(signal.SIGTERM)
+            os.killpg(self.src_process.pid, signal.SIGTERM)
+            # self.src_process.send_signal(signal.SIGTERM)
             self.src_process = None
             
         for proc in self.dst_processes:
@@ -103,7 +108,9 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             total_num_flows += switch_num_flows[switch_dpid]
         
         average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
-        traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
+        traffic_concentration = 0
+        if average_link_bandwidth_usage != 0:
+            traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
         link_util_std_dev = tstd(link_bandwidth_list)
         log_file.write('Group:' + str(cur_group_index) + ' NumReceivers:' + str(len(group.dst_hosts)) + '\n')
         log_file.write('TotalNumFlows:' + str(total_num_flows) + '\n')
@@ -211,7 +218,7 @@ class BriteTopo(Topo):
             print 'Generating switch and host for ID: ' + str(node_id)
             switch = self.addSwitch('s' + str(node_id))
             host = self.addHost('h' + str(node_id))
-            self.addLink(switch, host, bw=10, use_htb=True)	# TODO: Better define link parameters for hosts
+            self.addLink(switch, host, bw=30, use_htb=True)	# TODO: Better define link parameters for hosts
             self.routers.append(switch)
             self.hostnames.append('h' + str(node_id))
             
@@ -326,10 +333,10 @@ class MulticastTestTopo( Topo ):
         return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11']
 
         
-def mcastTest(topo, hosts = [], log_file_name = 'test_log.log'):
-    membership_mean = 0.25
-    membership_std_dev = 0.5
-    membership_avg_bound = 0
+def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log'):
+    membership_mean = 0.1
+    membership_std_dev = 0.25
+    membership_avg_bound = 15
     test_groups = []
     test_group_launch_times = []
     
@@ -379,57 +386,60 @@ def mcastTest(topo, hosts = [], log_file_name = 'test_log.log'):
     print 'Waiting 10 seconds to allow for controller topology discovery'
     sleep(10)   # Allow time for the controller to detect the topology
     
-    mcast_group_last_octet = 1
-    mcast_port = 5010
-    host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
-    i = 1
-    while True:
-        print 'Generating multicast group #' + str(i)
-        # Choose a sending host using a uniform random distribution
-        sender_index = randint(0,len(hosts))
-        sender_host = hosts[sender_index]
-        
-        # Choose a random number of receivers by comparing a uniform random variable
-        # against the previously generated group membership probabilities
-        receivers = []
-        for host_prob in host_join_probabilities:
-            p = uniform(0, 1)
-            if p >= host_prob[1]:
-                receivers.append(host_prob[0])
-        
-        # Initialize the group
-        # Note - This method of group IP generation will need to be modified slightly to support more than
-        # 255 groups
-        mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
-        test_groups.append(MulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
-        launch_time = time()
-        test_group_launch_times.append(launch_time)
-        print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
-        test_groups[-1].launch_mcast_applications(net)
-        mcast_group_last_octet = mcast_group_last_octet + 1
-        mcast_port = mcast_port + 2
-        i += 1
-        sleep(15)
-        
-        # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
-        print 'Check for congested link...'
-        congested_link = False
-        pox_log_file = open('./pox.log', 'r')
-        pox_log_file.seek(pox_log_offset)
-        for line in pox_log_file:
-            # print line
-            if 'Congested link detected!' in line:
-                congested_link = True
+    if interactive:
+        CLI(net)
+    else:
+        mcast_group_last_octet = 1
+        mcast_port = 5010
+        host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
+        i = 1
+        while True:
+            print 'Generating multicast group #' + str(i)
+            # Choose a sending host using a uniform random distribution
+            sender_index = randint(0,len(hosts))
+            sender_host = hosts[sender_index]
+            
+            # Choose a random number of receivers by comparing a uniform random variable
+            # against the previously generated group membership probabilities
+            receivers = []
+            for host_prob in host_join_probabilities:
+                p = uniform(0, 1)
+                if p >= host_prob[1]:
+                    receivers.append(host_prob[0])
+            
+            # Initialize the group
+            # Note - This method of group IP generation will need to be modified slightly to support more than
+            # 255 groups
+            mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
+            test_groups.append(MulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
+            launch_time = time()
+            test_group_launch_times.append(launch_time)
+            print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
+            test_groups[-1].launch_mcast_applications(net)
+            mcast_group_last_octet = mcast_group_last_octet + 1
+            mcast_port = mcast_port + 2
+            i += 1
+            sleep(15)
+            
+            # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
+            print 'Check for congested link...'
+            congested_link = False
+            pox_log_file = open('./pox.log', 'r')
+            pox_log_file.seek(pox_log_offset)
+            for line in pox_log_file:
+                # print line
+                if 'Congested link detected!' in line:
+                    congested_link = True
+                    break
+            pox_log_offset = pox_log_file.tell()
+            pox_log_file.close()
+            if congested_link:
+                print 'Detected congested link, terminating simulation.'
                 break
-        pox_log_offset = pox_log_file.tell()
-        pox_log_file.close()
-        if congested_link:
-            print 'Detected congested link, terminating simulation.'
-            break
-        else:
-            print 'No congestion detected.'
+            else:
+                print 'No congestion detected.'
 
-    # CLI(net)
+    
     
     print 'Terminating controller'
     pox_process.send_signal(signal.SIGINT)
@@ -440,7 +450,8 @@ def mcastTest(topo, hosts = [], log_file_name = 'test_log.log'):
         group.terminate_mcast_applications()
     net.stop()
     
-    write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
+    if not interactive:
+        write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
@@ -452,8 +463,10 @@ if __name__ == '__main__':
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
         start_time = time()
+        print 'Simulations started at: ' + str(datetime.now())
         for i in range(0,num_iterations):
-            mcastTest(topo, hosts, log_prefix + str(i) + '.log')
+            mcastTest(topo, False, hosts, log_prefix + str(i) + '.log')
+            print 'Simulation ' + str(i+1) + ' completed at: ' + str(datetime.now())
         end_time = time()
         print ' '
         print 'Simulations completed at: ' + str(datetime.now())
@@ -463,7 +476,7 @@ if __name__ == '__main__':
         print 'Launching BRITE defined multicast test topology'
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
-        mcastTest(topo, hosts)
+        mcastTest(topo, True, hosts)
     else:
         print 'Launching default multicast test topology'
         topo = MulticastTestTopo()
