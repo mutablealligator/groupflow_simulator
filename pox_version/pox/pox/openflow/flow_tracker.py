@@ -32,9 +32,13 @@ import datetime
 
 log = core.getLogger()
 
-AVERAGE_SMOOTHING_FACTOR = 0.5
+OUTPUT_PEAK_USAGE = True
+PEAK_USAGE_INTERVAL = 3 # Seconds between peak usage being printed
+
+AVERAGE_SMOOTHING_FACTOR = 0.7
 LINK_MAX_BANDWIDTH_MbPS = 30 # MegaBits per second
 LINK_CONGESTION_THRESHOLD_MbPS = 0.95 * LINK_MAX_BANDWIDTH_MbPS
+PERIODIC_QUERY_INTERVAL = 4 # Seconds
 
 class FlowTrackedSwitch(EventMixin):
     def __init__(self, flow_tracker):
@@ -82,7 +86,7 @@ class FlowTrackedSwitch(EventMixin):
         self.ignore_connection()
     
     def process_flow_stats(self, stats, reception_time):
-        log.info('== FlowStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
+        log.debug('== FlowStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
         
         # Clear byte counts for this interval
         for port in self.flow_interval_byte_count:
@@ -189,7 +193,8 @@ class FlowTracker(EventMixin):
         
         self._got_first_connection = False  # Flag used to start the periodic query thread when the first ConnectionUp is received
         self._periodic_query_timer = None
-        self.periodic_query_interval_seconds = 2
+        self._peak_usage_output_timer = None
+        self.periodic_query_interval_seconds = PERIODIC_QUERY_INTERVAL
         
         self._module_init_time = 0
         self._log_file = None
@@ -212,6 +217,14 @@ class FlowTracker(EventMixin):
             if self.switches[switch_dpid].is_connected:
                 self.switches[switch_dpid].connection.send(of.ofp_stats_request(body=of.ofp_flow_stats_request()))
                 log.debug('Sent flow stats requests to switch: ' + dpid_to_str(switch_dpid))
+    
+    def output_peak_usage(self):
+        peak_usage = 0
+        for switch_dpid in self.switches:
+            for port_no in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
+                if self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no] > peak_usage:
+                    peak_usage = self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no]
+        log.info('Network peak link throughout (MBps): ' + str(peak_usage))
 
     def _handle_ConnectionUp(self, event):
         """Handler for ConnectionUp from the discovery module, which represent new switches joining the network.
@@ -230,6 +243,8 @@ class FlowTracker(EventMixin):
         if not self._got_first_connection:
             self._got_first_connection = True
             self._periodic_query_timer = Timer(self.periodic_query_interval_seconds, self.launch_stats_query, recurring = True)
+            if OUTPUT_PEAK_USAGE:
+                self._peak_usage_output_timer = Timer(PEAK_USAGE_INTERVAL, self.output_peak_usage, recurring = True)
             
     def _handle_ConnectionDown (self, event):
         """Handler for ConnectionUp from the discovery module, which represents a switch leaving the network.
