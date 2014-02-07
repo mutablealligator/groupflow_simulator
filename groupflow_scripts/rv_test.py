@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import matplotlib.pyplot as plt
 from scipy.stats import truncnorm
 from time import sleep

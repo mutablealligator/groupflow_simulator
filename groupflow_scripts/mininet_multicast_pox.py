@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from mininet.net import *
 from mininet.topo import *
 from mininet.node import OVSSwitch
@@ -468,7 +469,7 @@ if __name__ == '__main__':
             util_params.append(int(sys.argv[param_index]))
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
-        
+        start_time = time()
         print 'Simulations started at: ' + str(datetime.now())
         for i in range(0,num_iterations):
             for util_weight in util_params:
