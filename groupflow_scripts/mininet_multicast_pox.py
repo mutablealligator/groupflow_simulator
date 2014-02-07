@@ -47,16 +47,22 @@ class MulticastGroupDefinition(object):
         if self.src_process is not None:
             # print 'Killing process with PID: ' + str(self.src_process.pid)
             os.killpg(self.src_process.pid, signal.SIGTERM)
-            # self.src_process.send_signal(signal.SIGTERM)
-            self.src_process = None
             
         for proc in self.dst_processes:
             # print 'Killing process with PID: ' + str(proc.pid)
             proc.send_signal(signal.SIGTERM)
         self.dst_processes = []
         
-        print 'Terminated multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
+        print 'Signaled termination of multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
 
+    def wait_for_application_termination(self):
+        if self.src_process is not None:
+            self.src_process.wait()
+            self.src_process = None
+        
+        for proc in self.dst_processes:
+            proc.wait()
+        self.dst_processes = []
 
 def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size = 0):
     num_hosts = len(hosts)
@@ -369,8 +375,9 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     net.addController('pox', RemoteController, ip = '127.0.0.1', port = 6633)
     net.start()
     topo.mcastConfig(net)
-    print 'Waiting 10 seconds to allow for controller topology discovery'
-    sleep(10)   # Allow time for the controller to detect the topology
+    sleep_time = 8 + (float(len(hosts))/8)
+    print 'Waiting ' + str(sleep_time) + ' seconds to allow for controller topology discovery'
+    sleep(sleep_time)   # Allow time for the controller to detect the topology
     
     if interactive:
         CLI(net)
@@ -431,16 +438,19 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 print 'No congestion detected.'
 
     
-    
-    print 'Sending termination signals'
-    pox_process.send_signal(signal.SIGINT)
+    print 'Terminating network applications'
     for group in test_groups:
         group.terminate_mcast_applications()
-    net.stop()
+    print 'Terminating controller'
+    pox_process.send_signal(signal.SIGINT)
+    print 'Waiting for network application termination...'
+    for group in test_groups:
+        group.wait_for_application_termination()
     print 'Waiting for controller termination...'
     pox_process.wait()
     pox_process = None
-    print 'Controller terminated'
+    net.stop()
+    call(['mn', '-c'])
     
     if not interactive:
         write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
