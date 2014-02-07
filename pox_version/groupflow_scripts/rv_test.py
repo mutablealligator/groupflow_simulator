@@ -13,7 +13,9 @@ def generate_group_membership_probabilities(num_hosts, mean, std_dev, avg_group_
     rvs = rv.rvs(num_hosts)
     if avg_group_size > 0:
         rvs_sum = sum(rvs)
-        rvs = [p * (rvs_sum/float(avg_group_size)) for p in rvs]
+        rvs = [p / (rvs_sum/float(avg_group_size)) for p in rvs]
+        rvs_sum = sum(rvs)
+        rvs = [p / (rvs_sum/float(avg_group_size)) for p in rvs]
     print 'Average group size: ' + str(sum(rvs))
     return rvs
     

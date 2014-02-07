@@ -69,6 +69,8 @@ def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size
     if avg_group_size > 0:
         rvs_sum = sum(rvs)
         rvs = [p / (rvs_sum/float(avg_group_size)) for p in rvs]
+        rvs_sum = sum(rvs)
+        rvs = [p / (rvs_sum/float(avg_group_size)) for p in rvs]
         
     prob_tuples = []
     for index, host in enumerate(hosts):
@@ -336,7 +338,7 @@ class MulticastTestTopo( Topo ):
 def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log'):
     membership_mean = 0.1
     membership_std_dev = 0.25
-    membership_avg_bound = 15
+    membership_avg_bound = 5
     test_groups = []
     test_group_launch_times = []
     
@@ -392,6 +394,10 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
         mcast_group_last_octet = 1
         mcast_port = 5010
         host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
+        print 'Host join probabilities: ' + ', '.join(str(p) for p in host_join_probabilities)
+        host_join_sum = sum(p[1] for p in host_join_probabilities)
+        print 'Measured mean join probability: ' + str(host_join_sum / len(host_join_probabilities))
+        print 'Predicted average group size: ' + str(host_join_sum)
         i = 1
         while True:
             print 'Generating multicast group #' + str(i)
@@ -404,7 +410,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             receivers = []
             for host_prob in host_join_probabilities:
                 p = uniform(0, 1)
-                if p >= host_prob[1]:
+                if p <= host_prob[1]:
                     receivers.append(host_prob[0])
             
             # Initialize the group
@@ -419,7 +425,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             mcast_group_last_octet = mcast_group_last_octet + 1
             mcast_port = mcast_port + 2
             i += 1
-            sleep(15)
+            sleep(20)
             
             # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
             print 'Check for congested link...'
