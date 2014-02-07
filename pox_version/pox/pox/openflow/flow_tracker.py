@@ -32,9 +32,9 @@ import datetime
 
 log = core.getLogger()
 
-OUTPUT_PEAK_USAGE = True
-PEAK_USAGE_INTERVAL = 3 # Seconds between peak usage being printed
-
+# Note: These constants provide default values, which can be overridden by passing command
+# line parameters when the module launches
+OUTPUT_PEAK_USAGE = False
 AVERAGE_SMOOTHING_FACTOR = 0.7
 LINK_MAX_BANDWIDTH_MbPS = 30 # MegaBits per second
 LINK_CONGESTION_THRESHOLD_MbPS = 0.95 * LINK_MAX_BANDWIDTH_MbPS
@@ -142,10 +142,10 @@ class FlowTrackedSwitch(EventMixin):
                 # log.debug('Port: ' + str(port_num) + ' ' + str(self.flow_interval_bandwidth_Mbps[port_num]))
                 # Update running average bandwidth
                 if port_num in self.flow_average_bandwidth_Mbps:
-                    self.flow_average_bandwidth_Mbps[port_num] = min((AVERAGE_SMOOTHING_FACTOR * self.flow_interval_bandwidth_Mbps[port_num]) + \
-                        ((1 - AVERAGE_SMOOTHING_FACTOR) * self.flow_average_bandwidth_Mbps[port_num]), LINK_MAX_BANDWIDTH_MbPS)
+                    self.flow_average_bandwidth_Mbps[port_num] = min((self.flow_tracker.avg_smooth_factor * self.flow_interval_bandwidth_Mbps[port_num]) + \
+                        ((1 - self.flow_tracker.avg_smooth_factor) * self.flow_average_bandwidth_Mbps[port_num]), self.flow_tracker.link_max_bw)
                 else:
-                    self.flow_average_bandwidth_Mbps[port_num] = min(self.flow_interval_bandwidth_Mbps[port_num], LINK_MAX_BANDWIDTH_MbPS)
+                    self.flow_average_bandwidth_Mbps[port_num] = min(self.flow_interval_bandwidth_Mbps[port_num], self.flow_tracker.link_max_bw)
         
         # Update last response time
         self._last_query_response_time = reception_time
@@ -170,7 +170,7 @@ class FlowTrackedSwitch(EventMixin):
                        + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
                 #log.warn('Port:' + str(port_num) + ' BytesThisInterval:' + str(self.flow_interval_byte_count[port_num])
                 #       + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
-                if(self.flow_average_bandwidth_Mbps[port_num] >= (LINK_CONGESTION_THRESHOLD_MbPS)):
+                if(self.flow_average_bandwidth_Mbps[port_num] >= (self.flow_tracker.link_cong_threshold)):
                     log.warn('Congested link detected! Sw:' + dpid_to_str(self.dpid) + ' Port:' + str(port_num))
                     
             self.flow_tracker._log_file.write('\n')
@@ -181,7 +181,7 @@ class FlowTrackedSwitch(EventMixin):
 class FlowTracker(EventMixin):
     _core_name = "openflow_flow_tracker"
 
-    def __init__(self):
+    def __init__(self, query_interval, link_max_bw, link_cong_threshold, avg_smooth_factor, log_peak_usage):
         # Listen to dependencies
         def startup():
             core.openflow.addListeners(self)
@@ -194,7 +194,15 @@ class FlowTracker(EventMixin):
         self._got_first_connection = False  # Flag used to start the periodic query thread when the first ConnectionUp is received
         self._periodic_query_timer = None
         self._peak_usage_output_timer = None
-        self.periodic_query_interval_seconds = PERIODIC_QUERY_INTERVAL
+        
+        self.periodic_query_interval_seconds = query_interval
+        self.link_max_bw = link_max_bw
+        self.link_cong_threshold = link_cong_threshold
+        self.avg_smooth_factor = avg_smooth_factor
+        self.log_peak_usage = log_peak_usage
+        
+        log.info('Set QueryInterval:' + str(self.periodic_query_interval_seconds) + ' LinkMaxBw:' + str(self.link_max_bw) + 'Mbps LinkCongThreshold:' + str(self.link_cong_threshold) 
+                + 'Mbps AvgSmoothFactor:' + str(self.avg_smooth_factor) + ' LogPeakUsage:' + str(self.log_peak_usage))
         
         self._module_init_time = 0
         self._log_file = None
@@ -243,8 +251,8 @@ class FlowTracker(EventMixin):
         if not self._got_first_connection:
             self._got_first_connection = True
             self._periodic_query_timer = Timer(self.periodic_query_interval_seconds, self.launch_stats_query, recurring = True)
-            if OUTPUT_PEAK_USAGE:
-                self._peak_usage_output_timer = Timer(PEAK_USAGE_INTERVAL, self.output_peak_usage, recurring = True)
+            if self.log_peak_usage:
+                self._peak_usage_output_timer = Timer(self.periodic_query_interval_seconds / 3, self.output_peak_usage, recurring = True)
             
     def _handle_ConnectionDown (self, event):
         """Handler for ConnectionUp from the discovery module, which represents a switch leaving the network.
@@ -271,8 +279,9 @@ class FlowTracker(EventMixin):
     
     def get_link_utilization_normalized(self, switch_dpid, output_port):
         ''' Note: Current implementation assumes all links have equal maximum bandwidth
-            which is defined by LINK_MAX_BANDWIDTH_MbPS'''
-        return self.get_link_utilization_mbps(switch_dpid, output_port) / LINK_MAX_BANDWIDTH_MbPS
+            which is defined by self.link_max_bw'''
+        return self.get_link_utilization_mbps(switch_dpid, output_port) / self.link_max_bw
     
-def launch():
-    core.registerNew(FlowTracker)
+def launch(query_interval = PERIODIC_QUERY_INTERVAL, link_max_bw = LINK_MAX_BANDWIDTH_MbPS, link_cong_threshold = LINK_CONGESTION_THRESHOLD_MbPS, avg_smooth_factor = AVERAGE_SMOOTHING_FACTOR, log_peak_usage = False):
+    flow_tracker = FlowTracker(float(query_interval), float(link_max_bw), float(link_cong_threshold), float(avg_smooth_factor), bool(log_peak_usage))
+    core.register('openflow_flow_tracker', flow_tracker)

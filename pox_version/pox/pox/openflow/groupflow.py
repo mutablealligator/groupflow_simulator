@@ -100,9 +100,9 @@ class MulticastPath(object):
         for edge in curr_topo_graph:
             output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
             link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
-            link_weight = STATIC_LINK_WEIGHT + (UTILIZATION_LINK_WEIGHT * link_util)
+            link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util)
             if(link_util > 0):
-                log.info(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' Util: ' + str(link_util) + ' Weight: ' + str(link_weight))
+                log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' Util: ' + str(link_util) + ' Weight: ' + str(link_weight))
             weighted_topo_graph.append([edge[0], edge[1], link_weight])
         self.weighted_topo_graph = weighted_topo_graph
         
@@ -146,7 +146,7 @@ class MulticastPath(object):
         if not edges_to_install is None:
             # log.info('Installing edges:')
             for edge in edges_to_install:
-                log.info('Installing: ' + dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]) + ' (Weight: ' + str(edge[2]) + ')')
+                log.debug('Installing: ' + dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]) + ' (Weight: ' + str(edge[2]) + ')')
         
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_route_processing_end_time()
@@ -243,12 +243,16 @@ class MulticastPath(object):
 class GroupFlowManager(EventMixin):
     _core_name = "openflow_groupflow"
     
-    def __init__(self):
+    def __init__(self, static_link_weight, util_link_weight):
         # Listen to dependencies
         def startup():
             core.openflow.addListeners(self)
             core.openflow_igmp_manager.addListeners(self)
 
+        self.static_link_weight = static_link_weight
+        self.util_link_weight = util_link_weight
+        log.info('Set StaticLinkWeight:' + str(self.static_link_weight) + ' UtilLinkWeight:' + str(self.util_link_weight))
+        
         self.adjacency = defaultdict(lambda : defaultdict(lambda : None))
         self.topology_graph = []
         self.node_set = Set()
@@ -405,5 +409,6 @@ class GroupFlowManager(EventMixin):
                         pass
                     self.multicast_paths[multicast_addr][source].handle_topology_change(groupflow_trace_event)
 
-def launch():
-    core.registerNew(GroupFlowManager)
+def launch(static_link_weight = STATIC_LINK_WEIGHT, util_link_weight = UTILIZATION_LINK_WEIGHT):
+    groupflow_manager = GroupFlowManager(static_link_weight, util_link_weight)
+    core.register('openflow_groupflow', groupflow_manager)
