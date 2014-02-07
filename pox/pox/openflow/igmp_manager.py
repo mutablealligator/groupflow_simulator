@@ -983,10 +983,16 @@ class IGMPManager(EventMixin):
                         log.info('Found parallel adjacency');
                         self.adjacency[l.dpid1][l.dpid2] = ll.port1
                         link_changes.append((l.dpid1, l.dpid2, ll.port1))
-                        router1.igmp_ports.remove(ll.port1)
+                        if ll.port1 in router1.igmp_ports:
+                            router1.igmp_ports.remove(ll.port1)
+                        else:
+                            log.warn(str(ll.port1) + ' not found in ports of router: ' + dpid_to_str(router1.dpid))
                         self.adjacency[l.dpid2][l.dpid1] = ll.port2
                         link_changes.append((l.dpid2, l.dpid1, ll.port2))
-                        router2.igmp_ports.remove(ll.port2)
+                        if ll.port2 in router2.igmp_ports:
+                            router2.igmp_ports.remove(ll.port2)
+                        else:
+                            log.warn(str(ll.port2) + ' not found in ports of router: ' + dpid_to_str(router2.dpid))
                         # Fixed -- new link chosen to connect these
                         
                         self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_UP, link_changes, self.adjacency))
@@ -1004,10 +1010,16 @@ class IGMPManager(EventMixin):
                     # Link goes both ways -- connected!
                     self.adjacency[l.dpid1][l.dpid2] = l.port1
                     link_changes.append((l.dpid1, l.dpid2, l.port1))
-                    router1.igmp_ports.remove(l.port1)
+                    if l.port1 in router1.igmp_ports:
+                        router1.igmp_ports.remove(l.port1)
+                    else:
+                        log.warn(str(l.port1) + ' not found in ports of router: ' + dpid_to_str(router1.dpid))
                     self.adjacency[l.dpid2][l.dpid1] = l.port2
                     link_changes.append((l.dpid2, l.dpid1, l.port2))
-                    router2.igmp_ports.remove(l.port2)
+                    if l.port2 in router2.igmp_ports:
+                        router2.igmp_ports.remove(l.port2)
+                    else:
+                        log.warn(str(l.port2) + ' not found in ports of router: ' + dpid_to_str(router2.dpid))
                     log.info('Added adjacency: ' + str(router1) + '.'
                              + str(l.port1) + ' <-> ' + str(router2) + '.'
                              + str(l.port2))
