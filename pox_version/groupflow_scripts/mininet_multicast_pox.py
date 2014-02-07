@@ -317,7 +317,7 @@ class MulticastTestTopo( Topo ):
         return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11']
 
         
-def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log'):
+def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10):
     membership_mean = 0.1
     membership_std_dev = 0.25
     membership_avg_bound = 5
@@ -325,8 +325,11 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     test_group_launch_times = []
     
     # Launch the external controller
-    pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.flow_tracker', 'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 
-            'openflow.igmp_manager', 'openflow.groupflow', 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
+    pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
+            'openflow.flow_tracker', '--link_max_bw=30', '--link_cong_threshold=28.5', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
+            'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 'openflow.igmp_manager', 
+            'openflow.groupflow', '--util_link_weight=' + str(util_link_weight),
+            'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     print 'Launching external controller: ' + str(pox_arguments[0])
     
     with open(os.devnull, "w") as fnull:
@@ -446,7 +449,31 @@ topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
+    if len(sys.argv) >= 5:
+        # Automated simulations - Differing link usage weights in Groupflow Module
+        log_prefix = sys.argv[3]
+        num_iterations = int(sys.argv[2])
+        util_params = []
+        for param_index in range(4, len(sys.argv)):
+            util_params.append(int(sys.argv[param_index]))
+        topo = BriteTopo(sys.argv[1])
+        hosts = topo.get_host_list()
+        
+        print 'Simulations started at: ' + str(datetime.now())
+        for i in range(0,num_iterations):
+            for util_weight in util_params:
+                sim_start_time = time()
+                mcastTest(topo, False, hosts, log_prefix + '_u' + str(util_weight) + '_' + str(i) + '.log', util_weight)
+                sim_end_time = time()
+                print 'Simulation ' + str(i+1) + '_u' + str(util_weight) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
+        end_time = time()
+        print ' '
+        print 'Simulations completed at: ' + str(datetime.now())
+        print 'Total runtime: ' + str(end_time - start_time) + ' seconds'
+        print 'Average runtime per sim: ' + str((end_time - start_time) / (num_iterations * len(util_params))) + ' seconds'
+        
     if len(sys.argv) >= 4:
+        # Automated simulations - Same module parameters for all runs
         log_prefix = sys.argv[3]
         num_iterations = int(sys.argv[2])
         topo = BriteTopo(sys.argv[1])
@@ -454,19 +481,25 @@ if __name__ == '__main__':
         start_time = time()
         print 'Simulations started at: ' + str(datetime.now())
         for i in range(0,num_iterations):
+            sim_start_time = time()
             mcastTest(topo, False, hosts, log_prefix + str(i) + '.log')
-            print 'Simulation ' + str(i+1) + ' completed at: ' + str(datetime.now())
+            sim_end_time = time()
+            print 'Simulation ' + str(i+1) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_start_time - sim_end_time) + ' seconds)'
         end_time = time()
         print ' '
         print 'Simulations completed at: ' + str(datetime.now())
         print 'Total runtime: ' + str(end_time - start_time) + ' seconds'
         print 'Average runtime per sim: ' + str((end_time - start_time) / num_iterations) + ' seconds'
+        
     elif len(sys.argv) >= 2:
+        # Interactive mode - configures POX and multicast routes, but no automatic traffic generation
         print 'Launching BRITE defined multicast test topology'
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
         mcastTest(topo, True, hosts)
+        
     else:
+        # Interactive mode with barebones topology
         print 'Launching default multicast test topology'
         topo = MulticastTestTopo()
         hosts = topo.get_host_list()
