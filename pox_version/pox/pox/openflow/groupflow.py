@@ -249,8 +249,8 @@ class GroupFlowManager(EventMixin):
             core.openflow.addListeners(self)
             core.openflow_igmp_manager.addListeners(self)
 
-        self.static_link_weight = static_link_weight
-        self.util_link_weight = util_link_weight
+        self.static_link_weight = float(static_link_weight)
+        self.util_link_weight = float(util_link_weight)
         log.info('Set StaticLinkWeight:' + str(self.static_link_weight) + ' UtilLinkWeight:' + str(self.util_link_weight))
         
         self.adjacency = defaultdict(lambda : defaultdict(lambda : None))
@@ -410,5 +410,5 @@ class GroupFlowManager(EventMixin):
                     self.multicast_paths[multicast_addr][source].handle_topology_change(groupflow_trace_event)
 
 def launch(static_link_weight = STATIC_LINK_WEIGHT, util_link_weight = UTILIZATION_LINK_WEIGHT):
-    groupflow_manager = GroupFlowManager(static_link_weight, util_link_weight)
+    groupflow_manager = GroupFlowManager(float(static_link_weight), float(util_link_weight))
     core.register('openflow_groupflow', groupflow_manager)

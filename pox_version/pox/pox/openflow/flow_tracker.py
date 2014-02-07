@@ -195,11 +195,11 @@ class FlowTracker(EventMixin):
         self._periodic_query_timer = None
         self._peak_usage_output_timer = None
         
-        self.periodic_query_interval_seconds = query_interval
-        self.link_max_bw = link_max_bw
-        self.link_cong_threshold = link_cong_threshold
-        self.avg_smooth_factor = avg_smooth_factor
-        self.log_peak_usage = log_peak_usage
+        self.periodic_query_interval_seconds = float(query_interval)
+        self.link_max_bw = float(link_max_bw)
+        self.link_cong_threshold = float(link_cong_threshold)
+        self.avg_smooth_factor = float(avg_smooth_factor)
+        self.log_peak_usage = float(log_peak_usage)
         
         log.info('Set QueryInterval:' + str(self.periodic_query_interval_seconds) + ' LinkMaxBw:' + str(self.link_max_bw) + 'Mbps LinkCongThreshold:' + str(self.link_cong_threshold) 
                 + 'Mbps AvgSmoothFactor:' + str(self.avg_smooth_factor) + ' LogPeakUsage:' + str(self.log_peak_usage))
