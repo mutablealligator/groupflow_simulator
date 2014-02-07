@@ -38,7 +38,7 @@ class MulticastGroupDefinition(object):
                 # self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
                 vlc_rcv_command = ['python', './multicast_receiver_VLC.py', self.group_ip, str(self.mcast_port), str(self.echo_port)]
                 # print 'Running: ' + ' '.join(vlc_rcv_command)
-                self.dst_processes.append(net.get(dst).popen(vlc_rcv_command, stdout=fnull, stderr=fnull, close_fds=True))
+                self.dst_processes.append(net.get(dst).popen(vlc_rcv_command, stdout=fnull, stderr=fnull, close_fds=True, shell=False))
         
         print('Initialized multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port)
                 + ' Echo port: ' + str(self.echo_port) + ' # Receivers: ' + str(len(self.dst_processes)))
@@ -77,24 +77,6 @@ def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size
         prob_tuples.append((host, rvs[index]))
     
     return prob_tuples
-
-
-def connectToRootNS( network, switch, ip, prefixLen, routes ):
-    """Connect hosts to root namespace via switch. Starts network.
-      network: Mininet() network object
-      switch: switch to connect to root namespace
-      ip: IP address for root namespace node
-      prefixLen: IP address prefix length (e.g. 8, 16, 24)
-      routes: host networks to route to"""
-    # Create a node in root namespace and link to switch 0
-    root = Node( 'root', inNamespace=False )
-    intf = Link( root, switch ).intf1
-    root.setIP( ip, prefixLen, intf )
-    # Start network that now includes link to root namespace
-    network.start()
-    # Add routes from root ns to hosts
-    for route in routes:
-        root.cmd( 'route add -net ' + route + ' dev ' + str( intf ) )
 
 
 def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography):
@@ -344,7 +326,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.flow_tracker', 'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 
-            'openflow.igmp_manager', 'openflow.groupflow', 'log.level', '--WARNING']
+            'openflow.igmp_manager', 'openflow.groupflow', 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     print 'Launching external controller: ' + str(pox_arguments[0])
     
     with open(os.devnull, "w") as fnull:
@@ -379,10 +361,9 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     pox_log_file.close()
     
     # External controller
-    # ./pox.py samples.pretty_log openflow.discovery openflow.flow_tracker misc.benchmark_terminator misc.groupflow_event_tracer openflow.igmp_manager openflow.groupflow log.level --WARNING --openflow.igmp_manager=WARNING --openflow.groupflow=DEBUG
     net = Mininet(topo, controller=RemoteController, switch=OVSSwitch, link=TCLink, build=False, autoSetMacs=True)
-    pox = RemoteController('pox', '127.0.0.1', 6633)
-    net.addController('c0', RemoteController, ip = '127.0.0.1', port = 6633)
+    # pox = RemoteController('pox', '127.0.0.1', 6633)
+    net.addController('pox', RemoteController, ip = '127.0.0.1', port = 6633)
     net.start()
     topo.mcastConfig(net)
     print 'Waiting 10 seconds to allow for controller topology discovery'
@@ -433,7 +414,8 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             pox_log_file = open('./pox.log', 'r')
             pox_log_file.seek(pox_log_offset)
             for line in pox_log_file:
-                # print line
+                if 'Network peak link throughout (MBps):' in line:
+                    print line,
                 if 'Congested link detected!' in line:
                     congested_link = True
                     break
@@ -447,14 +429,15 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
 
     
     
-    print 'Terminating controller'
+    print 'Sending termination signals'
     pox_process.send_signal(signal.SIGINT)
-    pox_process = None
-    print 'Controller terminated'
-    
     for group in test_groups:
         group.terminate_mcast_applications()
     net.stop()
+    print 'Waiting for controller termination...'
+    pox_process.wait()
+    pox_process = None
+    print 'Controller terminated'
     
     if not interactive:
         write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
