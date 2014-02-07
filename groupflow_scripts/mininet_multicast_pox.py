@@ -103,14 +103,13 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
         if average_link_bandwidth_usage != 0:
             traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
         link_util_std_dev = tstd(link_bandwidth_list)
-        log_file.write('Group:' + str(cur_group_index) + ' NumReceivers:' + str(len(group.dst_hosts)) + '\n')
-        log_file.write('TotalNumFlows:' + str(total_num_flows) + '\n')
-        log_file.write('MaxLinkUsageMbps:' + str(max(link_bandwidth_list)) + '\n')
-        log_file.write('AvgLinkUsageMbps:' + str(average_link_bandwidth_usage) + '\n')
-        log_file.write('TrafficConcentration:' + str(traffic_concentration) + '\n')
-        log_file.write('LinkUsageStdDev:' + str(link_util_std_dev) + '\n')
-        # if max(link_bandwidth_list) > 9.5:
-        #     print 'WARNING: Congestion detected'
+        log_file.write('Group:' + str(cur_group_index))
+        log_file.write(' NumReceivers:' + str(len(group.dst_hosts)))
+        log_file.write(' TotalNumFlows:' + str(total_num_flows))
+        log_file.write(' MaxLinkUsageMbps:' + str(max(link_bandwidth_list)))
+        log_file.write(' AvgLinkUsageMbps:' + str(average_link_bandwidth_usage))
+        log_file.write(' TrafficConcentration:' + str(traffic_concentration))
+        log_file.write(' LinkUsageStdDev:' + str(link_util_std_dev))
         log_file.write('\n')
  
     switch_num_flows = {}   # Dictionary of number of currently installed flows, keyed by switch_dpid
@@ -126,11 +125,11 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
         num_receivers_list.append(len(group.dst_hosts))
     avg_num_receivers = sum(num_receivers_list) / float(len(num_receivers_list))
     
-    final_log_file.write('Multicast Performance Simulation\n')
+    final_log_file.write('GroupFlow Performance Simulation: ' + str(datetime.now()) + '\n')
     final_log_file.write('FlowStatsLogFile:' + str(flow_stats_file_path) + '\n')
     final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
     final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' NumGroups:' + str(len(test_groups)) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
-    final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n\n')
+    final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n')
     
     flow_log_file = open(flow_stats_file_path, 'r')
     for line in flow_log_file:
