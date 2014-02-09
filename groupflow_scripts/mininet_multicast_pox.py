@@ -446,8 +446,10 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     print 'Waiting for network application termination...'
     for group in test_groups:
         group.wait_for_application_termination()
+    print 'Network applications terminated'
     print 'Waiting for controller termination...'
     pox_process.wait()
+    print 'Controller terminated'
     pox_process = None
     net.stop()
     call(['mn', '-c'])
@@ -459,12 +461,13 @@ topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-    if len(sys.argv) >= 5:
+    if len(sys.argv) >= 6:
         # Automated simulations - Differing link usage weights in Groupflow Module
         log_prefix = sys.argv[3]
         num_iterations = int(sys.argv[2])
+        first_index = int(sys.argv[4])
         util_params = []
-        for param_index in range(4, len(sys.argv)):
+        for param_index in range(5, len(sys.argv)):
             util_params.append(int(sys.argv[param_index]))
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
@@ -473,7 +476,7 @@ if __name__ == '__main__':
         for i in range(0,num_iterations):
             for util_weight in util_params:
                 sim_start_time = time()
-                mcastTest(topo, False, hosts, log_prefix + '_u' + str(util_weight) + '_' + str(i) + '.log', util_weight)
+                mcastTest(topo, False, hosts, log_prefix + '_u' + str(util_weight) + '_' + str(i + first_index) + '.log', util_weight)
                 sim_end_time = time()
                 print 'Simulation ' + str(i+1) + '_u' + str(util_weight) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
         end_time = time()
@@ -482,7 +485,7 @@ if __name__ == '__main__':
         print 'Total runtime: ' + str(end_time - start_time) + ' seconds'
         print 'Average runtime per sim: ' + str((end_time - start_time) / (num_iterations * len(util_params))) + ' seconds'
         
-    if len(sys.argv) >= 4:
+    elif len(sys.argv) >= 4:
         # Automated simulations - Same module parameters for all runs
         log_prefix = sys.argv[3]
         num_iterations = int(sys.argv[2])
