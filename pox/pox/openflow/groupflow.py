@@ -35,6 +35,10 @@ import time
 
 log = core.getLogger()
 
+# Constants used to determine which link weighting scheme is used
+LINK_WEIGHT_LINEAR = 1
+LINK_WEIGHT_EXPONENTIAL = 2
+
 STATIC_LINK_WEIGHT = 1    # Scaling factor for link weight which is statically assigned (implements shortest hop routing if no dynamic link weight is set)
 UTILIZATION_LINK_WEIGHT = 10   # Scaling factor for link weight which is determined by current link utilization
 
@@ -94,13 +98,18 @@ class MulticastPath(object):
         curr_topo_graph = self.groupflow_manager.topology_graph
         self.node_list = list(self.groupflow_manager.node_set)
         
-        # Note: At this point all link weights are set to 1 to enable minimum hop routing. In the future these
-        # weights should be adjusted based on available link bandwidth
         weighted_topo_graph = []
         for edge in curr_topo_graph:
             output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
             link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
-            link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util)
+            
+            link_weight = 1
+            if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
+                link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util)
+            elif self.groupflow_manager.link_weight_type == LINK_WEIGHT_EXPONENTIAL:
+                # min in this line is purely to protect against divide by zero issues on overloaded links
+                link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * (1 / (1 - min(link_util, 0.99999))))
+                
             if(link_util > 0):
                 log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' Util: ' + str(link_util) + ' Weight: ' + str(link_weight))
             weighted_topo_graph.append([edge[0], edge[1], link_weight])
@@ -243,12 +252,14 @@ class MulticastPath(object):
 class GroupFlowManager(EventMixin):
     _core_name = "openflow_groupflow"
     
-    def __init__(self, static_link_weight, util_link_weight):
+    def __init__(self, link_weight_type, static_link_weight, util_link_weight):
         # Listen to dependencies
         def startup():
             core.openflow.addListeners(self)
             core.openflow_igmp_manager.addListeners(self)
 
+        self.link_weight_type = link_weight_type
+        log.info('Set link weight type: ' + str(self.link_weight_type))
         self.static_link_weight = float(static_link_weight)
         self.util_link_weight = float(util_link_weight)
         log.info('Set StaticLinkWeight:' + str(self.static_link_weight) + ' UtilLinkWeight:' + str(self.util_link_weight))
@@ -409,6 +420,12 @@ class GroupFlowManager(EventMixin):
                         pass
                     self.multicast_paths[multicast_addr][source].handle_topology_change(groupflow_trace_event)
 
-def launch(static_link_weight = STATIC_LINK_WEIGHT, util_link_weight = UTILIZATION_LINK_WEIGHT):
-    groupflow_manager = GroupFlowManager(float(static_link_weight), float(util_link_weight))
+def launch(link_weight_type = 'linear', static_link_weight = STATIC_LINK_WEIGHT, util_link_weight = UTILIZATION_LINK_WEIGHT):
+    link_weight_type_enum = LINK_WEIGHT_LINEAR   # Default
+    if 'linear' in link_weight_type:
+        link_weight_type_enum = LINK_WEIGHT_LINEAR
+    elif 'exponential' in link_weight_type:
+        link_weight_type_enum = LINK_WEIGHT_EXPONENTIAL
+        
+    groupflow_manager = GroupFlowManager(link_weight_type_enum, float(static_link_weight), float(util_link_weight))
     core.register('openflow_groupflow', groupflow_manager)
