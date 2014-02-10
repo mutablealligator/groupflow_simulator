@@ -52,7 +52,6 @@ class MulticastGroupDefinition(object):
         for proc in self.dst_processes:
             # print 'Killing process with PID: ' + str(proc.pid)
             proc.send_signal(signal.SIGTERM)
-        self.dst_processes = []
         
         print 'Signaled termination of multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
 
@@ -323,7 +322,7 @@ class MulticastTestTopo( Topo ):
         return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11']
 
         
-def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10):
+def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear'):
     membership_mean = 0.1
     membership_std_dev = 0.25
     membership_avg_bound = 5
@@ -334,9 +333,11 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
             'openflow.flow_tracker', '--link_max_bw=30', '--link_cong_threshold=28.5', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
             'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 'openflow.igmp_manager', 
-            'openflow.groupflow', '--util_link_weight=' + str(util_link_weight),
+            'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type,
             'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     print 'Launching external controller: ' + str(pox_arguments[0])
+    print 'Launch arguments:'
+    print ' '.join(pox_arguments)
     
     with open(os.devnull, "w") as fnull:
         pox_process = Popen(pox_arguments, stdout=fnull, stderr=fnull, shell=False, close_fds=True)
@@ -416,7 +417,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             mcast_group_last_octet = mcast_group_last_octet + 1
             mcast_port = mcast_port + 2
             i += 1
-            sleep(20)
+            sleep(10)
             
             # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
             print 'Check for congested link...'
@@ -440,6 +441,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 break
             else:
                 print 'No congestion detected.'
+            break
 
     
     print 'Terminating network applications'
@@ -456,7 +458,20 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     print 'Controller terminated'
     pox_process = None
     net.stop()
+    
+    # Make extra sure the network terminated cleanly
     call(['mn', '-c'])
+    
+    # Make extra sure all VLC instances were killed
+    ps_out = os.popen('ps -e')
+    for line in ps_out:
+        if 'vlc' in line:
+            print line,
+            line_split = line.strip().split(' ')
+            print line_split
+            proc_id = int(line_split[0])
+            print 'Sending SIGTERM to leftover VLC process: ' + line,
+            os.kill(proc_id, signal.SIGTERM)
     
     if not interactive:
         write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
@@ -472,17 +487,18 @@ if __name__ == '__main__':
         first_index = int(sys.argv[4])
         util_params = []
         for param_index in range(5, len(sys.argv)):
-            util_params.append(int(sys.argv[param_index]))
+            param_split = sys.argv[param_index].split(',')
+            util_params.append((param_split[0], int(param_split[1])))
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
         start_time = time()
         print 'Simulations started at: ' + str(datetime.now())
         for i in range(0,num_iterations):
-            for util_weight in util_params:
+            for util_param in util_params:
                 sim_start_time = time()
-                mcastTest(topo, False, hosts, log_prefix + '_u' + str(util_weight) + '_' + str(i + first_index) + '.log', util_weight)
+                mcastTest(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0])
                 sim_end_time = time()
-                print 'Simulation ' + str(i+1) + '_u' + str(util_weight) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
+                print 'Simulation ' + str(i+1) + '_u' + ''.join([util_param[0], str(util_param[1])]) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
         end_time = time()
         print ' '
         print 'Simulations completed at: ' + str(datetime.now())
