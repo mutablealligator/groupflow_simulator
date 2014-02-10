@@ -426,6 +426,8 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             for line in pox_log_file:
                 if 'Network peak link throughout (MBps):' in line:
                     print line,
+                if 'Network avg link throughout (MBps):' in line:
+                    print line,
                 if 'Congested link detected!' in line:
                     congested_link = True
                     break
