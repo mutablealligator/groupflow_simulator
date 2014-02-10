@@ -13,6 +13,7 @@ import sys
 import signal
 from time import sleep, time
 from datetime import datetime
+from multiprocessing import Process
 
 
 class MulticastGroupDefinition(object):
@@ -32,7 +33,7 @@ class MulticastGroupDefinition(object):
             # self.src_process = net.get(self.src_host).popen(['python', './multicast_sender.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True)
             vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop']
             # print 'Running: ' + ' '.join(vlc_command)
-            self.src_process = net.get(self.src_host).popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True, preexec_fn=os.setsid)
+            self.src_process = net.get(self.src_host).popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True)
             
         for dst in self.dst_hosts:
             with open(os.devnull, "w") as fnull:
@@ -47,11 +48,15 @@ class MulticastGroupDefinition(object):
     def terminate_mcast_applications(self):
         if self.src_process is not None:
             # print 'Killing process with PID: ' + str(self.src_process.pid)
-            os.killpg(self.src_process.pid, signal.SIGTERM)
+            # os.killpg(self.src_process.pid, signal.SIGTERM)
+            self.src_process.terminate()
+            self.src_process.kill()
             
         for proc in self.dst_processes:
             # print 'Killing process with PID: ' + str(proc.pid)
-            proc.send_signal(signal.SIGTERM)
+            # proc.send_signal(signal.SIGTERM)
+            proc.terminate()
+            proc.kill()
         
         print 'Signaled termination of multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
 
@@ -457,19 +462,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     print 'Controller terminated'
     pox_process = None
     net.stop()
-    
-    # Make extra sure the network terminated cleanly
-    call(['mn', '-c'])
-    
-    # Make extra sure all VLC instances were killed
-    ps_out = os.popen('ps -e')
-    for line in ps_out:
-        if 'vlc' in line:
-            line_split = line.strip().split(' ')
-            proc_id = int(line_split[0])
-            # print 'Sending SIGTERM to leftover VLC process: ' + line,
-            os.kill(proc_id, signal.SIGTERM)
-    
+
     if not interactive:
         write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
 
@@ -492,9 +485,23 @@ if __name__ == '__main__':
         print 'Simulations started at: ' + str(datetime.now())
         for i in range(0,num_iterations):
             for util_param in util_params:
+                p = Process(target=mcastTest, args=(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0]))
                 sim_start_time = time()
-                mcastTest(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0])
+                p.start()
+                # mcastTest(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0])
+                p.join()
                 sim_end_time = time()
+                # Make extra sure the network terminated cleanly
+                call(['mn', '-c'])
+                
+                # Make extra sure all network application instances were killed
+                ps_out = os.popen('ps -e')
+                for line in ps_out:
+                    if 'vlc' in line:
+                        line_split = line.strip().split(' ')
+                        proc_id = int(line_split[0])
+                        print 'Sending SIGTERM to leftover VLC process: ' + line,
+                        os.kill(proc_id, signal.SIGTERM)
                 print 'Simulation ' + str(i+1) + '_u' + ''.join([util_param[0], str(util_param[1])]) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
         end_time = time()
         print ' '
@@ -502,24 +509,6 @@ if __name__ == '__main__':
         print 'Total runtime: ' + str(end_time - start_time) + ' seconds'
         print 'Average runtime per sim: ' + str((end_time - start_time) / (num_iterations * len(util_params))) + ' seconds'
         
-    elif len(sys.argv) >= 4:
-        # Automated simulations - Same module parameters for all runs
-        log_prefix = sys.argv[3]
-        num_iterations = int(sys.argv[2])
-        topo = BriteTopo(sys.argv[1])
-        hosts = topo.get_host_list()
-        start_time = time()
-        print 'Simulations started at: ' + str(datetime.now())
-        for i in range(0,num_iterations):
-            sim_start_time = time()
-            mcastTest(topo, False, hosts, log_prefix + str(i) + '.log')
-            sim_end_time = time()
-            print 'Simulation ' + str(i+1) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_start_time - sim_end_time) + ' seconds)'
-        end_time = time()
-        print ' '
-        print 'Simulations completed at: ' + str(datetime.now())
-        print 'Total runtime: ' + str(end_time - start_time) + ' seconds'
-        print 'Average runtime per sim: ' + str((end_time - start_time) / num_iterations) + ' seconds'
         
     elif len(sys.argv) >= 2:
         # Interactive mode - configures POX and multicast routes, but no automatic traffic generation
