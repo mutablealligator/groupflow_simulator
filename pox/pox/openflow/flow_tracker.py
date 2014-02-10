@@ -38,7 +38,7 @@ OUTPUT_PEAK_USAGE = False
 AVERAGE_SMOOTHING_FACTOR = 0.7
 LINK_MAX_BANDWIDTH_MbPS = 30 # MegaBits per second
 LINK_CONGESTION_THRESHOLD_MbPS = 0.95 * LINK_MAX_BANDWIDTH_MbPS
-PERIODIC_QUERY_INTERVAL = 4 # Seconds
+PERIODIC_QUERY_INTERVAL = 2 # Seconds
 
 class FlowTrackedSwitch(EventMixin):
     def __init__(self, flow_tracker):
@@ -57,6 +57,8 @@ class FlowTrackedSwitch(EventMixin):
         self.flow_interval_byte_count = {}
         self.flow_interval_bandwidth_Mbps = {}
         self.flow_average_bandwidth_Mbps = {}
+        
+        self._periodic_query_timer = None
 
     def __repr__(self):
         return dpid_to_str(self.dpid)
@@ -69,6 +71,9 @@ class FlowTrackedSwitch(EventMixin):
             self.is_connected = False
             self._connection_time = None
             self._listeners = None
+            if self._periodic_query_timer is not None:
+                self._periodic_query_timer.cancel()
+                self._periodic_query_timer = None
 
     def listen_on_connection(self, connection):
         if self.dpid is None:
@@ -81,9 +86,15 @@ class FlowTrackedSwitch(EventMixin):
         self._listeners = self.listenTo(connection)
         self._connection_time = time.time()
         self._last_query_response_time = self._connection_time
+        self._periodic_query_timer = Timer(self.flow_tracker.periodic_query_interval_seconds, self.launch_stats_query, recurring = True)
 
     def _handle_ConnectionDown(self, event):
         self.ignore_connection()
+    
+    def launch_stats_query(self):
+        if self.is_connected:
+            self.connection.send(of.ofp_stats_request(body=of.ofp_flow_stats_request()))
+            log.debug('Sent flow stats requests to switch: ' + dpid_to_str(self.dpid))
     
     def process_flow_stats(self, stats, reception_time):
         log.debug('== FlowStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
@@ -192,7 +203,6 @@ class FlowTracker(EventMixin):
             self._log_file = open(self._log_file_name, 'w') # TODO: Figure out how to properly close this on shutdown
         
         self._got_first_connection = False  # Flag used to start the periodic query thread when the first ConnectionUp is received
-        self._periodic_query_timer = None
         self._peak_usage_output_timer = None
         
         self.periodic_query_interval_seconds = float(query_interval)
@@ -220,19 +230,20 @@ class FlowTracker(EventMixin):
             self._log_file = None
             log.info('Termination signalled, closed log file: ' + str(self._log_file_name))
     
-    def launch_stats_query(self):
-        for switch_dpid in self.switches:
-            if self.switches[switch_dpid].is_connected:
-                self.switches[switch_dpid].connection.send(of.ofp_stats_request(body=of.ofp_flow_stats_request()))
-                log.debug('Sent flow stats requests to switch: ' + dpid_to_str(switch_dpid))
-    
     def output_peak_usage(self):
         peak_usage = 0
+        total_usage = 0
+        num_links = 0
         for switch_dpid in self.switches:
             for port_no in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
+                if port_no == of.OFPP_LOCAL:
+                    continue
+                total_usage += self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no]
+                num_links += 1
                 if self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no] > peak_usage:
                     peak_usage = self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no]
         log.info('Network peak link throughout (MBps): ' + str(peak_usage))
+        log.info('Network avg link throughout (MBps): ' + str(total_usage / float(num_links)))
 
     def _handle_ConnectionUp(self, event):
         """Handler for ConnectionUp from the discovery module, which represent new switches joining the network.
@@ -250,9 +261,8 @@ class FlowTracker(EventMixin):
         
         if not self._got_first_connection:
             self._got_first_connection = True
-            self._periodic_query_timer = Timer(self.periodic_query_interval_seconds, self.launch_stats_query, recurring = True)
             if self.log_peak_usage:
-                self._peak_usage_output_timer = Timer(self.periodic_query_interval_seconds / 3, self.output_peak_usage, recurring = True)
+                self._peak_usage_output_timer = Timer(self.periodic_query_interval_seconds / 1.5, self.output_peak_usage, recurring = True)
             
     def _handle_ConnectionDown (self, event):
         """Handler for ConnectionUp from the discovery module, which represents a switch leaving the network.
