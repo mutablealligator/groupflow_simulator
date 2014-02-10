@@ -441,7 +441,6 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 break
             else:
                 print 'No congestion detected.'
-            break
 
     
     print 'Terminating network applications'
@@ -466,11 +465,9 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     ps_out = os.popen('ps -e')
     for line in ps_out:
         if 'vlc' in line:
-            print line,
             line_split = line.strip().split(' ')
-            print line_split
             proc_id = int(line_split[0])
-            print 'Sending SIGTERM to leftover VLC process: ' + line,
+            # print 'Sending SIGTERM to leftover VLC process: ' + line,
             os.kill(proc_id, signal.SIGTERM)
     
     if not interactive:
