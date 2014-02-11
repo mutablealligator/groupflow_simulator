@@ -330,7 +330,7 @@ class MulticastTestTopo( Topo ):
 def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear'):
     membership_mean = 0.1
     membership_std_dev = 0.25
-    membership_avg_bound = len(hosts) / 8
+    membership_avg_bound = float(len(hosts)) / 8.0
     test_groups = []
     test_group_launch_times = []
     
