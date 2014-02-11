@@ -503,7 +503,10 @@ if __name__ == '__main__':
                         line_split = line.strip().split(' ')
                         proc_id = int(line_split[0])
                         print 'Sending SIGTERM to leftover VLC process: ' + line,
-                        os.kill(proc_id, signal.SIGTERM)
+                        try:
+                            os.kill(proc_id, signal.SIGTERM)
+                        except:
+                            pass
                 print 'Simulation ' + str(i+1) + '_u' + ''.join([util_param[0], str(util_param[1])]) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
         end_time = time()
         print ' '
