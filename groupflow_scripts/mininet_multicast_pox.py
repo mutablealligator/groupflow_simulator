@@ -453,11 +453,13 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
         group.terminate_mcast_applications()
     print 'Terminating controller'
     pox_process.send_signal(signal.SIGINT)
+    sleep(1)
     print 'Waiting for network application termination...'
     for group in test_groups:
         group.wait_for_application_termination()
     print 'Network applications terminated'
     print 'Waiting for controller termination...'
+    pox_process.send_signal(signal.SIGKILL)
     pox_process.wait()
     print 'Controller terminated'
     pox_process = None
