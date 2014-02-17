@@ -61,6 +61,11 @@ def print_group_record_statistics(group_records, num_groups_list):
     print 'Average # Groups Supported: ' + str(avg_num_groups_supported) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
     print ' '
     
+    traffic_conc_avgs = []
+    link_std_dev_avgs = []
+    link_avg_mbps_avgs = []
+    num_flows_avgs = []
+    
     for group_index in range(0, len(group_records)):
         print 'Group #' + str(group_index) + ' stats:'
         print '# Trials:\t\t' + str(len(group_records[group_index]))
@@ -72,6 +77,7 @@ def print_group_record_statistics(group_records, num_groups_list):
         
         num_flows_list = [float(r.num_flows) for r in group_records[group_index]]
         avg = sum(num_flows_list) / len(num_flows_list)
+        num_flows_avgs.append(avg)
         ci_upper, ci_lower = mean_confidence_interval(num_flows_list)
         print 'TotalNumFlows:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         
@@ -82,20 +88,27 @@ def print_group_record_statistics(group_records, num_groups_list):
         
         avg_link_mbps_list = [float(r.avg_link_mbps) for r in group_records[group_index]]
         avg = sum(avg_link_mbps_list) / len(avg_link_mbps_list)
+        link_avg_mbps_avgs.append(avg)
         ci_upper, ci_lower = mean_confidence_interval(avg_link_mbps_list)
         print 'AvgLinkUsageMbps:\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         
         traffic_conc_list = [float(r.traffic_conc) for r in group_records[group_index]]
         avg = sum(traffic_conc_list) / len(traffic_conc_list)
+        traffic_conc_avgs.append(avg)
         ci_upper, ci_lower = mean_confidence_interval(traffic_conc_list)
         print 'TrafficConcentration:\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         
         link_mbps_std_dev_list = [float(r.link_mbps_std_dev) for r in group_records[group_index]]
         avg = sum(link_mbps_std_dev_list) / len(link_mbps_std_dev_list)
+        link_std_dev_avgs.append(avg)
         ci_upper, ci_lower = mean_confidence_interval(link_mbps_std_dev_list)
         print 'LinkUsageStdDev:\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         
         print ' '
+        print 'TrafficConc: [' + ', '.join([str(r) for r in traffic_conc_avgs]) + ']'
+        print 'LinkStdDev: [' + ', '.join([str(r) for r in link_std_dev_avgs]) + ']'
+        print 'LinkAvgMbps: [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + ']'
+        print 'NumFlows: [' + ', '.join([str(r) for r in num_flows_avgs]) + ']'
 
 if __name__ == '__main__':
     if len(sys.argv) >= 4:
