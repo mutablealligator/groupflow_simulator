@@ -14,6 +14,7 @@ import signal
 from time import sleep, time
 from datetime import datetime
 from multiprocessing import Process
+import numpy as np
 
 
 class MulticastGroupDefinition(object):
@@ -390,6 +391,9 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     else:
         mcast_group_last_octet = 1
         mcast_port = 5010
+        rand_seed = int(time())
+        print 'Using random seed: ' + str(rand_seed)
+        np.random.seed(rand_seed)
         host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
         print 'Host join probabilities: ' + ', '.join(str(p) for p in host_join_probabilities)
         host_join_sum = sum(p[1] for p in host_join_probabilities)
