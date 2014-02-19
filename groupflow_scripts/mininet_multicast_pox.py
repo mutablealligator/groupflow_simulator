@@ -484,7 +484,7 @@ if __name__ == '__main__':
         util_params = []
         for param_index in range(5, len(sys.argv)):
             param_split = sys.argv[param_index].split(',')
-            util_params.append((param_split[0], int(param_split[1])))
+            util_params.append((param_split[0], float(param_split[1])))
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
         start_time = time()
