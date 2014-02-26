@@ -1,7 +1,7 @@
 GroupFlow
 =========
 
-This project aims to create a POX fork of the NOX-Classic Castflow implementation, supplemented with full IGMP v3 support implemented in the controller. This will allow the Castflow multicast proposals to be used in a live OpenFlow SDN network with standard IGMP v3 hosts. The end goal of this project is to provide a testbed for developers aiming to test new multicast ideas in a software defined network.
+This project aims to create a POX fork/extension of the NOX-Classic Castflow implementation, supplemented with full IGMP v3 support implemented in the controller. This will allow SDN multicast proposals to be deployed in a live OpenFlow SDN network with standard IGMPv3 hosts. The end goal of this project is to provide a testbed for developers aiming to test new multicast ideas in a software defined network.
 
 ![GroupFlow deployment](https://github.com/alexcraig/GroupFlow/blob/master/docs/CastflowDeploymentDiagram.png?raw=true)
 
@@ -15,14 +15,12 @@ The OpenFlow IGMP v3 controller is now functionally complete, with the following
 
 The multicast controller module is now functionally complete.
 
-Testing automation using BRITE topologies is not yet implemented.
-
 Installation
 ------------
 
-To install into an existing POX installation, merge the "pox" directory located inside the "pox_version" directory in this repository with the base folder of your POX installation. This will place new files into the "pox/pox/lib/packet" and "pox/pox/openflow" directories.
+To install into an existing POX installation, merge the "pox" directory in this repository with the base folder of your POX installation. This will place new files into the "pox/pox/lib/packet" and "pox/pox/openflow" directories.
 
-The "pythontest" directory contains test scripts which are capable of sending and receiving source specific multicast traffic, as well as automating topology configuration and launching for Mininet network emulation.
+The "groupflow_scripts" directory contains test scripts which are capable of sending and receiving source specific multicast traffic, as well as automating topology configuration and launching for Mininet network emulation.
 
 Usage
 -----
@@ -63,4 +61,4 @@ MulticastTopoEvents are raised whenever a change in the network topology occurs 
 GroupFlow Module
 ----------------
 
-The GroupFlow module implements multicast routing exactly as implemented in the original [CastFlow](https://github.com/caioviel/CastFlow) implementation. Multicast routing records are stored for each combination of multicast group and source address. For each of these records the GroupFlow module will calculate a shortest path tree using Dijkstra's algorithm from the multicast source to all routers in the network (where each edge is weighted according to the number of hops from the multicast source). Branches of this tree which correspond to active multicast receivers are installed into the network through OpenFlow, and the spanning tree is only recalculated when the network topology changes. This should enable rapid changes of multicast group, as there is no need to completely recalculate the multicast tree when new receivers join a group.
+Multicast routing records are stored for each combination of multicast group and source address. For each of these records the GroupFlow module will calculate a shortest path tree using Dijkstra's algorithm from the multicast source to all routers in the network (where each edge is weighted according to the number of hops from the multicast source). Branches of this tree which correspond to active multicast receivers are installed into the network through OpenFlow, and the spanning tree is only recalculated when the network topology changes. This should enable rapid changes of multicast group, as there is no need to completely recalculate the multicast tree when new receivers join a group.
