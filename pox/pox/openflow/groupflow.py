@@ -134,6 +134,10 @@ class MulticastPath(object):
             
             # log.debug('Building path for receiver on router: ' + dpid_to_str(receiver[0]))
             receiver_path = self.path_tree_map[receiver[0]]
+            if receiver_path is None:
+                log.warning('Path could not be determined for receiver ' + dpid_to_str(receiver[0]) + ' (network is not fully connected)')
+                continue
+                
             while receiver_path[1]:
                 edges_to_install.append((receiver_path[1][0], receiver_path[0]))
                 receiver_path = receiver_path[1]
