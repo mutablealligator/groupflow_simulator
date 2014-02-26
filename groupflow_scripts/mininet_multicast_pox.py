@@ -337,7 +337,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-            'openflow.flow_tracker', '--query_interval=0.5', '--link_max_bw=30', '--link_cong_threshold=30', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
+            'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=30', '--link_cong_threshold=30', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
             'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 'openflow.igmp_manager', 
             'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type,
             'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
