@@ -59,6 +59,8 @@ def print_group_record_statistics(group_records, num_groups_list):
     avg_num_groups_supported = float(sum(num_groups_list)) / len(num_groups_list)
     ci_upper, ci_lower = mean_confidence_interval(num_groups_list)
     print 'Average # Groups Supported: ' + str(avg_num_groups_supported) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
+    print 'num_groups = ' + str(avg_num_groups_supported) + ';'
+    print 'num_groups_ci = ' + str(abs(ci_upper - ci_lower) / 2) + ';'
     print ' '
     
     traffic_conc_avgs = []
