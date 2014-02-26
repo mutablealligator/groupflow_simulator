@@ -4,7 +4,7 @@
 '''
 A POX module which periodically queries the network to learn the following information:
 - Bandwidth usage on all links in the network
-- Number of flow table installations on all routers in the network
+- Number of flow table installations on all switchs in the network
 - Queue state of all links in the network
 
 Depends on openflow.discovery
@@ -43,6 +43,7 @@ PERIODIC_QUERY_INTERVAL = 2 # Seconds
 class FlowTrackedSwitch(EventMixin):
     def __init__(self, flow_tracker):
         self.flow_tracker = flow_tracker
+        self.tracked_ports = [] # Only numbers in this list will have their utilization tracked
         self.connection = None
         self.is_connected = False
         self.dpid = None
@@ -91,6 +92,20 @@ class FlowTrackedSwitch(EventMixin):
     def _handle_ConnectionDown(self, event):
         self.ignore_connection()
     
+    def set_tracked_ports(self, tracked_ports):
+        self.tracked_ports = tracked_ports
+        # log.warn('Switch ' + dpid_to_str(self.dpid) + ' set tracked ports: ' + str(tracked_ports))
+        # Delete any stored state on ports which are no longer tracked
+        keys_to_del = []
+        for port_no in self.flow_interval_byte_count:
+            if not port_no in self.tracked_ports:
+                keys_to_del.append(port_no)
+        for key in keys_to_del:
+            del self.flow_total_byte_count[key]
+            del self.flow_interval_byte_count[key]
+            del self.flow_interval_bandwidth_Mbps[key]
+            del self.flow_average_bandwidth_Mbps[key]
+    
     def launch_stats_query(self):
         if self.is_connected:
             self.connection.send(of.ofp_stats_request(body=of.ofp_flow_stats_request()))
@@ -109,9 +124,12 @@ class FlowTrackedSwitch(EventMixin):
         # Check for new ports on the switch
         ports = self.connection.features.ports
         for port in ports:
-            if port.port_no == of.OFPP_LOCAL:
+            if port.port_no == of.OFPP_LOCAL or port.port_no == of.OFPP_CONTROLLER:
                 continue
                 
+            if not port.port_no in self.tracked_ports:
+                continue
+            
             if not port.port_no in self.flow_total_byte_count:
                 self.flow_total_byte_count[port.port_no] = 0
                 self.flow_interval_byte_count[port.port_no] = 0
@@ -123,10 +141,11 @@ class FlowTrackedSwitch(EventMixin):
             self.num_flows = self.num_flows + 1
             for action in flow_stat.actions:
                 if isinstance(action, of.ofp_action_output):
-                    if action.port in curr_event_byte_count:
-                        curr_event_byte_count[action.port] = curr_event_byte_count[action.port] + flow_stat.byte_count
-                    else:
-                        curr_event_byte_count[action.port] = flow_stat.byte_count
+                    if action.port in self.tracked_ports:
+                        if action.port in curr_event_byte_count:
+                            curr_event_byte_count[action.port] = curr_event_byte_count[action.port] + flow_stat.byte_count
+                        else:
+                            curr_event_byte_count[action.port] = flow_stat.byte_count
                         
         # Determine the number of new bytes that appeared this interval, and set the flow removed flag to true if
         # any port count is lower than in the previous interval
@@ -197,6 +216,7 @@ class FlowTracker(EventMixin):
         def startup():
             core.openflow.addListeners(self)
             core.openflow_discovery.addListeners(self)
+            core.openflow_igmp_manager.addListeners(self)
             self._module_init_time = time.time()
             self._log_file_name = datetime.datetime.now().strftime("flowtracker_%H-%M-%S_%B-%d_%Y.txt")
             log.info('Writing flow tracker info to file: ' + str(self._log_file_name))
@@ -222,7 +242,7 @@ class FlowTracker(EventMixin):
         self.switches = {}
         
         # Setup listeners
-        core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
+        core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager', 'openflow_discovery'))
     
     def termination_handler(self, signal, frame):
         if not self._log_file is None:
@@ -236,14 +256,15 @@ class FlowTracker(EventMixin):
         num_links = 0
         for switch_dpid in self.switches:
             for port_no in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
-                if port_no == of.OFPP_LOCAL:
+                if port_no == of.OFPP_LOCAL or port_no == of.OFPP_CONTROLLER:
                     continue
                 total_usage += self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no]
                 num_links += 1
                 if self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no] > peak_usage:
                     peak_usage = self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no]
+
+        log.info('Network peak link throughout (MBps): ' + str(peak_usage))
         if num_links > 0:
-            log.info('Network peak link throughout (MBps): ' + str(peak_usage))
             log.info('Network avg link throughout (MBps): ' + str(total_usage / float(num_links)))
 
     def _handle_ConnectionUp(self, event):
@@ -278,7 +299,16 @@ class FlowTracker(EventMixin):
     def _handle_FlowStatsReceived(self, event):
         if event.connection.dpid in self.switches:
             self.switches[event.connection.dpid].process_flow_stats(event.stats, time.time())
-            
+    
+    def _handle_MulticastTopoEvent(self, event):
+        for switch1 in event.adjacency_map:
+            if switch1 in self.switches:
+                tracked_ports = []
+                for switch2 in event.adjacency_map[switch1]:
+                    if event.adjacency_map[switch1][switch2] is not None:
+                        tracked_ports.append(event.adjacency_map[switch1][switch2])
+                self.switches[switch1].set_tracked_ports(tracked_ports)
+    
     def get_link_utilization_mbps(self, switch_dpid, output_port):
         if switch_dpid in self.switches:
             if output_port in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
