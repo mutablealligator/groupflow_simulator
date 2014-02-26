@@ -94,7 +94,7 @@ class FlowTrackedSwitch(EventMixin):
     
     def set_tracked_ports(self, tracked_ports):
         self.tracked_ports = tracked_ports
-        # log.warn('Switch ' + dpid_to_str(self.dpid) + ' set tracked ports: ' + str(tracked_ports))
+        # log.debug('Switch ' + dpid_to_str(self.dpid) + ' set tracked ports: ' + str(tracked_ports))
         # Delete any stored state on ports which are no longer tracked
         keys_to_del = []
         for port_no in self.flow_interval_byte_count:
@@ -128,6 +128,7 @@ class FlowTrackedSwitch(EventMixin):
                 continue
                 
             if not port.port_no in self.tracked_ports:
+                # log.debug('Switch ' + dpid_to_str(self.dpid) + ' detected untracked port: ' + str(port.port_no))
                 continue
             
             if not port.port_no in self.flow_total_byte_count:
@@ -150,16 +151,17 @@ class FlowTrackedSwitch(EventMixin):
         # Determine the number of new bytes that appeared this interval, and set the flow removed flag to true if
         # any port count is lower than in the previous interval
         for port_num in curr_event_byte_count:
-            if not port_num in self.flow_total_byte_count:
-                self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
-                self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num]
-                continue
-                
-            if curr_event_byte_count[port_num] < self.flow_total_byte_count[port_num]:
-                self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
-                self.flow_interval_byte_count[port_num] = 0
-                self.flow_removed_curr_interval = True
-                continue
+            if action.port in self.tracked_ports:
+                if not port_num in self.flow_total_byte_count:
+                    self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
+                    self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num]
+                    continue
+                    
+                if curr_event_byte_count[port_num] < self.flow_total_byte_count[port_num]:
+                    self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
+                    self.flow_interval_byte_count[port_num] = 0
+                    self.flow_removed_curr_interval = True
+                    continue
             
             self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num] - self.flow_total_byte_count[port_num]
             self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
