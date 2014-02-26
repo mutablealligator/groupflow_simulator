@@ -48,48 +48,44 @@ class MulticastPath(object):
         self.ingress_port = ingress_port
         self.src_router_dpid = src_router_dpid
         self.dst_mcast_address = dst_mcast_address
-        self.mst = None
-        self.mst_map = defaultdict(lambda : None)     # self.mst_map[router_dpid] = [incoming edge to this router dpid]
+        self.path_tree_map = defaultdict(lambda : None)     # self.path_tree_map[router_dpid] = Complete path from receiver router_dpid to src
         self.weighted_topo_graph = []
         self.node_list = []                 # List of all managed router dpids
         self.installed_node_list = []       # List of all router dpids with rules currently installed
         self.receivers = []                 # Tuples of (router_dpid, port)
         self.groupflow_manager = groupflow_manager
-        self.calc_mst(groupflow_trace_event)
+        self.calc_path_tree_dijkstras(groupflow_trace_event)
 
-    def calc_mst(self, groupflow_trace_event = None):
+    def calc_path_tree_dijkstras(self, groupflow_trace_event = None):
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_tree_calc_start_time(self.dst_mcast_address, self.src_ip)
     
         self._calc_link_weights()
-        nodes = self.node_list
-        edges = self.weighted_topo_graph
         
-        conn = defaultdict( list )
-        for n1,n2,c in edges:
-            conn[ n1 ].append( (c, n1, n2) )
-        mst = []
-        mst_map = defaultdict(lambda : None)
-        used = set([self.src_router_dpid])
-        usable_edges = conn[self.src_router_dpid][:]
-        heapify( usable_edges )
-
-        while usable_edges:
-
-            cost, n1, n2 = heappop( usable_edges )
-            if n2 not in used:
-                used.add( n2 )
-                mst.append( ( n1, n2, cost) )
-                mst_map[n2] = (n1, n2, cost)
-                for e in conn[ n2 ]:
-                    if e[ 2 ] not in used:
-                        heappush( usable_edges, e )
-        self.mst = mst
-        self.mst_map = mst_map
+        nodes = set(self.node_list)
+        edges = self.weighted_topo_graph
+        graph = defaultdict(list)
+        for src,dst,cost in edges:
+            graph[src].append((cost, dst))
+     
+        path_tree_map = defaultdict(lambda : None)
+        queue, seen = [(0,self.src_router_dpid,())], set()
+        while queue:
+            (cost,node1,path) = heappop(queue)
+            if node1 not in seen:
+                seen.add(node1)
+                path = (node1, path)
+                path_tree_map[node1] = path
+     
+                for next_cost, node2 in graph.get(node1, ()):
+                    if node2 not in seen:
+                        heappush(queue, (cost + next_cost, node2, path))
+        
+        self.path_tree_map = path_tree_map
         
         log.debug('Calculated MST for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
-        for edge in self.mst:
-            log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]))
+        for node in self.path_tree_map:
+            log.debug('Path to Node ' + dpid_to_str(node) + ': ' + str(self.path_tree_map[node]))
         
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_tree_calc_end_time()
@@ -135,27 +131,20 @@ class MulticastPath(object):
                 continue
             if receiver[0] in calculated_path_router_dpids:
                 continue
+            
             # log.debug('Building path for receiver on router: ' + dpid_to_str(receiver[0]))
-            got_complete_path = False
-            cur_node = receiver[0]
-            while got_complete_path == False:
-                edge_to_add = self.mst_map[cur_node]
-                if edge_to_add is None:
-                    log.warning('Path could not be determined for receiver ' + dpid_to_str(receiver[0]) + ' (network is not fully connected)')
-                    break
-                edges_to_install.append(edge_to_add)
-                # log.debug('Added edge: ' + dpid_to_str(edge_to_add[0]) + ' -> ' + dpid_to_str(edge_to_add[1]))
-                cur_node = edge_to_add[0]
-                if cur_node == self.src_router_dpid:
-                    got_complete_path = True
-                    calculated_path_router_dpids.append(receiver[0])
+            receiver_path = self.path_tree_map[receiver[0]]
+            while receiver_path[1]:
+                edges_to_install.append((receiver_path[1][0], receiver_path[0]))
+                receiver_path = receiver_path[1]
+            calculated_path_router_dpids.append(receiver[0])
                     
         # Get rid of duplicates in the edge list (must be a more efficient way to do this, find it eventually)
         edges_to_install = list(Set(edges_to_install))
         if not edges_to_install is None:
             # log.info('Installing edges:')
             for edge in edges_to_install:
-                log.debug('Installing: ' + dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]) + ' (Weight: ' + str(edge[2]) + ')')
+                log.debug('Installing: ' + dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]))
         
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_route_processing_end_time()
@@ -244,7 +233,7 @@ class MulticastPath(object):
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         
     def handle_topology_change(self, groupflow_trace_event = None):
-        self.calc_mst(groupflow_trace_event)
+        self.calc_path_tree_dijkstras(groupflow_trace_event)
         self.install_openflow_rules(groupflow_trace_event)
     
 
@@ -267,7 +256,6 @@ class GroupFlowManager(EventMixin):
         self.adjacency = defaultdict(lambda : defaultdict(lambda : None))
         self.topology_graph = []
         self.node_set = Set()
-        # self.multicast_paths[mcast_group][src_ip]
         self.multicast_paths = defaultdict(lambda : defaultdict(lambda : None))
         
         # Desired reception state as delivered by the IGMP manager, keyed by the dpid of the router for which
