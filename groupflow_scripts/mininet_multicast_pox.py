@@ -213,7 +213,7 @@ class BriteTopo(Topo):
             print 'Generating switch and host for ID: ' + str(node_id)
             switch = self.addSwitch('s' + str(node_id))
             host = self.addHost('h' + str(node_id))
-            self.addLink(switch, host, bw=30, use_htb=True)	# TODO: Better define link parameters for hosts
+            self.addLink(switch, host, bw=1000, use_htb=True)	# TODO: Better define link parameters for hosts
             self.routers.append(switch)
             self.hostnames.append('h' + str(node_id))
             
@@ -337,7 +337,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-            'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=30', '--link_cong_threshold=28.5', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
+            'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=30', '--link_cong_threshold=30', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
             'misc.benchmark_terminator', 'misc.groupflow_event_tracer', 'openflow.igmp_manager', 
             'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type,
             'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
@@ -426,7 +426,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             mcast_group_last_octet = mcast_group_last_octet + 1
             mcast_port = mcast_port + 2
             i += 1
-            sleep(8)
+            sleep(10)
             
             # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
             print 'Check for congested link...'
