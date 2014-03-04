@@ -32,6 +32,7 @@ import pox.openflow.libopenflow_01 as of
 from pox.lib.addresses import IPAddr, EthAddr
 from pox.lib.recoco import Timer
 import time
+import sys
 
 log = core.getLogger()
 
@@ -103,8 +104,10 @@ class MulticastPath(object):
             if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
                 link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util)
             elif self.groupflow_manager.link_weight_type == LINK_WEIGHT_EXPONENTIAL:
-                # min in this line is purely to protect against divide by zero issues on overloaded links
-                link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * (1 / (1 - min(link_util, 0.99999))))
+                if link_util == 1:
+                    link_weight = sys.float_info.max
+                else:
+                    link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * (1 / (1 - link_util)))
                 
             if(link_util > 0):
                 log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' Util: ' + str(link_util) + ' Weight: ' + str(link_weight))
