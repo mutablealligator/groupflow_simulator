@@ -387,17 +387,18 @@ class MulticastTestTopo( Topo ):
         return ['h0', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10']
 
         
-def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear'):
+def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', controller_placement_metric = LATENCY_METRIC_MIN_AVERAGE_DELAY):
     membership_mean = 0.1
     membership_std_dev = 0.25
     membership_avg_bound = float(len(hosts)) / 8.0
     test_groups = []
     test_group_launch_times = []
-    controller_node_id = 0
+    controller_switch, metric_val = topo.get_controller_placement(controller_placement_metric)
+    controller_node_id = int(controller_switch[1:])
     controller_host = 'h' + str(controller_node_id)
     controller_ip = '10.0.0.' + str(controller_node_id + 1)
-    controller_switch = 's' + str(controller_node_id)
     print 'Configuring network for in-band control.'
+    print 'Controller Placement Metric: ' + str(controller_placement_metric)
     print 'Controller IP: ' + controller_ip + '\tHost: ' + controller_host + '\tSwitch: ' + controller_switch
     
     
@@ -544,13 +545,19 @@ topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-    if len(sys.argv) >= 6:
+    if len(sys.argv) >= 7:
         # Automated simulations - Differing link usage weights in Groupflow Module
-        log_prefix = sys.argv[3]
+        log_prefix = sys.argv[4]
         num_iterations = int(sys.argv[2])
-        first_index = int(sys.argv[4])
+        controller_placement_metric = sys.argv[3]
+        if 'min_average_delay' in controller_placement_metric:
+            controller_placement_metric = LATENCY_METRIC_MIN_AVERAGE_DELAY
+        elif 'min_maximum_delay' in controller_placement_metric:
+            controller_placement_metric = LATENCY_METRIC_MIN_MAXIMUM_DELAY
+            
+        first_index = int(sys.argv[5])
         util_params = []
-        for param_index in range(5, len(sys.argv)):
+        for param_index in range(6, len(sys.argv)):
             param_split = sys.argv[param_index].split(',')
             util_params.append((param_split[0], float(param_split[1])))
         topo = BriteTopo(sys.argv[1])
@@ -559,7 +566,7 @@ if __name__ == '__main__':
         print 'Simulations started at: ' + str(datetime.now())
         for i in range(0,num_iterations):
             for util_param in util_params:
-                p = Process(target=mcastTest, args=(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0]))
+                p = Process(target=mcastTest, args=(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0], controller_placement_metric))
                 sim_start_time = time()
                 p.start()
                 # mcastTest(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0])
