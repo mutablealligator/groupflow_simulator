@@ -72,7 +72,7 @@ def print_group_record_statistics(group_records, num_groups_list):
     link_avg_mbps_avgs = []
     link_avg_mbps_cis = []
     response_time_avgs = []
-    respone_time_cis = []
+    response_time_cis = []
     num_flows_avgs = []
     num_flows_cis = []
     
@@ -100,7 +100,7 @@ def print_group_record_statistics(group_records, num_groups_list):
         avg = sum(response_time_list) / len(response_time_list)
         response_time_avgs.append(avg)
         ci_upper, ci_lower = mean_confidence_interval(response_time_list)
-        num_flows_cis.append(abs(ci_upper - ci_lower) / 2)
+        response_time_cis.append(abs(ci_upper - ci_lower) / 2)
         print 'ResponseTime:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         
         max_link_mbps_list = [float(r.max_link_mbps) for r in group_records[group_index]]
