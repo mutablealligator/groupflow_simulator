@@ -39,7 +39,7 @@ def read_log_set(filepath_prefix, num_logs, output_filepath):
                 group_index = int(split_line[0][len('Group:'):])
                 num_receivers = int(split_line[1][len('NumReceivers:'):])
                 num_flows = int(split_line[2][len('TotalNumFlows:'):])
-                flow_tracker_response_time = float(split_line[3][len('ResponseTime:'):]
+                flow_tracker_response_time = float(split_line[3][len('ResponseTime:'):])
                 max_link_mbps = float(split_line[4][len('MaxLinkUsageMbps:'):])
                 avg_link_mbps = float(split_line[5][len('AvgLinkUsageMbps:'):])
                 traffic_conc = float(split_line[6][len('TrafficConcentration:'):])
