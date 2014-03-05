@@ -183,6 +183,7 @@ class FlowTrackedSwitch(EventMixin):
         
         # Update last response time
         self._last_query_response_time = reception_time
+        complete_processing_time = time.time()
         
         # Print debug information
         # log.info('Num Flows: ' + str(self.num_flows))
@@ -194,7 +195,7 @@ class FlowTrackedSwitch(EventMixin):
         
         # Print log information to file
         if not self.flow_tracker._log_file is None:
-            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(reception_time - self._last_query_send_time) + '\n')
+            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(complete_processing_time - self._last_query_send_time) + '\n')
             #for port_num in curr_event_byte_count:
             #    self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]) + '\n')
             #    log.info('Switch:' + dpid_to_str(self.dpid) + 'Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]))
