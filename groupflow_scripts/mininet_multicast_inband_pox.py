@@ -15,6 +15,12 @@ from time import sleep, time
 from datetime import datetime
 from multiprocessing import Process
 import numpy as np
+from collections import defaultdict
+from sets import Set
+from heapq import heapify, heappop, heappush
+
+LATENCY_METRIC_MIN_AVERAGE_DELAY = 1
+LATENCY_METRIC_MIN_MAXIMUM_DELAY = 2
 
 class InbandController( RemoteController ):
     def checkListening( self ):
@@ -189,6 +195,7 @@ class BriteTopo(Topo):
         
         self.hostnames = []
         self.routers = []
+        self.edges = []
         self.file_path = brite_filepath
         
         print 'Parsing BRITE topology at filepath: ' + str(brite_filepath)
@@ -241,6 +248,8 @@ class BriteTopo(Topo):
             switch_id_1 = int(line_split[1])
             switch_id_2 = int(line_split[2])
             delay_ms = str(float(line_split[4])) + 'ms'
+            self.edges.append(('s' + str(switch_id_1), 's' + str(switch_id_2), float(line_split[4])))
+            self.edges.append(('s' + str(switch_id_2), 's' + str(switch_id_1), float(line_split[4])))
             bandwidth_Mbps = float(line_split[5])
             print 'Adding link between switch ' + str(switch_id_1) + ' and ' + str(switch_id_2) + '\n\tRate: ' \
                 + str(bandwidth_Mbps) + ' Mbps\tDelay: ' + delay_ms
@@ -249,6 +258,52 @@ class BriteTopo(Topo):
             self.addLink(self.routers[switch_id_1], self.routers[switch_id_2], bw=bandwidth_Mbps, delay=delay_ms, max_queue_size=1000, use_htb=True)
         
         file.close()
+    
+    def get_controller_placement(self, latency_metric = LATENCY_METRIC_MIN_AVERAGE_DELAY):
+        delay_metric_value = sys.float_info.max
+        source_node_id = None
+
+        for src_switch in self.routers:
+            # Compute the shortest path tree for each possible controller placement
+            nodes = set(self.routers)
+            graph = defaultdict(list)
+            for src,dst,cost in self.edges:
+                graph[src].append((cost, dst))
+         
+            path_tree_map = defaultdict(lambda : None)
+            queue, seen = [(0,src_switch,())], set()
+            while queue:
+                (cost,node1,path) = heappop(queue)
+                if node1 not in seen:
+                    seen.add(node1)
+                    path = (cost, node1, path)
+                    path_tree_map[node1] = path
+         
+                    for next_cost, node2 in graph.get(node1, ()):
+                        if node2 not in seen:
+                            heappush(queue, (cost + next_cost, node2, path))
+
+            # Calculate the metric value for this position
+            if latency_metric == LATENCY_METRIC_MIN_AVERAGE_DELAY:
+                sum_delay = 0
+                for receiver in path_tree_map:
+                    sum_delay += path_tree_map[receiver][0]
+                avg_delay = sum_delay / float(len(path_tree_map))
+                if avg_delay < delay_metric_value:
+                    source_node_id = src_switch
+                    delay_metric_value = avg_delay
+                    
+            elif latency_metric == LATENCY_METRIC_MIN_MAXIMUM_DELAY:
+                max_delay = 0
+                for receiver in path_tree_map:
+                    if path_tree_map[receiver][0] > max_delay:
+                        max_delay = path_tree_map[receiver][0]
+                if max_delay < delay_metric_value:
+                    source_node_id = src_switch
+                    delay_metric_value = max_delay
+        
+        print 'Found best controller placement at ' + str(source_node_id) + ' with metric: ' + str(delay_metric_value)
+        return source_node_id, delay_metric_value
     
     def get_host_list(self):
         return self.hostnames
