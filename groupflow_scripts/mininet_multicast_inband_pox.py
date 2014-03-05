@@ -102,7 +102,7 @@ def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size
 
 
 def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography):
-    def write_current_stats(log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index, group):
+    def write_current_stats(log_file, link_bandwidth_usage_Mbps, switch_num_flows, response_times, cur_group_index, group):
         link_bandwidth_list = []
         total_num_flows = 0
         
@@ -113,6 +113,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
         for switch_dpid in switch_num_flows:
             total_num_flows += switch_num_flows[switch_dpid]
         
+        avg_response_time = sum(response_times) / float(len(response_times))
         average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
         traffic_concentration = 0
         if average_link_bandwidth_usage != 0:
@@ -121,6 +122,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
         log_file.write('Group:' + str(cur_group_index))
         log_file.write(' NumReceivers:' + str(len(group.dst_hosts)))
         log_file.write(' TotalNumFlows:' + str(total_num_flows))
+        log_file.write(' ResponseTime:' + str(avg_response_time))
         log_file.write(' MaxLinkUsageMbps:' + str(max(link_bandwidth_list)))
         log_file.write(' AvgLinkUsageMbps:' + str(average_link_bandwidth_usage))
         log_file.write(' TrafficConcentration:' + str(traffic_concentration))
@@ -147,13 +149,17 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
     final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n')
     
     flow_log_file = open(flow_stats_file_path, 'r')
+    response_times = []
+    
     for line in flow_log_file:
         # This line specifies that start of stats for a new switch and time instant
         if 'FlowStats' in line:
             line_split = line.split()
-            switch_dpid = line_split[1][7:]
-            num_flows = int(line_split[2][9:])
-            cur_time = float(line_split[4][16:])
+            switch_dpid = line_split[1][len('Switch:'):]
+            num_flows = int(line_split[2][len('NumFlows:'):])
+            cur_time = float(line_split[4][len('IntervalEndTime:'):])
+            response_time = float(line_split[5][len('ResponseTime:'):])
+            response_times.append(response_time)
             
             cur_switch_dpid = switch_dpid
             
@@ -164,7 +170,8 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             if cur_group_index < len(group_launch_times) and cur_time > group_launch_times[cur_group_index]:
                 cur_group_index += 1
                 if(cur_group_index > 1):
-                    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index - 2, test_groups[cur_group_index - 2])
+                    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, response_times, cur_group_index - 2, test_groups[cur_group_index - 2])
+                    response_times = []
             
             switch_num_flows[cur_switch_dpid] = num_flows
             
@@ -182,7 +189,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             link_bandwidth_usage_Mbps[cur_switch_dpid][port_no] = bandwidth_usage
     
     # Print the stats for the final multicast group
-    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, cur_group_index - 1, test_groups[cur_group_index - 1])
+    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, response_times, cur_group_index - 1, test_groups[cur_group_index - 1])
     
     flow_log_file.close()
     final_log_file.close()
