@@ -502,7 +502,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             mcast_group_last_octet = mcast_group_last_octet + 1
             mcast_port = mcast_port + 2
             i += 1
-            sleep(5)
+            sleep(5 + uniform(0, 5))
             
             # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
             print 'Check for congested link...'
