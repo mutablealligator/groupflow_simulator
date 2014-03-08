@@ -104,19 +104,25 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             total_num_flows += switch_num_flows[switch_dpid]
         
         avg_response_time = sum(response_times) / float(len(response_times))
+        avg_network_time = sum(network_times) / float(len(network_times))
+        avg_processing_time = sum(processing_times) / float(len(processing_times))
+        
         average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
         traffic_concentration = 0
         if average_link_bandwidth_usage != 0:
             traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
         link_util_std_dev = tstd(link_bandwidth_list)
+        
         log_file.write('Group:' + str(cur_group_index))
         log_file.write(' NumReceivers:' + str(len(group.dst_hosts)))
         log_file.write(' TotalNumFlows:' + str(total_num_flows))
-        log_file.write(' ResponseTime:' + str(avg_response_time))
         log_file.write(' MaxLinkUsageMbps:' + str(max(link_bandwidth_list)))
         log_file.write(' AvgLinkUsageMbps:' + str(average_link_bandwidth_usage))
         log_file.write(' TrafficConcentration:' + str(traffic_concentration))
         log_file.write(' LinkUsageStdDev:' + str(link_util_std_dev))
+        log_file.write(' ResponseTime:' + str(avg_response_time))
+        log_file.write(' NetworkTime:' + str(avg_network_time))
+        log_file.write(' ProcessingTime:' + str(avg_processing_time))
         log_file.write('\n')
  
     switch_num_flows = {}   # Dictionary of number of currently installed flows, keyed by switch_dpid
@@ -140,6 +146,8 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
     
     flow_log_file = open(flow_stats_file_path, 'r')
     response_times = []
+    network_times = []
+    processing_times = []
     
     for line in flow_log_file:
         # This line specifies that start of stats for a new switch and time instant
@@ -149,7 +157,11 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             num_flows = int(line_split[2][len('NumFlows:'):])
             cur_time = float(line_split[4][len('IntervalEndTime:'):])
             response_time = float(line_split[5][len('ResponseTime:'):])
+            network_time = float(line_split[6][len('NetworkTime:'):])
+            processing_time = float(line_split[7][len('ProcessingTime:'):])
             response_times.append(response_time)
+            network_times.append(network_time)
+            processing_times.append(processing_time)
             
             cur_switch_dpid = switch_dpid
             
@@ -162,6 +174,8 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
                 if(cur_group_index > 1):
                     write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, response_times, cur_group_index - 2, test_groups[cur_group_index - 2])
                     response_times = []
+                    network_times = []
+                    processing_times = []
             
             switch_num_flows[cur_switch_dpid] = num_flows
             
