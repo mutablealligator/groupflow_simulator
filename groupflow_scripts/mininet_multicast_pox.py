@@ -16,6 +16,8 @@ from datetime import datetime
 from multiprocessing import Process
 import numpy as np
 
+LATENCY_METRIC_MIN_AVERAGE_DELAY = 1
+LATENCY_METRIC_MIN_MAXIMUM_DELAY = 2
 
 class MulticastGroupDefinition(object):
     def __init__(self, src_host, dst_hosts, group_ip, mcast_port, echo_port):
@@ -205,7 +207,9 @@ class BriteTopo(Topo):
         Topo.__init__( self )
         
         self.hostnames = []
+        self.switch_names = []
         self.routers = []
+        self.edges = []
         self.file_path = brite_filepath
         
         print 'Parsing BRITE topology at filepath: ' + str(brite_filepath)
@@ -232,10 +236,11 @@ class BriteTopo(Topo):
             line_split = line.split('\t')
             node_id = int(line_split[0])
             print 'Generating switch and host for ID: ' + str(node_id)
-            switch = self.addSwitch('s' + str(node_id))
-            host = self.addHost('h' + str(node_id))
+            switch = self.addSwitch('s' + str(node_id), inband = False)
+            host = self.addHost('h' + str(node_id), ip = '10.0.0.' + str(node_id + 1))
             self.addLink(switch, host, bw=1000, use_htb=True)	# TODO: Better define link parameters for hosts
             self.routers.append(switch)
+            self.switch_names.append('s' + str(node_id))
             self.hostnames.append('h' + str(node_id))
             
         # Skip ahead to the edges section
@@ -258,6 +263,8 @@ class BriteTopo(Topo):
             switch_id_1 = int(line_split[1])
             switch_id_2 = int(line_split[2])
             delay_ms = str(float(line_split[4])) + 'ms'
+            self.edges.append(('s' + str(switch_id_1), 's' + str(switch_id_2), float(line_split[4])))
+            self.edges.append(('s' + str(switch_id_2), 's' + str(switch_id_1), float(line_split[4])))
             bandwidth_Mbps = float(line_split[5])
             print 'Adding link between switch ' + str(switch_id_1) + ' and ' + str(switch_id_2) + '\n\tRate: ' \
                 + str(bandwidth_Mbps) + ' Mbps\tDelay: ' + delay_ms
@@ -267,8 +274,57 @@ class BriteTopo(Topo):
         
         file.close()
     
+    def get_controller_placement(self, latency_metric = LATENCY_METRIC_MIN_AVERAGE_DELAY):
+        delay_metric_value = sys.float_info.max
+        source_node_id = None
+
+        for src_switch in self.routers:
+            # Compute the shortest path tree for each possible controller placement
+            nodes = set(self.routers)
+            graph = defaultdict(list)
+            for src,dst,cost in self.edges:
+                graph[src].append((cost, dst))
+         
+            path_tree_map = defaultdict(lambda : None)
+            queue, seen = [(0,src_switch,())], set()
+            while queue:
+                (cost,node1,path) = heappop(queue)
+                if node1 not in seen:
+                    seen.add(node1)
+                    path = (cost, node1, path)
+                    path_tree_map[node1] = path
+         
+                    for next_cost, node2 in graph.get(node1, ()):
+                        if node2 not in seen:
+                            heappush(queue, (cost + next_cost, node2, path))
+
+            # Calculate the metric value for this position
+            if latency_metric == LATENCY_METRIC_MIN_AVERAGE_DELAY:
+                sum_delay = 0
+                for receiver in path_tree_map:
+                    sum_delay += path_tree_map[receiver][0]
+                avg_delay = sum_delay / float(len(path_tree_map))
+                if avg_delay < delay_metric_value:
+                    source_node_id = src_switch
+                    delay_metric_value = avg_delay
+                    
+            elif latency_metric == LATENCY_METRIC_MIN_MAXIMUM_DELAY:
+                max_delay = 0
+                for receiver in path_tree_map:
+                    if path_tree_map[receiver][0] > max_delay:
+                        max_delay = path_tree_map[receiver][0]
+                if max_delay < delay_metric_value:
+                    source_node_id = src_switch
+                    delay_metric_value = max_delay
+        
+        print 'Found best controller placement at ' + str(source_node_id) + ' with metric: ' + str(delay_metric_value)
+        return source_node_id, delay_metric_value
+    
     def get_host_list(self):
         return self.hostnames
+    
+    def get_switch_list(self):
+        return self.switch_names
     
     def mcastConfig(self, net):
         for hostname in self.hostnames:
@@ -288,51 +344,52 @@ class MulticastTestTopo( Topo ):
         Topo.__init__( self )
         
         # Add hosts and switches
-        h1 = self.addHost('h1')
-        h2 = self.addHost('h2')
-        h3 = self.addHost('h3')
-        h4 = self.addHost('h4')
-        h5 = self.addHost('h5')
-        h6 = self.addHost('h6')
-        h7 = self.addHost('h7')
-        h8 = self.addHost('h8')
-        h9 = self.addHost('h9')
-        h10 = self.addHost('h10')
-        h11 = self.addHost('h11')
+        h0 = self.addHost('h0', ip='10.0.0.1')
+        h1 = self.addHost('h1', ip='10.0.0.2')
+        h2 = self.addHost('h2', ip='10.0.0.3')
+        h3 = self.addHost('h3', ip='10.0.0.4')
+        h4 = self.addHost('h4', ip='10.0.0.5')
+        h5 = self.addHost('h5', ip='10.0.0.6')
+        h6 = self.addHost('h6', ip='10.0.0.7')
+        h7 = self.addHost('h7', ip='10.0.0.8')
+        h8 = self.addHost('h8', ip='10.0.0.9')
+        h9 = self.addHost('h9', ip='10.0.0.10')
+        h10 = self.addHost('h10', ip='10.0.0.11')
         
+        s0 = self.addSwitch('s0')
         s1 = self.addSwitch('s1')
         s2 = self.addSwitch('s2')
         s3 = self.addSwitch('s3')
         s4 = self.addSwitch('s4')
         s5 = self.addSwitch('s5')
         s6 = self.addSwitch('s6')
-        s7 = self.addSwitch('s7')
         
         # Add links
-        self.addLink(s1, s2, bw = 10, use_htb = True)
+        self.addLink(s0, s1, bw = 10, use_htb = True)
+        self.addLink(s0, s2, bw = 10, use_htb = True)
         self.addLink(s1, s3, bw = 10, use_htb = True)
-        self.addLink(s2, s4, bw = 10, use_htb = True)
-        self.addLink(s4, s5, bw = 10, use_htb = True)
-        self.addLink(s2, s5, bw = 10, use_htb = True)
+        self.addLink(s3, s4, bw = 10, use_htb = True)
+        self.addLink(s1, s4, bw = 10, use_htb = True)
+        self.addLink(s1, s5, bw = 10, use_htb = True)
+        self.addLink(s5, s2, bw = 10, use_htb = True)
         self.addLink(s2, s6, bw = 10, use_htb = True)
-        self.addLink(s6, s3, bw = 10, use_htb = True)
-        self.addLink(s3, s7, bw = 10, use_htb = True)
-        self.addLink(s7, s5, bw = 10, use_htb = True)
+        self.addLink(s6, s4, bw = 10, use_htb = True)
         
+        self.addLink(s0, h0, bw = 10, use_htb = True)
         self.addLink(s2, h1, bw = 10, use_htb = True)
-        self.addLink(s3, h2, bw = 10, use_htb = True)
-        self.addLink(s3, h3, bw = 10, use_htb = True)
-        self.addLink(s5, h4, bw = 10, use_htb = True)
-        self.addLink(s5, h5, bw = 10, use_htb = True)
-        self.addLink(s5, h6, bw = 10, use_htb = True)
-        self.addLink(s2, h7, bw = 10, use_htb = True)
+        self.addLink(s2, h2, bw = 10, use_htb = True)
+        self.addLink(s4, h3, bw = 10, use_htb = True)
+        self.addLink(s4, h4, bw = 10, use_htb = True)
+        self.addLink(s4, h5, bw = 10, use_htb = True)
+        self.addLink(s1, h6, bw = 10, use_htb = True)
+        self.addLink(s5, h7, bw = 10, use_htb = True)
         self.addLink(s6, h8, bw = 10, use_htb = True)
-        self.addLink(s7, h9, bw = 10, use_htb = True)
-        self.addLink(s4, h10, bw = 10, use_htb = True)
-        self.addLink(s1, h11, bw = 10, use_htb = True)
+        self.addLink(s3, h9, bw = 10, use_htb = True)
+        self.addLink(s1, h10, bw = 10, use_htb = True)
 
     def mcastConfig(self, net):
         # Configure hosts for multicast support
+        net.get('h0').cmd('route add -net 224.0.0.0/4 h0-eth0')
         net.get('h1').cmd('route add -net 224.0.0.0/4 h1-eth0')
         net.get('h2').cmd('route add -net 224.0.0.0/4 h2-eth0')
         net.get('h3').cmd('route add -net 224.0.0.0/4 h3-eth0')
@@ -343,10 +400,12 @@ class MulticastTestTopo( Topo ):
         net.get('h8').cmd('route add -net 224.0.0.0/4 h8-eth0')
         net.get('h9').cmd('route add -net 224.0.0.0/4 h9-eth0')
         net.get('h10').cmd('route add -net 224.0.0.0/4 h10-eth0')
-        net.get('h11').cmd('route add -net 224.0.0.0/4 h11-eth0')
     
     def get_host_list(self):
-        return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11']
+        return ['h0', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10']
+    
+    def get_switch_list(self):
+        return ['s0', 's1', 's2', 's3', 's4', 's5', 's6']
 
         
 def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear'):
@@ -402,6 +461,8 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     # pox = RemoteController('pox', '127.0.0.1', 6633)
     net.addController('pox', RemoteController, ip = '127.0.0.1', port = 6633)
     net.start()
+    for switch_name in topo.get_switch_list():
+        net.get(switch_name).cmd('route 127.0.0.1 dev lo')
     topo.mcastConfig(net)
     sleep_time = 8 + (float(len(hosts))/8)
     print 'Waiting ' + str(sleep_time) + ' seconds to allow for controller topology discovery'
