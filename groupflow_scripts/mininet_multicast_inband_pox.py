@@ -243,7 +243,7 @@ class BriteTopo(Topo):
             line_split = line.split('\t')
             node_id = int(line_split[0])
             print 'Generating switch and host for ID: ' + str(node_id)
-            switch = self.addSwitch('s' + str(node_id))
+            switch = self.addSwitch('s' + str(node_id), inband = True)
             host = self.addHost('h' + str(node_id), ip = '10.0.0.' + str(node_id + 1))
             self.addLink(switch, host, bw=1000, use_htb=True)	# TODO: Better define link parameters for hosts
             self.routers.append(switch)
