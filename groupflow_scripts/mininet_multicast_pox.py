@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from mininet.net import *
 from mininet.topo import *
-from mininet.node import OVSSwitch
+from mininet.node import OVSSwitch, UserSwitch
 from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
@@ -579,20 +579,10 @@ if __name__ == '__main__':
                 # mcastTest(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0])
                 p.join()
                 sim_end_time = time()
-                # Make extra sure the network terminated cleanly
-                call(['mn', '-c'])
                 
-                # Make extra sure all network application instances were killed
-                ps_out = os.popen('ps -e')
-                for line in ps_out:
-                    if 'vlc' in line:
-                        line_split = line.strip().split(' ')
-                        proc_id = int(line_split[0])
-                        print 'Sending SIGTERM to leftover VLC process: ' + line,
-                        try:
-                            os.kill(proc_id, signal.SIGTERM)
-                        except:
-                            pass
+                # Make extra sure the network terminated cleanly
+                call(['python', 'kill_running_test.py'])
+
                 print 'Simulation ' + str(i+1) + '_u' + ''.join([util_param[0], str(util_param[1])]) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
         end_time = time()
         print ' '
