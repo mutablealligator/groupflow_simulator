@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from mininet.net import *
 from mininet.topo import *
-from mininet.node import OVSSwitch
+from mininet.node import OVSSwitch, UserSwitch
 from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
@@ -215,6 +215,7 @@ class BriteTopo(Topo):
         Topo.__init__( self )
         
         self.hostnames = []
+        self.switch_names = []
         self.routers = []
         self.edges = []
         self.file_path = brite_filepath
@@ -243,10 +244,11 @@ class BriteTopo(Topo):
             line_split = line.split('\t')
             node_id = int(line_split[0])
             print 'Generating switch and host for ID: ' + str(node_id)
-            switch = self.addSwitch('s' + str(node_id), inband = True)
-            host = self.addHost('h' + str(node_id), ip = '10.0.0.' + str(node_id + 1))
+            switch = self.addSwitch('s' + str(node_id), inband = True, inNamespace=True, ip = '192.168.1.' + str(node_id + 150))
+            host = self.addHost('h' + str(node_id), ip = '10.0.0.' + str(node_id + 1), inNamespace=True)
             self.addLink(switch, host, bw=1000, use_htb=True)	# TODO: Better define link parameters for hosts
             self.routers.append(switch)
+            self.switch_names.append('s' + str(node_id))
             self.hostnames.append('h' + str(node_id))
             
         # Skip ahead to the edges section
@@ -283,6 +285,7 @@ class BriteTopo(Topo):
     def get_controller_placement(self, latency_metric = LATENCY_METRIC_MIN_AVERAGE_DELAY):
         delay_metric_value = sys.float_info.max
         source_node_id = None
+        final_path_tree_map = None
 
         for src_switch in self.routers:
             # Compute the shortest path tree for each possible controller placement
@@ -313,6 +316,7 @@ class BriteTopo(Topo):
                 if avg_delay < delay_metric_value:
                     source_node_id = src_switch
                     delay_metric_value = avg_delay
+                    final_path_tree_map = path_tree_map
                     
             elif latency_metric == LATENCY_METRIC_MIN_MAXIMUM_DELAY:
                 max_delay = 0
@@ -322,12 +326,16 @@ class BriteTopo(Topo):
                 if max_delay < delay_metric_value:
                     source_node_id = src_switch
                     delay_metric_value = max_delay
+                    final_path_tree_map = path_tree_map
         
         print 'Found best controller placement at ' + str(source_node_id) + ' with metric: ' + str(delay_metric_value)
-        return source_node_id, delay_metric_value
+        return source_node_id, delay_metric_value, final_path_tree_map
     
     def get_host_list(self):
         return self.hostnames
+    
+    def get_switch_list(self):
+        return self.switch_names
     
     def mcastConfig(self, net):
         for hostname in self.hostnames:
@@ -406,6 +414,9 @@ class MulticastTestTopo( Topo ):
     
     def get_host_list(self):
         return ['h0', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10']
+    
+    def get_switch_list(self):
+        return ['s0', 's1', 's2', 's3', 's4', 's5', 's6']
 
         
 def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', controller_placement_metric = LATENCY_METRIC_MIN_AVERAGE_DELAY):
@@ -414,7 +425,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     membership_avg_bound = float(len(hosts)) / 8.0
     test_groups = []
     test_group_launch_times = []
-    controller_switch, metric_val = topo.get_controller_placement(controller_placement_metric)
+    controller_switch, metric_val, con_path_map = topo.get_controller_placement(controller_placement_metric)
     controller_node_id = int(controller_switch[1:])
     controller_host = 'h' + str(controller_node_id)
     controller_ip = '10.0.0.' + str(controller_node_id + 1)
@@ -425,17 +436,73 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     
     # External controller
     # Following lines implement inband control
-    net = Mininet(topo, controller=InbandController, switch=OVSSwitch, link=TCLink, build=False)
-    net.addController('c0', InbandController, ip = controller_ip)
+    net = Mininet(topo, controller=RemoteController, switch=UserSwitch, link=TCLink, build=False)
+    net.addController('c0', RemoteController, ip = controller_ip)
     net.start()
-    net.get(controller_switch).cmd('ifconfig ' + controller_switch + ' 10.0.0.254')
+    
+    # Configure the routes to use for in-band control
+    
+    # Determine which interfaces configure which switches
+    # Two dimensional map:  [switch_1][switch_2] -> interface name that connects switch_1 to switch_2
+    interface_map = defaultdict(lambda : defaultdict(lambda : None))
+    for switch_name in topo.get_switch_list() + topo.get_host_list():
+        # print 'Interfaces for node: ' + switch_name
+        for int_index in net.get(switch_name).intfs:
+            interface = net.get(switch_name).intfs[int_index]
+            if interface.link:
+                source_node, dest_node = None, None
+                if switch_name in str(interface.link.node1):
+                    source_node = str(interface.link.node1)
+                    dest_node = str(interface.link.node2)
+                else:
+                    source_node = str(interface.link.node2)
+                    dest_node = str(interface.link.node1)
+                interface_map[source_node][dest_node] = str(interface.name)
+                print 'Interface ' + str(interface.name) + ' connects nodes: ' + source_node + ' -> ' + dest_node
+                # if source_node in topo.get_switch_list() and dest_node in topo.get_switch_list():
+                    # print source_node + ': ' + 'route add 192.168.1.' + str(int(dest_node[1:]) + 150) + '/32 dev ' + str(interface.name)
+                    # print net.get(source_node).cmd('route add 192.168.1.' + str(int(dest_node[1:]) + 150) + '/32 dev ' + str(interface.name))
+                    # net.get(source_node).setHostRoute('192.168.1.' + str(int(dest_node[1:]) + 150), str(interface.name))
+    
+    # Install routes to forward control traffic based on the path tree map provided by the controller placement algorithm
+    for switch_name in topo.get_switch_list():
+        switch_ip = '192.168.1.' + str(int(switch_name[1:]) + 150)
+        net.get(switch_name).cmd('ifconfig lo ' + switch_ip)
+        control_path = con_path_map[switch_name]
+        while control_path[2]:
+            # print net.get(control_path[1]).cmd('route')
+            # print control_path[1] + ': ' + 'route add -host ' + controller_ip + ' gw ' + '192.168.1.' + str(int(control_path[2][1][1:]) + 150) + ' dev ' + interface_map[control_path[1]][control_path[2][1]]
+            net.get(control_path[1]).cmd('route add -host ' + controller_ip + ' dev ' + interface_map[control_path[1]][control_path[2][1]])
+            net.get(control_path[2][1]).setHostRoute(switch_ip, interface_map[control_path[2][1]][control_path[1]]) # Set reverse route
+            control_path = control_path[2]
+            
+    # Install the route on the final switch to direct traffic to the controller
+    # net.get(controller_switch).setHostRoute(controller_ip, interface_map[controller_switch][controller_host])
+    print controller_switch + ': ' + 'route add -host ' + controller_ip + ' dev ' + interface_map[controller_switch][controller_host]
+    print net.get(controller_switch).cmd('route add -host ' + controller_ip + ' dev ' + interface_map[controller_switch][controller_host])
+    
+    # net.get(controller_host).setHostRoute('192.168.1.' + str(int(controller_switch[1:]) + 150), interface_map[controller_host][controller_switch])
+    net.get(controller_host).cmd('route add -net 192.168.1.0 netmask 255.255.255.0 dev ' + interface_map[controller_host][controller_switch])
+    
+    topo.mcastConfig(net)
+    
+    for switch_name in topo.get_switch_list():
+        print '====\nSwitch: ' + switch_name
+        print net.get(switch_name).cmd('route')
+        print net.get(switch_name).cmd('ifconfig')
+        print '====\n'
+    
+    print '====\nController Host:'
+    print net.get(controller_host).cmd('route')
+    print net.get(controller_host).cmd('ifconfig')
+    print '====\n'
     
     # Launch the external controller
-    pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
+    pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.of_01', '--address=' + controller_ip, 'openflow.discovery',
             'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=30', '--link_cong_threshold=30', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
             'misc.benchmark_terminator', 'openflow.igmp_manager', 
             'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type,
-            'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
+            'log.level', '--DEBUG', '--openflow.flow_tracker=INFO']
     print 'Launching external controller: ' + str(pox_arguments[0])
     print 'Launch arguments:'
     print ' '.join(pox_arguments)
@@ -471,7 +538,6 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     pox_log_offset = pox_log_file.tell()
     pox_log_file.close()
     
-    topo.mcastConfig(net)
     sleep_time = 8 + (float(len(hosts))/8)
     print 'Waiting ' + str(sleep_time) + ' seconds to allow for controller topology discovery'
     sleep(sleep_time)   # Allow time for the controller to detect the topology
