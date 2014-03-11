@@ -251,8 +251,8 @@ class GroupFlowManager(EventMixin):
     def __init__(self, link_weight_type, static_link_weight, util_link_weight):
         # Listen to dependencies
         def startup():
-            core.openflow.addListeners(self)
-            core.openflow_igmp_manager.addListeners(self)
+            core.openflow.addListeners(self, priority = 99)
+            core.openflow_igmp_manager.addListeners(self, priority = 99)
 
         self.link_weight_type = link_weight_type
         log.info('Set link weight type: ' + str(self.link_weight_type))

@@ -227,9 +227,9 @@ class FlowTracker(EventMixin):
     def __init__(self, query_interval, link_max_bw, link_cong_threshold, avg_smooth_factor, log_peak_usage):
         # Listen to dependencies
         def startup():
-            core.openflow.addListeners(self)
-            core.openflow_discovery.addListeners(self)
-            core.openflow_igmp_manager.addListeners(self)
+            core.openflow.addListeners(self, priority = 101)
+            core.openflow_discovery.addListeners(self, priority = 101)
+            core.openflow_igmp_manager.addListeners(self, priority = 101)
             self._module_init_time = time.time()
             self._log_file_name = datetime.datetime.now().strftime("flowtracker_%H-%M-%S_%B-%d_%Y.txt")
             log.info('Writing flow tracker info to file: ' + str(self._log_file_name))

@@ -767,8 +767,8 @@ class IGMPManager(EventMixin):
     def __init__(self):
         # Listen to dependencies
         def startup():
-            core.openflow.addListeners(self)
-            core.openflow_discovery.addListeners(self)
+            core.openflow.addListeners(self, priority=100)
+            core.openflow_discovery.addListeners(self, priority=100)
         
         # Set variables for IGMP operation to default values
         self.igmp_robustness = 2
