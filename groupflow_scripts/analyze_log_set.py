@@ -75,6 +75,8 @@ def print_group_record_statistics(group_records, num_groups_list):
     link_std_dev_cis = []
     link_avg_mbps_avgs = []
     link_avg_mbps_cis = []
+    link_max_mbps_avgs = []
+    link_max_mbps_cis = []
     num_flows_avgs = []
     num_flows_cis = []
     response_time_avgs = []
@@ -106,7 +108,9 @@ def print_group_record_statistics(group_records, num_groups_list):
 
         max_link_mbps_list = [float(r.max_link_mbps) for r in group_records[group_index]]
         avg = sum(max_link_mbps_list) / len(max_link_mbps_list)
+        link_max_mbps_avgs.append(avg)
         ci_upper, ci_lower = mean_confidence_interval(max_link_mbps_list)
+        link_max_mbps_cis.append(abs(ci_upper - ci_lower) / 2)
         print 'MaxLinkUsageMbps:\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         
         avg_link_mbps_list = [float(r.avg_link_mbps) for r in group_records[group_index]]
@@ -158,6 +162,8 @@ def print_group_record_statistics(group_records, num_groups_list):
     print 'link_std_dev_ci = [' + ', '.join([str(r) for r in link_std_dev_cis]) + '];'
     print 'link_avg_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
     print 'link_avg_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
+    print 'link_max_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
+    print 'link_max_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
     print 'num_flows = [' + ', '.join([str(r) for r in num_flows_avgs]) + '];'
     print 'num_flows_ci = [' + ', '.join([str(r) for r in num_flows_cis]) + '];'
     print 'response_time = [' + ', '.join([str(r) for r in response_time_avgs]) + '];'
