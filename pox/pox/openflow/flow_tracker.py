@@ -63,6 +63,7 @@ class FlowTrackedSwitch(EventMixin):
         self.flow_interval_byte_count = {}
         self.flow_interval_bandwidth_Mbps = {}
         self.flow_average_bandwidth_Mbps = {}
+        self.average_switch_load = 0
         
         self._periodic_query_timer = None
 
@@ -186,6 +187,11 @@ class FlowTrackedSwitch(EventMixin):
                 else:
                     self.flow_average_bandwidth_Mbps[port_num] = min(self.flow_interval_bandwidth_Mbps[port_num], self.flow_tracker.link_max_bw)
         
+        average_switch_load = 0
+        for port_num in self.flow_average_bandwidth_Mbps:
+            average_switch_load += self.flow_average_bandwidth_Mbps[port_num]
+        self.average_switch_load = average_switch_load
+        
         # Update last response time
         complete_processing_time = time.time()
         self._last_query_processing_time = complete_processing_time - reception_time
@@ -203,7 +209,7 @@ class FlowTrackedSwitch(EventMixin):
         
         # Print log information to file
         if not self.flow_tracker._log_file is None:
-            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(self._last_query_total_time) + ' NetworkTime:' + str(self._last_query_network_time) + ' ProcessingTime:' + str(self._last_query_processing_time) + '\n')
+            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(self._last_query_total_time) + ' NetworkTime:' + str(self._last_query_network_time) + ' ProcessingTime:' + str(self._last_query_processing_time) + ' AvgSwitchLoad:' + str(self.average_switch_load) + '\n')
             #for port_num in curr_event_byte_count:
             #    self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]) + '\n')
             #    log.info('Switch:' + dpid_to_str(self.dpid) + 'Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]))

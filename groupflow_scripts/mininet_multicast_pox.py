@@ -94,7 +94,7 @@ def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size
 
 
 def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography):
-    def write_current_stats(log_file, link_bandwidth_usage_Mbps, switch_num_flows, response_times, cur_group_index, group):
+    def write_current_stats(log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_group_index, group):
         link_bandwidth_list = []
         total_num_flows = 0
         
@@ -104,6 +104,11 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
         
         for switch_dpid in switch_num_flows:
             total_num_flows += switch_num_flows[switch_dpid]
+        
+        net_wide_avg_load = 0
+        for switch_dpid in switch_average_load:
+            net_wide_avg_load += switch_average_load[switch_dpid]
+        net_wide_avg_load = float(net_wide_avg_load) / len(switch_average_load)
         
         avg_response_time = sum(response_times) / float(len(response_times))
         avg_network_time = sum(network_times) / float(len(network_times))
@@ -125,9 +130,11 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
         log_file.write(' ResponseTime:' + str(avg_response_time))
         log_file.write(' NetworkTime:' + str(avg_network_time))
         log_file.write(' ProcessingTime:' + str(avg_processing_time))
+        log_file.write(' SwitchAvgLoadMbps:' + str(net_wide_avg_load))
         log_file.write('\n')
  
     switch_num_flows = {}   # Dictionary of number of currently installed flows, keyed by switch_dpid
+    switch_average_load = {}    # Dictionary of switch average load, keyed by switch_dpid
     link_bandwidth_usage_Mbps = {} # Dictionary of dictionaries: link_bandwidth_usage_Mbps[switch_dpid][port_no]
     cur_group_index = 0
     cur_time = 0
@@ -161,10 +168,8 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             response_time = float(line_split[5][len('ResponseTime:'):])
             network_time = float(line_split[6][len('NetworkTime:'):])
             processing_time = float(line_split[7][len('ProcessingTime:'):])
-            response_times.append(response_time)
-            network_times.append(network_time)
-            processing_times.append(processing_time)
-            
+            avg_load = float(line_split[8][len('AvgSwitchLoad:'):])
+
             cur_switch_dpid = switch_dpid
             
             # print 'Got stats for switch: ' + str(switch_dpid)
@@ -174,12 +179,16 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             if cur_group_index < len(group_launch_times) and cur_time > group_launch_times[cur_group_index]:
                 cur_group_index += 1
                 if(cur_group_index > 1):
-                    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, response_times, cur_group_index - 2, test_groups[cur_group_index - 2])
+                    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_group_index - 2, test_groups[cur_group_index - 2])
                     response_times = []
                     network_times = []
                     processing_times = []
             
+            response_times.append(response_time)
+            network_times.append(network_time)
+            processing_times.append(processing_time)
             switch_num_flows[cur_switch_dpid] = num_flows
+            switch_average_load[cur_switch_dpid] = avg_load
             
         # This line specifies port specific stats for the last referenced switch
         if 'Port' in line:
@@ -195,7 +204,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             link_bandwidth_usage_Mbps[cur_switch_dpid][port_no] = bandwidth_usage
     
     # Print the stats for the final multicast group
-    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, response_times, cur_group_index - 1, test_groups[cur_group_index - 1])
+    write_current_stats(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_group_index - 1, test_groups[cur_group_index - 1])
     
     flow_log_file.close()
     final_log_file.close()
