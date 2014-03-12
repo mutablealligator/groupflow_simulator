@@ -2,7 +2,7 @@
 import sys
 
 class MulticastGroupStatRecord(object):
-    def __init__(self, group_index, num_receivers, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time):
+    def __init__(self, group_index, num_receivers, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time):
         self.group_index = group_index
         self.num_receivers = num_receivers
         self.num_flows = num_flows
@@ -11,6 +11,8 @@ class MulticastGroupStatRecord(object):
         self.traffic_conc = traffic_conc
         self.link_mbps_std_dev = link_mbps_std_dev
         self.flow_tracker_response_time = flow_tracker_response_time
+        self.flow_tracker_network_time = flow_tracker_network_time
+        self.flow_tracker_processing_time = flow_tracker_processing_time
 
 def mean_confidence_interval(data, confidence=0.95):
 	import scipy.stats
@@ -39,12 +41,14 @@ def read_log_set(filepath_prefix, num_logs, output_filepath):
                 group_index = int(split_line[0][len('Group:'):])
                 num_receivers = int(split_line[1][len('NumReceivers:'):])
                 num_flows = int(split_line[2][len('TotalNumFlows:'):])
-                flow_tracker_response_time = float(split_line[3][len('ResponseTime:'):])
-                max_link_mbps = float(split_line[4][len('MaxLinkUsageMbps:'):])
-                avg_link_mbps = float(split_line[5][len('AvgLinkUsageMbps:'):])
-                traffic_conc = float(split_line[6][len('TrafficConcentration:'):])
-                link_mbps_std_dev = float(split_line[7][len('LinkUsageStdDev:'):])
-                group_record = MulticastGroupStatRecord(group_index, num_receivers, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time)
+                max_link_mbps = float(split_line[3][len('MaxLinkUsageMbps:'):])
+                avg_link_mbps = float(split_line[4][len('AvgLinkUsageMbps:'):])
+                traffic_conc = float(split_line[5][len('TrafficConcentration:'):])
+                link_mbps_std_dev = float(split_line[6][len('LinkUsageStdDev:'):])
+                flow_tracker_response_time = float(split_line[7][len('ResponseTime:'):])
+                flow_tracker_network_time = float(split_line[8][len('NetworkTime:'):])
+                flow_tracker_processing_time = float(split_line[9][len('ProcessingTime:'):])
+                group_record = MulticastGroupStatRecord(group_index, num_receivers, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time)
                 
                 if group_index < len(group_records):
                     group_records[group_index].append(group_record)
@@ -71,10 +75,14 @@ def print_group_record_statistics(group_records, num_groups_list):
     link_std_dev_cis = []
     link_avg_mbps_avgs = []
     link_avg_mbps_cis = []
-    response_time_avgs = []
-    response_time_cis = []
     num_flows_avgs = []
     num_flows_cis = []
+    response_time_avgs = []
+    response_time_cis = []
+    network_time_avgs = []
+    network_time_cis = []
+    processing_time_avgs = []
+    processing_time_cis = []
     
     for group_index in range(0, len(group_records)):
         if len(group_records[group_index]) < 2:
@@ -95,14 +103,7 @@ def print_group_record_statistics(group_records, num_groups_list):
         ci_upper, ci_lower = mean_confidence_interval(num_flows_list)
         num_flows_cis.append(abs(ci_upper - ci_lower) / 2)
         print 'TotalNumFlows:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
-        
-        response_time_list = [float(r.flow_tracker_response_time) for r in group_records[group_index]]
-        avg = sum(response_time_list) / len(response_time_list)
-        response_time_avgs.append(avg)
-        ci_upper, ci_lower = mean_confidence_interval(response_time_list)
-        response_time_cis.append(abs(ci_upper - ci_lower) / 2)
-        print 'ResponseTime:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
-        
+
         max_link_mbps_list = [float(r.max_link_mbps) for r in group_records[group_index]]
         avg = sum(max_link_mbps_list) / len(max_link_mbps_list)
         ci_upper, ci_lower = mean_confidence_interval(max_link_mbps_list)
@@ -129,6 +130,27 @@ def print_group_record_statistics(group_records, num_groups_list):
         link_std_dev_cis.append(abs(ci_upper - ci_lower) / 2)
         print 'LinkUsageStdDev:\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         
+        response_time_list = [float(r.flow_tracker_response_time) for r in group_records[group_index]]
+        avg = sum(response_time_list) / len(response_time_list)
+        response_time_avgs.append(avg)
+        ci_upper, ci_lower = mean_confidence_interval(response_time_list)
+        response_time_cis.append(abs(ci_upper - ci_lower) / 2)
+        print 'ResponseTime:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
+        
+        network_time_list = [float(r.flow_tracker_network_time) for r in group_records[group_index]]
+        avg = sum(network_time_list) / len(network_time_list)
+        network_time_avgs.append(avg)
+        ci_upper, ci_lower = mean_confidence_interval(network_time_list)
+        network_time_cis.append(abs(ci_upper - ci_lower) / 2)
+        print 'NetworkTime:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
+        
+        processing_time_list = [float(r.flow_tracker_processing_time) for r in group_records[group_index]]
+        avg = sum(processing_time_list) / len(processing_time_list)
+        processing_time_avgs.append(avg)
+        ci_upper, ci_lower = mean_confidence_interval(processing_time_list)
+        processing_time_cis.append(abs(ci_upper - ci_lower) / 2)
+        print 'ProcessingTime:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
+        
     print ' '
     print 'traffic_conc = [' + ', '.join([str(r) for r in traffic_conc_avgs]) + '];'
     print 'traffic_conc_ci = [' + ', '.join([str(r) for r in traffic_conc_cis]) + '];'
@@ -140,6 +162,10 @@ def print_group_record_statistics(group_records, num_groups_list):
     print 'num_flows_ci = [' + ', '.join([str(r) for r in num_flows_cis]) + '];'
     print 'response_time = [' + ', '.join([str(r) for r in response_time_avgs]) + '];'
     print 'response_time_ci = [' + ', '.join([str(r) for r in response_time_cis]) + '];'
+    print 'network_time = [' + ', '.join([str(r) for r in network_time_avgs]) + '];'
+    print 'network_time_ci = [' + ', '.join([str(r) for r in network_time_cis]) + '];'
+    print 'processing_time = [' + ', '.join([str(r) for r in processing_time_avgs]) + '];'
+    print 'processing_time_ci = [' + ', '.join([str(r) for r in processing_time_cis]) + '];'
 
 if __name__ == '__main__':
     if len(sys.argv) >= 4:
