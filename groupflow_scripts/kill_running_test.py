@@ -16,6 +16,12 @@ for line in ps_out:
     line_split = line.strip().split(' ')
     os.kill(int(line_split[0]), signal.SIGTERM)
 
+ps_out = os.popen('ps -e | grep controller')
+for line in ps_out:
+    print line,
+    line_split = line.strip().split(' ')
+    os.kill(int(line_split[0]), signal.SIGTERM)
+
 ps_out = os.popen('ps -e | grep python')
 for line in ps_out:
     line_split = line.strip().split(' ')
