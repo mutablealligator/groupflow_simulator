@@ -2,7 +2,7 @@
 import sys
 
 class MulticastGroupStatRecord(object):
-    def __init__(self, group_index, num_receivers, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time):
+    def __init__(self, group_index, num_receivers, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time, switch_load_mbps):
         self.group_index = group_index
         self.num_receivers = num_receivers
         self.num_flows = num_flows
@@ -13,6 +13,7 @@ class MulticastGroupStatRecord(object):
         self.flow_tracker_response_time = flow_tracker_response_time
         self.flow_tracker_network_time = flow_tracker_network_time
         self.flow_tracker_processing_time = flow_tracker_processing_time
+        self.switch_load_mbps = switch_load_mbps
 
 def mean_confidence_interval(data, confidence=0.95):
 	import scipy.stats
@@ -48,7 +49,8 @@ def read_log_set(filepath_prefix, num_logs, output_filepath):
                 flow_tracker_response_time = float(split_line[7][len('ResponseTime:'):])
                 flow_tracker_network_time = float(split_line[8][len('NetworkTime:'):])
                 flow_tracker_processing_time = float(split_line[9][len('ProcessingTime:'):])
-                group_record = MulticastGroupStatRecord(group_index, num_receivers, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time)
+                switch_load_mbps = float(split_line[10][len('SwitchAvgLoadMbps:'):])
+                group_record = MulticastGroupStatRecord(group_index, num_receivers, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time, switch_load_mbps)
                 
                 if group_index < len(group_records):
                     group_records[group_index].append(group_record)
@@ -77,6 +79,8 @@ def print_group_record_statistics(group_records, num_groups_list):
     link_avg_mbps_cis = []
     link_max_mbps_avgs = []
     link_max_mbps_cis = []
+    switch_load_mbps_avgs = []
+    switch_load_mbps_cis = []
     num_flows_avgs = []
     num_flows_cis = []
     response_time_avgs = []
@@ -119,6 +123,13 @@ def print_group_record_statistics(group_records, num_groups_list):
         ci_upper, ci_lower = mean_confidence_interval(avg_link_mbps_list)
         link_avg_mbps_cis.append(abs(ci_upper - ci_lower) / 2)
         print 'AvgLinkUsageMbps:\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
+        
+        switch_load_mbps_list = [float(r.switch_load_mbps) for r in group_records[group_index]]
+        avg = sum(switch_load_mbps_list) / len(switch_load_mbps_list)
+        switch_load_mbps_avgs.append(avg)
+        ci_upper, ci_lower = mean_confidence_interval(switch_load_mbps_list)
+        switch_load_mbps_cis.append(abs(ci_upper - ci_lower) / 2)
+        print 'SwitchLoadMbps:\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         
         traffic_conc_list = [float(r.traffic_conc) for r in group_records[group_index]]
         avg = sum(traffic_conc_list) / len(traffic_conc_list)
@@ -164,6 +175,8 @@ def print_group_record_statistics(group_records, num_groups_list):
     print 'link_avg_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
     print 'link_max_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
     print 'link_max_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
+    print 'switch_load_mbps = [' + ', '.join([str(r) for r in switch_load_mbps_avgs]) + '];'
+    print 'switch_load_mbps_ci = [' + ', '.join([str(r) for r in switch_load_mbps_cis]) + '];'
     print 'num_flows = [' + ', '.join([str(r) for r in num_flows_avgs]) + '];'
     print 'num_flows_ci = [' + ', '.join([str(r) for r in num_flows_cis]) + '];'
     print 'response_time = [' + ', '.join([str(r) for r in response_time_avgs]) + '];'
