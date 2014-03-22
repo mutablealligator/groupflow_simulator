@@ -70,8 +70,19 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     net.addController('pox', RemoteController, ip = '127.0.0.1', port = 6633)
     net.start()
     for switch_name in topo.get_switch_list():
-        net.get(switch_name).cmd('route 127.0.0.1 dev lo')
+        #print switch_name + ' route add -host 127.0.0.1 dev lo'
+        net.get(switch_name).controlIntf = net.get(switch_name).intf('lo')
+        net.get(switch_name).cmd('route add -host 127.0.0.1 dev lo')
+        #print 'pox' + ' route add -host ' + net.get(switch_name).IP() + ' dev lo'
+        net.get('pox').cmd('route add -host ' + net.get(switch_name).IP() + ' dev lo')
+        #print net.get(switch_name).cmd('ifconfig')
+        
     topo.mcastConfig(net)
+    
+    #print 'Controller network configuration:'
+    #print net.get('pox').cmd('ifconfig')
+    #print net.get('pox').cmd('route')
+    
     sleep_time = 8 + (float(len(hosts))/8)
     print 'Waiting ' + str(sleep_time) + ' seconds to allow for controller topology discovery'
     sleep(sleep_time)   # Allow time for the controller to detect the topology
