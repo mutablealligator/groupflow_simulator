@@ -56,6 +56,12 @@ def read_log_set(filepath_prefix, num_logs, output_filepath):
                     group_records[group_index].append(group_record)
                 else:
                     group_records.append([group_record])
+        
+        # KLUDGE: Discard the last group record recorded, as link congestion actually occured when
+        # this group was added
+        num_groups = num_groups - 1;
+        group_records = group_records[0:-1]
+        
         num_groups_list.append(num_groups)
         log_file.close()
         print 'Processed log: ' + str(filepath)
