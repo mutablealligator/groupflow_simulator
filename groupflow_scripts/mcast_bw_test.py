@@ -17,9 +17,10 @@ from multiprocessing import Process
 import numpy as np
 
 def iperf_mcast(net, hosts=None, udpBw='10M'):
-    """Run iperf between two hosts.
-       hosts: list of hosts; if None, uses opposite hosts
+    """Run iperf between two hosts using a multicast group.
+       hosts: list containing the pair of hosts to test
     """
+    # Validate input parameters and presence of telnet
     if not quietRun( 'which telnet' ):
         error( 'Cannot find telnet in $PATH - required for iperf test' )
         return
@@ -27,53 +28,49 @@ def iperf_mcast(net, hosts=None, udpBw='10M'):
         hosts = [ net.hosts[ 0 ], net.hosts[ -1 ] ]
     else:
         assert len( hosts ) == 2
+        
+    # Configure iperf parameters
     client, server = hosts
     output( '*** Iperf: testing UDP bandwidth between ' )
     output( "%s and %s\n" % ( client.name, server.name ) )
     server.cmd( 'killall -9 iperf' )
-    iperfArgs = 'iperf '
-    bwArgs = ''
-
-    iperfArgs += '-u '
+    iperfArgs = 'iperf -u '
     bwArgs = '-b ' + udpBw + ' '
 
+    # Launch the server
     server.sendCmd( iperfArgs + '-s -B 224.1.1.1 -i 5 ', printPid=True )
-    servout = ''
     while server.lastPid is None:
-        servout += server.monitor()
+        server.monitor()
     
+    # Launch the client
     cliout = client.cmd( iperfArgs + '-t 30 -c 224.1.1.1 ' +
                          bwArgs )
-    # output('*** Client output: %s\n' % cliout)
+
+    # Wait for the test to complete, and terminate the server
     sleep(30)
+    output( '*** Iperf: Ending test' )
     # Send two interrupts to terminate iperf 
     # First interrupt causes "Waiting for server threads to complete. Interrupt again to force quit."
     server.sendInt()
     sleep(0.5)
     server.sendInt()
-    servout += server.waitOutput(True)
-    #output('*** Server output:\n %s\n' % servout)
+    server.waitOutput(True)
 
 
-    
-class FlowTrackerTestTopo( Topo ):
+class BandwidthTestTopo( Topo ):
     def __init__( self ):
-        "Create custom topo."
-        
         # Initialize topology
         Topo.__init__( self )
         
         # Add hosts and switches
         h0 = self.addHost('h0', ip='10.0.0.1')
         h1 = self.addHost('h1', ip='10.0.0.2')
-        
         s0 = self.addSwitch('s0')
         s1 = self.addSwitch('s1')
         
         # Add links        
         self.addLink(s0, h0, bw = 1000, use_htb = True)
         self.addLink(s1, h1, bw = 1000, use_htb = True)
-        
         self.addLink(s0, s1, bw = 5, use_htb = True)
 
     def mcastConfig(self, net):
@@ -87,7 +84,7 @@ class FlowTrackerTestTopo( Topo ):
     def get_switch_list(self):
         return ['s0', 's1']
 
-        
+
 def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10, link_weight_type = 'linear'):
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
@@ -98,23 +95,22 @@ def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10
     print 'Launching external controller: ' + str(pox_arguments[0])
     print 'Launch arguments:'
     print ' '.join(pox_arguments)
-    
     with open(os.devnull, "w") as fnull:
         pox_process = Popen(pox_arguments, stdout=fnull, stderr=fnull, shell=False, close_fds=True)
-        # Allow time for the log file to be generated
         sleep(1)
     
-    # External controller
+    # Configure network to use external controller
     net = Mininet(topo, controller=RemoteController, switch=OVSSwitch, link=TCLink, build=False, autoSetMacs=True)
-    # pox = RemoteController('pox', '127.0.0.1', 6633)
     net.addController('pox', RemoteController, ip = '127.0.0.1', port = 6633)
     net.start()
     
-    #for switch_name in topo.get_switch_list():
-    #    net.get(switch_name).controlIntf = net.get(switch_name).intf('lo')
-    #    net.get(switch_name).cmd('route add -host 127.0.0.1 dev lo')
-    #    net.get('pox').cmd('route add -host ' + net.get(switch_name).IP() + ' dev lo')
-        
+    # Configure control interface on network switches
+    for switch_name in topo.get_switch_list():
+        net.get(switch_name).controlIntf = net.get(switch_name).intf('lo')
+        net.get(switch_name).cmd('route add -host 127.0.0.1 dev lo')
+        net.get('pox').cmd('route add -host ' + net.get(switch_name).IP() + ' dev lo')
+    
+    # Setup multicast routes to virtual interfaces
     topo.mcastConfig(net)
     
     #print 'Network configuration:'
@@ -145,16 +141,11 @@ def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10
     pox_process = None
     net.stop()
 
-    # write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
-
-topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-
-    # Interactive mode with barebones topology
-    print 'Launching default multicast test topology'
-    topo = FlowTrackerTestTopo()
+    # Generate the test topology and run the throughput test
+    topo = BandwidthTestTopo()
     hosts = topo.get_host_list()
     flowtrackerTest(topo, hosts, False)
     # Make extra sure the network terminated cleanly
