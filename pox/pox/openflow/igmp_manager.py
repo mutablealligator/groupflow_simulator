@@ -945,7 +945,9 @@ class IGMPManager(EventMixin):
 
         def flip(link):
             return Discovery.Link(link[2], link[3], link[0], link[1])
-
+        
+        log.debug('Got LinkEvent: ' + dpid_to_str(event.link.dpid1) + ' --> ' + dpid_to_str(event.link.dpid2) + ' LinkUp: ' + str(not event.removed))
+        
         l = event.link
         if not l.dpid1 in self.routers:
             self.add_igmp_router(l.dpid1, core.openflow.getConnection(l.dpid1))
@@ -975,12 +977,14 @@ class IGMPManager(EventMixin):
             # TODO: Check if this is actually neccesary...
             # These routers may still be adjacent through a different link
             for ll in core.openflow_discovery.adjacency:
-                if ll.dpid1 == l.dpid1 and ll.dpid2 == l.dpid2:
+                if ll.dpid1 == l.dpid1 and ll.dpid2 == l.dpid2 and ll.port1 != l.port1:
                     if flip(ll) in core.openflow_discovery.adjacency:
                         link_changes = []
                         
                         # Yup, link goes both ways
-                        log.info('Found parallel adjacency');
+                        log.info('Found parallel adjacency: ' + dpid_to_str(ll.dpid1) + '.'
+                                + str(ll.port1) + ' <-> ' + dpid_to_str(ll.dpid2) + '.'
+                                + str(ll.port2));
                         self.adjacency[l.dpid1][l.dpid2] = ll.port1
                         link_changes.append((l.dpid1, l.dpid2, ll.port1))
                         if ll.port1 in router1.igmp_ports:
