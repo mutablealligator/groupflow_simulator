@@ -31,24 +31,23 @@ def iperf_mcast(net, hosts=None, udpBw='10M'):
         
     # Configure iperf parameters
     client, server = hosts
-    output( '*** Iperf: testing UDP bandwidth between ' )
+    output( '*** Iperf: Testing UDP bandwidth between ' )
     output( "%s and %s\n" % ( client.name, server.name ) )
     server.cmd( 'killall -9 iperf' )
     iperfArgs = 'iperf -u '
     bwArgs = '-b ' + udpBw + ' '
 
     # Launch the server
-    server.sendCmd( iperfArgs + '-s -B 224.1.1.1 -i 5 ', printPid=True )
+    server.sendCmd( iperfArgs + '-s -B 224.1.1.1 -i 1 ', printPid=True )
     while server.lastPid is None:
         server.monitor()
     
     # Launch the client
+    output( '*** Iperf: Running test client\n' )
     cliout = client.cmd( iperfArgs + '-t 30 -c 224.1.1.1 ' +
                          bwArgs )
+    output( '*** Iperf: Test client complete\n' )
 
-    # Wait for the test to complete, and terminate the server
-    sleep(30)
-    output( '*** Iperf: Ending test' )
     # Send two interrupts to terminate iperf 
     # First interrupt causes "Waiting for server threads to complete. Interrupt again to force quit."
     server.sendInt()
@@ -126,9 +125,9 @@ def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10
     if interactive:
         CLI(net)
     else:
-        iperf_mcast(net, [net.get('h0'), net.get('h1')], udpBw='10M')
-        sleep(2)
-        iperf_mcast(net, [net.get('h1'), net.get('h0')], udpBw='10M')
+        iperf_mcast(net, [net.get('h0'), net.get('h1')], udpBw='15M')
+        sleep(10)
+        iperf_mcast(net, [net.get('h1'), net.get('h0')], udpBw='15M')
         sleep(2)
     
     print 'Terminating controller'
