@@ -100,7 +100,7 @@ class FlowTrackedSwitch(EventMixin):
     
     def set_tracked_ports(self, tracked_ports):
         self.tracked_ports = tracked_ports
-        # log.debug('Switch ' + dpid_to_str(self.dpid) + ' set tracked ports: ' + str(tracked_ports))
+        log.debug('Switch ' + dpid_to_str(self.dpid) + ' set tracked ports: ' + str(tracked_ports))
         # Delete any stored state on ports which are no longer tracked
         keys_to_del = []
         for port_no in self.flow_interval_byte_count:
@@ -153,26 +153,28 @@ class FlowTrackedSwitch(EventMixin):
                     if action.port in self.tracked_ports:
                         if action.port in curr_event_byte_count:
                             curr_event_byte_count[action.port] = curr_event_byte_count[action.port] + flow_stat.byte_count
+                            #self.flow_tracker._log_file.write('Set curr event byte count on known port ' + str(action.port) + ': ' + str(flow_stat.byte_count) + '\n')
                         else:
                             curr_event_byte_count[action.port] = flow_stat.byte_count
+                            #self.flow_tracker._log_file.write('Set curr event byte count on new port ' + str(action.port) + ': ' + str(flow_stat.byte_count) + '\n')
                         
         # Determine the number of new bytes that appeared this interval, and set the flow removed flag to true if
         # any port count is lower than in the previous interval
         for port_num in curr_event_byte_count:
-            if action.port in self.tracked_ports:
+            #self.flow_tracker._log_file.write('Check if port ' + str(action.port) + ' is in ' + str(self.tracked_ports) + ': ' + str(port_num in self.tracked_ports) + '\n')
+            if port_num in self.tracked_ports:
                 if not port_num in self.flow_total_byte_count:
+                    # Port has never appeared before
                     self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
                     self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num]
-                    continue
-                    
-                if curr_event_byte_count[port_num] < self.flow_total_byte_count[port_num]:
+                elif curr_event_byte_count[port_num] < self.flow_total_byte_count[port_num]:
+                    # Byte count for this monitoring interval is less than previous interval, flow must have been removed
                     self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
                     self.flow_interval_byte_count[port_num] = 0
                     self.flow_removed_curr_interval = True
-                    continue
-            
-            self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num] - self.flow_total_byte_count[port_num]
-            self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
+                else:
+                    self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num] - self.flow_total_byte_count[port_num]
+                    self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
         
         # Update bandwidth estimates if no flows were removed
         if not self.flow_removed_curr_interval:
@@ -197,8 +199,6 @@ class FlowTrackedSwitch(EventMixin):
         self._last_query_processing_time = complete_processing_time - reception_time
         self._last_query_total_time = complete_processing_time - self._last_query_send_time
         
-        self._last_query_response_time = reception_time
-        
         # Print debug information
         # log.info('Num Flows: ' + str(self.num_flows))
         # if(self.flow_removed_curr_interval):
@@ -221,9 +221,13 @@ class FlowTrackedSwitch(EventMixin):
                 #       + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
                 if(self.flow_average_bandwidth_Mbps[port_num] >= (self.flow_tracker.link_cong_threshold)):
                     log.warn('Congested link detected! Sw:' + dpid_to_str(self.dpid) + ' Port:' + str(port_num))
-                    
+            
+            #if self.flow_removed_curr_interval:
+            #    log.warn('Flow removal detected!')
+                
             self.flow_tracker._log_file.write('\n')
         
+        self._last_query_response_time = reception_time
         self.flow_removed_curr_interval = False
 
 
@@ -282,9 +286,9 @@ class FlowTracker(EventMixin):
                 if self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no] > peak_usage:
                     peak_usage = self.switches[switch_dpid].flow_average_bandwidth_Mbps[port_no]
 
-        log.info('Network peak link throughout (MBps): ' + str(peak_usage))
+        log.info('Network peak link throughout (Mbps): ' + str(peak_usage))
         if num_links > 0:
-            log.info('Network avg link throughout (MBps): ' + str(total_usage / float(num_links)))
+            log.info('Network avg link throughout (Mbps): ' + str(total_usage / float(num_links)))
 
     def _handle_ConnectionUp(self, event):
         """Handler for ConnectionUp from the discovery module, which represent new switches joining the network.
