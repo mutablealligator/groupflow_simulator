@@ -160,15 +160,12 @@ class FlowTrackedSwitch(EventMixin):
                     if action.port in self.tracked_ports:
                         if action.port in curr_event_byte_count:
                             curr_event_byte_count[action.port] = curr_event_byte_count[action.port] + flow_stat.byte_count
-                            #self.flow_tracker._log_file.write('Set curr event byte count on known port ' + str(action.port) + ': ' + str(flow_stat.byte_count) + '\n')
                         else:
                             curr_event_byte_count[action.port] = flow_stat.byte_count
-                            #self.flow_tracker._log_file.write('Set curr event byte count on new port ' + str(action.port) + ': ' + str(flow_stat.byte_count) + '\n')
                         
         # Determine the number of new bytes that appeared this interval, and set the flow removed flag to true if
         # any port count is lower than in the previous interval
         for port_num in curr_event_byte_count:
-            #self.flow_tracker._log_file.write('Check if port ' + str(action.port) + ' is in ' + str(self.tracked_ports) + ': ' + str(port_num in self.tracked_ports) + '\n')
             if port_num in self.tracked_ports:
                 if not port_num in self.flow_total_byte_count:
                     # Port has never appeared before
@@ -188,7 +185,6 @@ class FlowTrackedSwitch(EventMixin):
             for port_num in self.flow_interval_byte_count:
                 # Update instant bandwidth
                 self.flow_interval_bandwidth_Mbps[port_num] = ((self.flow_interval_byte_count[port_num] * 8.0) / 1048576.0) / (reception_time - self._last_flow_stats_query_response_time)
-                # log.debug('Port: ' + str(port_num) + ' ' + str(self.flow_interval_bandwidth_Mbps[port_num]))
                 # Update running average bandwidth
                 if port_num in self.flow_average_bandwidth_Mbps:
                     self.flow_average_bandwidth_Mbps[port_num] = min((self.flow_tracker.avg_smooth_factor * self.flow_interval_bandwidth_Mbps[port_num]) + \
@@ -206,26 +202,13 @@ class FlowTrackedSwitch(EventMixin):
         self._last_flow_stats_query_processing_time = complete_processing_time - reception_time
         self._last_flow_stats_query_total_time = complete_processing_time - self._last_flow_stats_query_send_time
         
-        # Print debug information
-        # log.info('Num Flows: ' + str(self.num_flows))
-        # if(self.flow_removed_curr_interval):
-        #     log.info('Removed flows detected')
-        # for port_num in self.flow_interval_bandwidth_Mbps:
-        #    if self.flow_interval_bandwidth_Mbps[port_num] > 0 or self.flow_average_bandwidth_Mbps[port_num] > 0:
-        #        log.info('Port ' + str(port_num) + ' - ' + str(self.flow_average_bandwidth_Mbps[port_num]) + ' Mbps - Bytes This Interval: ' + str(self.flow_interval_byte_count[port_num]))
-        
         # Print log information to file
         if not self.flow_tracker._log_file is None:
             self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_flow_stats_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(self._last_flow_stats_query_total_time) + ' NetworkTime:' + str(self._last_flow_stats_query_network_time) + ' ProcessingTime:' + str(self._last_flow_stats_query_processing_time) + ' AvgSwitchLoad:' + str(self.average_switch_load) + '\n')
-            #for port_num in curr_event_byte_count:
-            #    self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]) + '\n')
-            #    log.info('Switch:' + dpid_to_str(self.dpid) + 'Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]))
-            
+
             for port_num in self.flow_interval_bandwidth_Mbps:
                 self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisInterval:' + str(self.flow_interval_byte_count[port_num])
                        + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
-                #log.warn('Port:' + str(port_num) + ' BytesThisInterval:' + str(self.flow_interval_byte_count[port_num])
-                #       + ' InstBandwidth:' + str(self.flow_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(self.flow_average_bandwidth_Mbps[port_num])  + '\n')
                 if(self.flow_average_bandwidth_Mbps[port_num] >= (self.flow_tracker.link_cong_threshold)):
                     log.warn('Congested link detected! Sw:' + dpid_to_str(self.dpid) + ' Port:' + str(port_num))
             
