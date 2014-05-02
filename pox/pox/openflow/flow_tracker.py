@@ -50,12 +50,14 @@ class FlowTrackedSwitch(EventMixin):
         self.flow_removed_curr_interval = False
         self._listeners = None
         self._connection_time = None
-        self._last_query_send_time = None
-        self._last_query_response_time = None
         
-        self._last_query_network_time = None
-        self._last_query_processing_time = None
-        self._last_query_total_time = None
+        self._last_flow_stats_query_send_time = None 
+        self._last_flow_stats_query_response_time = None
+        self._last_flow_stats_query_network_time = None
+        self._last_flow_stats_query_processing_time = None
+        self._last_flow_stats_query_total_time = None
+        
+        self._last_port_stats_query_send_time = None
         
         self.num_flows = 0
         # Maps are keyed by port number
@@ -92,7 +94,7 @@ class FlowTrackedSwitch(EventMixin):
         self.is_connected = True
         self._listeners = self.listenTo(connection)
         self._connection_time = time.time()
-        self._last_query_response_time = self._connection_time
+        self._last_flow_stats_query_response_time = self._connection_time
         self._periodic_query_timer = Timer(self.flow_tracker.periodic_query_interval_seconds, self.launch_stats_query, recurring = True)
 
     def _handle_ConnectionDown(self, event):
@@ -115,12 +117,17 @@ class FlowTrackedSwitch(EventMixin):
     def launch_stats_query(self):
         if self.is_connected:
             self.connection.send(of.ofp_stats_request(body=of.ofp_flow_stats_request()))
-            self._last_query_send_time = time.time()
-            log.debug('Sent flow stats requests to switch: ' + dpid_to_str(self.dpid))
+            self._last_flow_stats_query_send_time = time.time()
+            self.connection.send(of.ofp_stats_request(body=of.ofp_port_stats_request()))
+            self._last_port_stats_query_send_time = time.time()
+            log.debug('Sent flow and port stats requests to switch: ' + dpid_to_str(self.dpid))
+    
+    def process_port_stats(self, stats, reception_time):
+        log.info('== PortStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
     
     def process_flow_stats(self, stats, reception_time):
         log.debug('== FlowStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
-        self._last_query_network_time = reception_time - self._last_query_send_time
+        self._last_flow_stats_query_network_time = reception_time - self._last_flow_stats_query_send_time
         
         # Clear byte counts for this interval
         for port in self.flow_interval_byte_count:
@@ -180,7 +187,7 @@ class FlowTrackedSwitch(EventMixin):
         if not self.flow_removed_curr_interval:
             for port_num in self.flow_interval_byte_count:
                 # Update instant bandwidth
-                self.flow_interval_bandwidth_Mbps[port_num] = ((self.flow_interval_byte_count[port_num] * 8.0) / 1048576.0) / (reception_time - self._last_query_response_time)
+                self.flow_interval_bandwidth_Mbps[port_num] = ((self.flow_interval_byte_count[port_num] * 8.0) / 1048576.0) / (reception_time - self._last_flow_stats_query_response_time)
                 # log.debug('Port: ' + str(port_num) + ' ' + str(self.flow_interval_bandwidth_Mbps[port_num]))
                 # Update running average bandwidth
                 if port_num in self.flow_average_bandwidth_Mbps:
@@ -196,8 +203,8 @@ class FlowTrackedSwitch(EventMixin):
         
         # Update last response time
         complete_processing_time = time.time()
-        self._last_query_processing_time = complete_processing_time - reception_time
-        self._last_query_total_time = complete_processing_time - self._last_query_send_time
+        self._last_flow_stats_query_processing_time = complete_processing_time - reception_time
+        self._last_flow_stats_query_total_time = complete_processing_time - self._last_flow_stats_query_send_time
         
         # Print debug information
         # log.info('Num Flows: ' + str(self.num_flows))
@@ -209,7 +216,7 @@ class FlowTrackedSwitch(EventMixin):
         
         # Print log information to file
         if not self.flow_tracker._log_file is None:
-            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(self._last_query_total_time) + ' NetworkTime:' + str(self._last_query_network_time) + ' ProcessingTime:' + str(self._last_query_processing_time) + ' AvgSwitchLoad:' + str(self.average_switch_load) + '\n')
+            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_flow_stats_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(self._last_flow_stats_query_total_time) + ' NetworkTime:' + str(self._last_flow_stats_query_network_time) + ' ProcessingTime:' + str(self._last_flow_stats_query_processing_time) + ' AvgSwitchLoad:' + str(self.average_switch_load) + '\n')
             #for port_num in curr_event_byte_count:
             #    self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]) + '\n')
             #    log.info('Switch:' + dpid_to_str(self.dpid) + 'Port:' + str(port_num) + ' BytesThisEvent: ' + str(curr_event_byte_count[port_num]))
@@ -227,7 +234,7 @@ class FlowTrackedSwitch(EventMixin):
                 
             self.flow_tracker._log_file.write('\n')
         
-        self._last_query_response_time = reception_time
+        self._last_flow_stats_query_response_time = reception_time
         self.flow_removed_curr_interval = False
 
 
@@ -322,6 +329,10 @@ class FlowTracker(EventMixin):
     def _handle_FlowStatsReceived(self, event):
         if event.connection.dpid in self.switches:
             self.switches[event.connection.dpid].process_flow_stats(event.stats, time.time())
+            
+    def _handle_PortStatsReceived(self, event):
+        if event.connection.dpid in self.switches:
+            self.switches[event.connection.dpid].process_port_stats(event.stats, time.time())
     
     def _handle_MulticastTopoEvent(self, event):
         for switch1 in event.adjacency_map:
