@@ -4,8 +4,7 @@
 '''
 A POX module which periodically queries the network to learn the following information:
 - Bandwidth usage on all links in the network
-- Number of flow table installations on all switchs in the network
-- Queue state of all links in the network
+- Number of flow table installations on all switches in the network
 
 Depends on openflow.discovery
 
@@ -60,12 +59,21 @@ class FlowTrackedSwitch(EventMixin):
         self._last_port_stats_query_send_time = None
         
         self.num_flows = 0
+        
         # Maps are keyed by port number
+        # Flow maps record transmission statistics based on FlowStats queries
         self.flow_total_byte_count = {}
         self.flow_interval_byte_count = {}
         self.flow_interval_bandwidth_Mbps = {}
         self.flow_average_bandwidth_Mbps = {}
-        self.average_switch_load = 0
+        self.flow_average_switch_load = 0
+        
+        # Port maps record reception statistics based on PortStats queries
+        self.port_total_byte_count = {}
+        self.port_interval_byte_count = {}
+        self.port_interval_bandwidth_Mbps = {}
+        self.port_average_bandwidth_Mbps = {}
+        self.port_average_switch_load = 0
         
         self._periodic_query_timer = None
 
@@ -95,6 +103,7 @@ class FlowTrackedSwitch(EventMixin):
         self._listeners = self.listenTo(connection)
         self._connection_time = time.time()
         self._last_flow_stats_query_response_time = self._connection_time
+        self._last_port_stats_query_response_time = self._connection_time
         self._periodic_query_timer = Timer(self.flow_tracker.periodic_query_interval_seconds, self.launch_stats_query, recurring = True)
 
     def _handle_ConnectionDown(self, event):
@@ -113,6 +122,11 @@ class FlowTrackedSwitch(EventMixin):
             del self.flow_interval_byte_count[key]
             del self.flow_interval_bandwidth_Mbps[key]
             del self.flow_average_bandwidth_Mbps[key]
+            
+            del self.port_total_byte_count[key]
+            del self.port_interval_byte_count[key]
+            del self.port_interval_bandwidth_Mbps[key]
+            del self.port_average_bandwidth_Mbps[key]
     
     def launch_stats_query(self):
         if self.is_connected:
@@ -192,10 +206,10 @@ class FlowTrackedSwitch(EventMixin):
                 else:
                     self.flow_average_bandwidth_Mbps[port_num] = min(self.flow_interval_bandwidth_Mbps[port_num], self.flow_tracker.link_max_bw)
         
-        average_switch_load = 0
+        flow_average_switch_load = 0
         for port_num in self.flow_average_bandwidth_Mbps:
-            average_switch_load += self.flow_average_bandwidth_Mbps[port_num]
-        self.average_switch_load = average_switch_load
+            flow_average_switch_load += self.flow_average_bandwidth_Mbps[port_num]
+        self.flow_average_switch_load = flow_average_switch_load
         
         # Update last response time
         complete_processing_time = time.time()
@@ -204,7 +218,7 @@ class FlowTrackedSwitch(EventMixin):
         
         # Print log information to file
         if not self.flow_tracker._log_file is None:
-            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_flow_stats_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(self._last_flow_stats_query_total_time) + ' NetworkTime:' + str(self._last_flow_stats_query_network_time) + ' ProcessingTime:' + str(self._last_flow_stats_query_processing_time) + ' AvgSwitchLoad:' + str(self.average_switch_load) + '\n')
+            self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(self.num_flows) + ' IntervalLen:' + str(reception_time - self._last_flow_stats_query_response_time) + ' IntervalEndTime:' + str(reception_time) + ' ResponseTime:' + str(self._last_flow_stats_query_total_time) + ' NetworkTime:' + str(self._last_flow_stats_query_network_time) + ' ProcessingTime:' + str(self._last_flow_stats_query_processing_time) + ' AvgSwitchLoad:' + str(self.flow_average_switch_load) + '\n')
 
             for port_num in self.flow_interval_bandwidth_Mbps:
                 self.flow_tracker._log_file.write('Port:' + str(port_num) + ' BytesThisInterval:' + str(self.flow_interval_byte_count[port_num])
