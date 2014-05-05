@@ -55,6 +55,7 @@ class MulticastPath(object):
         self.installed_node_list = []       # List of all router dpids with rules currently installed
         self.receivers = []                 # Tuples of (router_dpid, port)
         self.groupflow_manager = groupflow_manager
+        self.flow_cookie = self.groupflow_manager.get_new_mcast_group_cookie()
         self.calc_path_tree_dijkstras(groupflow_trace_event)
 
     def calc_path_tree_dijkstras(self, groupflow_trace_event = None):
@@ -188,6 +189,7 @@ class MulticastPath(object):
             else:
                 # Otherwise, generate a new flow mod
                 msg = of.ofp_flow_mod()
+                msg.cookie = self.flow_cookie
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
@@ -201,6 +203,7 @@ class MulticastPath(object):
         for router_dpid in self.node_list:
             if not router_dpid in outgoing_rules and router_dpid in self.installed_node_list:
                 msg = of.ofp_flow_mod()
+                msg.cookie = self.flow_cookie
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
@@ -228,6 +231,7 @@ class MulticastPath(object):
         log.info('Removing rules on all routers for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip))
         for router_dpid in self.node_list:
             msg = of.ofp_flow_mod()
+            msg.cookie = self.flow_cookie
             msg.match.dl_type = 0x800   # IPV4
             msg.match.nw_dst = self.dst_mcast_address
             msg.match.nw_src = self.src_ip
@@ -264,6 +268,7 @@ class GroupFlowManager(EventMixin):
         self.topology_graph = []
         self.node_set = Set()
         self.multicast_paths = defaultdict(lambda : defaultdict(lambda : None))
+        self._next_mcast_group_cookie = 1;
         
         # Desired reception state as delivered by the IGMP manager, keyed by the dpid of the router for which
         # the reception state applies
@@ -271,6 +276,10 @@ class GroupFlowManager(EventMixin):
         
         # Setup listeners
         core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager', 'openflow_flow_tracker'))
+    
+    def get_new_mcast_group_cookie(self):
+        self._next_mcast_group_cookie += 1
+        return self._next_mcast_group_cookie - 1
     
     def get_reception_state(self, mcast_group, src_ip):
         # log.debug('Calculating reception state for mcast group: ' + str(mcast_group) + ' Source: ' + str(src_ip))
@@ -356,7 +365,7 @@ class GroupFlowManager(EventMixin):
                     path_setup.install_openflow_rules(groupflow_trace_event)
     
     def _handle_MulticastGroupEvent(self, event):
-        # log.info(event.debug_str())
+        log.debug(event.debug_str())
         # Save a copy of the old reception state to account for members which left a group
         old_reception_state = None
         if event.router_dpid in self.desired_reception_state:
@@ -368,6 +377,7 @@ class GroupFlowManager(EventMixin):
         
         # Build a list of all multicast groups that may be impacted by this change
         mcast_addr_list = []
+        removed_mcast_addr_list = []
         for multicast_addr in self.desired_reception_state[event.router_dpid]:
             mcast_addr_list.append(multicast_addr)
             
@@ -375,7 +385,8 @@ class GroupFlowManager(EventMixin):
             for multicast_addr in old_reception_state:
                 # Capture groups which were removed in this event
                 if not multicast_addr in mcast_addr_list:
-                    mcast_addr_list.append(multicast_addr)
+                    log.debug('Multicast group ' + str(multicast_addr) + ' no longer requires reception')
+                    removed_mcast_addr_list.append(multicast_addr)
                 elif multicast_addr in self.desired_reception_state[event.router_dpid] \
                         and set(old_reception_state[multicast_addr]) == set(self.desired_reception_state[event.router_dpid][multicast_addr]):
                     # Prevent processing of groups that did not change
@@ -383,7 +394,7 @@ class GroupFlowManager(EventMixin):
                     log.debug('Prevented redundant processing of group: ' + str(multicast_addr))
         
         # Rebuild multicast trees for relevant multicast groups
-        log.info('Recalculating paths due to new receiver')
+        log.debug('Recalculating paths due to new reception state change')
         for multicast_addr in mcast_addr_list:
             if multicast_addr in self.multicast_paths:
                 log.debug('Recalculating paths for group ' + str(multicast_addr))
@@ -396,7 +407,16 @@ class GroupFlowManager(EventMixin):
                     log.info('Recalculating paths for group ' + str(multicast_addr) + ' Source: ' + str(source))
                     self.multicast_paths[multicast_addr][source].install_openflow_rules(groupflow_trace_event)
             else:
-                log.info('No existing sources for group ' + str(multicast_addr)) 
+                log.debug('No existing sources for group ' + str(multicast_addr))
+                
+        for multicast_addr in removed_mcast_addr_list:
+            if multicast_addr in self.multicast_paths:
+                for source in self.multicast_paths[multicast_addr]:
+                    log.debug('Removing flows for group ' + str(multicast_addr) + ' Source: ' + str(source))
+                    self.multicast_paths[multicast_addr][source].remove_openflow_rules()
+                    del self.multicast_paths[multicast_addr][source]
+            else:
+                log.debug('Removed multicast group ' + str(multicast_addr) + ' has no known paths')
     
     def _handle_MulticastTopoEvent(self, event):
         # log.info(event.debug_str())
