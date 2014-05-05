@@ -82,12 +82,15 @@ class FlowTrackedSwitch(EventMixin):
 
     def ignore_connection(self):
         if self.connection is not None:
-            # log.debug('Disconnect %s' % (self.connection, ))
+            log.debug('Disconnect %s' % (self.connection, ))
             self.connection.removeListeners(self._listeners)
             self.connection = None
             self.is_connected = False
             self._connection_time = None
             self._listeners = None
+            self._last_port_stats_query_response_time = None
+            self._last_flow_stats_query_response_time = None
+            
             if self._periodic_query_timer is not None:
                 self._periodic_query_timer.cancel()
                 self._periodic_query_timer = None
@@ -97,13 +100,13 @@ class FlowTrackedSwitch(EventMixin):
             self.dpid = connection.dpid
         assert self.dpid == connection.dpid
 
-        # log.debug('Connect %s' % (connection, ))
+        log.debug('Connect %s' % (connection, ))
         self.connection = connection
         self.is_connected = True
         self._listeners = self.listenTo(connection)
         self._connection_time = time.time()
-        self._last_flow_stats_query_response_time = self._connection_time
-        self._last_port_stats_query_response_time = self._connection_time
+        self._last_flow_stats_query_response_time = None
+        self._last_port_stats_query_response_time = None
         self._periodic_query_timer = Timer(self.flow_tracker.periodic_query_interval_seconds, self.launch_stats_query, recurring = True)
 
     def _handle_ConnectionDown(self, event):
@@ -137,6 +140,9 @@ class FlowTrackedSwitch(EventMixin):
             log.debug('Sent flow and port stats requests to switch: ' + dpid_to_str(self.dpid))
     
     def process_port_stats(self, stats, reception_time):
+        if not self.is_connected:
+            return
+            
         log.debug('== PortStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
         
         # Clear byte counts for this interval
@@ -146,6 +152,7 @@ class FlowTrackedSwitch(EventMixin):
         
         # Check for new ports on the switch
         ports = self.connection.features.ports
+        invalid_stat_ports = []     # Ports added to this list will not have their bandwidth averages updated for this interval
         for port in ports:
             if port.port_no == of.OFPP_LOCAL or port.port_no == of.OFPP_CONTROLLER:
                 continue
@@ -154,6 +161,7 @@ class FlowTrackedSwitch(EventMixin):
                 continue
             
             if not port.port_no in self.port_total_byte_count:
+                invalid_stat_ports.append(port.port_no)
                 self.port_total_byte_count[port.port_no] = 0
                 self.port_interval_byte_count[port.port_no] = 0
                 self.port_interval_bandwidth_Mbps[port.port_no] = 0
@@ -169,7 +177,6 @@ class FlowTrackedSwitch(EventMixin):
                         
         # Determine the number of new bytes that appeared this interval, and set the flow removed flag to true if
         # any port count is lower than in the previous interval
-        port_negative_reception = False
         for port_num in curr_event_byte_count:
             if port_num in self.tracked_ports:
                 if not port_num in self.port_total_byte_count:
@@ -180,23 +187,35 @@ class FlowTrackedSwitch(EventMixin):
                     # Byte count for this monitoring interval is less than previous interval, flow must have been removed
                     self.port_total_byte_count[port_num] = curr_event_byte_count[port_num]
                     self.port_interval_byte_count[port_num] = 0
-                    # TODO: Figure out how to better handle a port that reports a negative change in ports received
-                    port_negative_reception = True
+                    invalid_stat_ports.append(port_num)
                 else:
                     self.port_interval_byte_count[port_num] = curr_event_byte_count[port_num] - self.port_total_byte_count[port_num]
                     self.port_total_byte_count[port_num] = curr_event_byte_count[port_num]
         
+        # Ensure the query response time was within reasonable bounds, and skip further processing if it was not
+        if self._last_port_stats_query_response_time is None:
+            self._last_port_stats_query_response_time = reception_time
+            return
+            
+        interval_len = reception_time - self._last_port_stats_query_response_time
+        log.info('=== Interval Len: ' + str(interval_len));
+        if interval_len < (0.5 * self.flow_tracker.periodic_query_interval_seconds) or interval_len > (2 * self.flow_tracker.periodic_query_interval_seconds):
+            self._last_port_stats_query_response_time = reception_time
+            return
+        
         # Update bandwidth estimates if no flows were removed
-        if not port_negative_reception:
-            for port_num in self.port_interval_byte_count:
-                # Update instant bandwidth
-                self.port_interval_bandwidth_Mbps[port_num] = ((self.port_interval_byte_count[port_num] * 8.0) / 1048576.0) / (reception_time - self._last_port_stats_query_response_time)
-                # Update running average bandwidth
-                if port_num in self.port_average_bandwidth_Mbps:
-                    self.port_average_bandwidth_Mbps[port_num] = (self.flow_tracker.avg_smooth_factor * self.port_interval_bandwidth_Mbps[port_num]) + \
-                        ((1 - self.flow_tracker.avg_smooth_factor) * self.port_average_bandwidth_Mbps[port_num])
-                else:
-                    self.port_average_bandwidth_Mbps[port_num] = self.port_interval_bandwidth_Mbps[port_num]
+        for port_num in self.port_interval_byte_count:
+            if port_num in invalid_stat_ports:
+                continue
+                
+            # Update instant bandwidth
+            self.port_interval_bandwidth_Mbps[port_num] = ((self.port_interval_byte_count[port_num] * 8.0) / 1048576.0) / (reception_time - self._last_port_stats_query_response_time)
+            # Update running average bandwidth
+            if port_num in self.port_average_bandwidth_Mbps:
+                self.port_average_bandwidth_Mbps[port_num] = (self.flow_tracker.avg_smooth_factor * self.port_interval_bandwidth_Mbps[port_num]) + \
+                    ((1 - self.flow_tracker.avg_smooth_factor) * self.port_average_bandwidth_Mbps[port_num])
+            else:
+                self.port_average_bandwidth_Mbps[port_num] = self.port_interval_bandwidth_Mbps[port_num]
         
         port_average_switch_load = 0
         for port_num in self.port_average_bandwidth_Mbps:
@@ -226,6 +245,9 @@ class FlowTrackedSwitch(EventMixin):
         self._last_port_stats_query_response_time = reception_time
     
     def process_flow_stats(self, stats, reception_time):
+        if not self.is_connected:
+            return
+            
         log.debug('== FlowStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
         self._last_flow_stats_query_network_time = reception_time - self._last_flow_stats_query_send_time
         
@@ -279,6 +301,16 @@ class FlowTrackedSwitch(EventMixin):
                 else:
                     self.flow_interval_byte_count[port_num] = curr_event_byte_count[port_num] - self.flow_total_byte_count[port_num]
                     self.flow_total_byte_count[port_num] = curr_event_byte_count[port_num]
+        
+        # Ensure the query response time was within reasonable bounds, and skip further processing if it was not
+        if self._last_flow_stats_query_response_time is None:
+            self._last_flow_stats_query_response_time = reception_time
+            return
+            
+        interval_len = reception_time - self._last_flow_stats_query_response_time
+        if interval_len < (0.5 * self.flow_tracker.periodic_query_interval_seconds) or interval_len > (2 * self.flow_tracker.periodic_query_interval_seconds):
+            self._last_flow_stats_query_response_time = reception_time
+            return
         
         # Update bandwidth estimates if no flows were removed
         if not self.flow_removed_curr_interval:
@@ -368,6 +400,9 @@ class FlowTracker(EventMixin):
         total_usage = 0
         num_links = 0
         for switch_dpid in self.switches:
+            if not self.switches[switch_dpid].is_connected:
+                continue
+                
             for port_no in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
                 if port_no == of.OFPP_LOCAL or port_no == of.OFPP_CONTROLLER:
                     continue
