@@ -172,6 +172,7 @@ class MulticastPath(object):
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
+                msg.cookie = self.flow_cookie
                 output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
                 msg.actions.append(of.ofp_action_output(port = output_port))
                 outgoing_rules[edge[0]] = msg
