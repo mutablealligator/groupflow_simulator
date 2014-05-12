@@ -17,7 +17,7 @@ Created on July 16, 2013
 
 from collections import defaultdict
 from sets import Set
-from heapq import heapify, heappop, heappush
+from heapq import  heappop, heappush
 
 # POX dependencies
 from pox.openflow.discovery import Discovery
@@ -31,7 +31,6 @@ from pox.lib.packet.ethernet import *
 import pox.openflow.libopenflow_01 as of
 from pox.lib.addresses import IPAddr, EthAddr
 from pox.lib.recoco import Timer
-import time
 import sys
 
 log = core.getLogger()
@@ -44,6 +43,8 @@ STATIC_LINK_WEIGHT = 1    # Scaling factor for link weight which is statically a
 UTILIZATION_LINK_WEIGHT = 10   # Scaling factor for link weight which is determined by current link utilization
 
 class MulticastPath(object):
+    """Manages multicast route calculation and installation for a single pair of multicast group and multicast sender."""
+
     def __init__(self, src_ip, src_router_dpid, ingress_port, dst_mcast_address, groupflow_manager, groupflow_trace_event = None):
         self.src_ip = src_ip
         self.ingress_port = ingress_port
@@ -59,6 +60,9 @@ class MulticastPath(object):
         self.calc_path_tree_dijkstras(groupflow_trace_event)
 
     def calc_path_tree_dijkstras(self, groupflow_trace_event = None):
+        """Calculates a shortest path tree from the group sender to all network switches, and caches the resulting tree.
+
+        Note that this function does not install any flow modifications."""
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_tree_calc_start_time(self.dst_mcast_address, self.src_ip)
     
@@ -93,6 +97,16 @@ class MulticastPath(object):
             groupflow_trace_event.set_tree_calc_end_time()
     
     def _calc_link_weights(self):
+        """Calculates link weights for all links in the network to be used by calc_path_tree_dijkstras().
+
+        The cost assigned to each link is based on the link's current utilization (as determined by the FlowTracker
+        module), and the exact manner in which utilization is converted to a link wieght is determined by
+        groupflow_manager.link_weight_type. Valid options are LINK_WEIGHT_LINEAR and LINK_WEIGHT_EXPONENTIAL. Both options
+        include a static weight which is always assigned to all links (determined by groupflow_manager.static_link_weight),
+        and a dynamic weight which is based on the current utilization (determined by
+        groupflow_manager.utilization_link_weight). Setting groupflow_manager.utilization_link_weight to 0 will always
+        results in shortest hop routing.
+        """
         curr_topo_graph = self.groupflow_manager.topology_graph
         self.node_list = list(self.groupflow_manager.node_set)
         
@@ -120,6 +134,7 @@ class MulticastPath(object):
             log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' W: ' + str(edge[2]))
     
     def install_openflow_rules(self, groupflow_trace_event = None):
+        """Selects routes for active receivers from the cached shortest path tree, and installs/removes OpenFlow rules accordingly."""
         reception_state = self.groupflow_manager.get_reception_state(self.dst_mcast_address, self.src_ip)
         outgoing_rules = defaultdict(lambda : None)
         
@@ -229,6 +244,9 @@ class MulticastPath(object):
 
                 
     def remove_openflow_rules(self):
+        """Removes all OpenFlow rules associated with this multicast group / sender pair.
+
+        This should be used when the group has on active receivers."""
         log.info('Removing rules on all routers for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip))
         for router_dpid in self.node_list:
             msg = of.ofp_flow_mod()
@@ -243,14 +261,17 @@ class MulticastPath(object):
                 connection.send(msg)
             else:
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
+        self.installed_node_list = []
         
     def handle_topology_change(self, groupflow_trace_event = None):
+        """Handles topology changes by recalculating the cached shortest path tree, and installing new OpenFlow rules."""
         self.calc_path_tree_dijkstras(groupflow_trace_event)
         self.install_openflow_rules(groupflow_trace_event)
     
 
 
 class GroupFlowManager(EventMixin):
+    """The GroupFlowManager implements multicast routing for OpenFlow networks."""
     _core_name = "openflow_groupflow"
     
     def __init__(self, link_weight_type, static_link_weight, util_link_weight):
@@ -279,10 +300,18 @@ class GroupFlowManager(EventMixin):
         core.call_when_ready(startup, ('openflow', 'openflow_igmp_manager', 'openflow_flow_tracker'))
     
     def get_new_mcast_group_cookie(self):
+        """Returns a new, unique cookie which should be assigned to a multicast_group / sender pair.
+
+        Using a unique cookie per multicast group / sender allows the FlowTracker module to accurately track
+        bandwidth utilization on a per-flow basis.
+        """
         self._next_mcast_group_cookie += 1
         return self._next_mcast_group_cookie - 1
     
     def get_reception_state(self, mcast_group, src_ip):
+        """Returns locations to which traffic must be routed for the specified multicast address and sender IP.
+
+        Returns a list of tuples of the form (router_dpid, output_port)."""
         # log.debug('Calculating reception state for mcast group: ' + str(mcast_group) + ' Source: ' + str(src_ip))
         reception_state = []
         for router_dpid in self.desired_reception_state:
@@ -315,6 +344,7 @@ class GroupFlowManager(EventMixin):
         return debug_str + '\n===== GroupFlow Learned Topology'
         
     def parse_topology_graph(self, adjacency_map):
+        """Parses an adjacency map into a node and edge graph (which is cached in self.topology_graph and self.node_set)."""
         new_topo_graph = []
         new_node_list = []
         for router1 in adjacency_map:
@@ -328,6 +358,7 @@ class GroupFlowManager(EventMixin):
         self.node_set = Set(new_node_list)
     
     def _handle_PacketIn(self, event):
+        """Processes PacketIn events to detect multicast sender IPs."""
         router_dpid = event.connection.dpid
         if not router_dpid in self.node_set:
             # log.debug('Got packet from unrecognized router.')

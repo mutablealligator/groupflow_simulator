@@ -6,14 +6,11 @@ A POX module implementation providing IGMP v3 Multicast Router functionality.
 
 Depends on openflow.discovery, misc.groupflow_event_tracer (optional)
 
-WARNING: This module is not complete, and should currently only be tested on loop free topologies
-
 Created on July 16, 2013
 @author: alexcraig
 '''
 
 from collections import defaultdict
-from heapq import heapify, heappop, heappush
 
 # POX dependencies
 from pox.openflow.discovery import Discovery
@@ -32,8 +29,7 @@ import time
 log = core.getLogger()
 
 def int_to_filter_mode_str(filter_mode):
-    """Converts an IGMP integer filter mode into the associated string constant"""
-    
+    """Converts an IGMP integer filter mode into the associated string constant."""
     if filter_mode == MODE_IS_INCLUDE:
         return 'MODE_IS_INCLUDE'
     elif filter_mode == MODE_IS_EXCLUDE:
@@ -49,9 +45,7 @@ def int_to_filter_mode_str(filter_mode):
     return 'UNKNOWN_FILTER_MODE'
 
 class MulticastGroupEvent(Event):
-    """
-    Event which represents the desired reception state for all interfaces/multicast groups on a single router
-    """
+    """Event which represents the desired reception state for all interfaces/multicast groups on a single router."""
     def __init__ (self, router_dpid, desired_reception, igmp_trace_event = None):
         Event.__init__(self)
         self.router_dpid = router_dpid
@@ -77,12 +71,10 @@ class MulticastGroupEvent(Event):
         
     
 class MulticastTopoEvent(Event):
+    """Event which signifies a change in topology that will be relevant to the multicast routing module."""
     LINK_UP     = 0
     LINK_DOWN   = 1
     
-    """
-    Event which signifies a change in topology that will be relevant to the multicast routing module
-    """
     def __init__ (self, event_type, link_changes, adjacency_map):
         Event.__init__(self)
         self.event_type = event_type
@@ -99,21 +91,15 @@ class MulticastTopoEvent(Event):
         debug_str += '\nChanged Links:'
         for link in self.link_changes:
             debug_str += '\n' + dpid_to_str(link[0]) + ' -> ' + dpid_to_str(link[1]) + ' Port: ' + str(link[2])
-        #for router1 in self.adjacency_map:
-        #    debug_str += '\nRouter ' + dpid_to_str(router1) + ':'
-        #    for router2 in self.adjacency_map[router1]:
-        #        debug_str += ' ' + dpid_to_str(router2)
         return debug_str + '\n===== MulticastTopoEvent'
     
     
 class MulticastMembershipRecord:
     """Class representing the group record state maintained by an IGMPv3 multicast router
 
-    Multicast routers implementing IGMPv3 keep state per group per
-    attached network.  This group state consists of a filter-mode, a list
-    of sources, and various timers.  For each attached network running
-    IGMP, a multicast router records the desired reception state for that
-    network.  That state conceptually consists of a set of records of the
+    Multicast routers implementing IGMPv3 keep state per group per attached network.  This group state consists of a 
+    filter-mode, a list of sources, and various timers.  For each attached network running IGMP, a multicast router 
+    records the desired reception state for that network.  That state conceptually consists of a set of records of the
     form:
 
         (multicast address, group timer, filter-mode, (source records))
@@ -142,6 +128,7 @@ class MulticastMembershipRecord:
         
     def get_x_addr_set(self):
         """Returns the set of addresses in the X set of source records (see IGMPv3 RFC)
+        
         Note: When in INCLUDE mode, all sources are stored in the X set.
         """
         
@@ -152,6 +139,7 @@ class MulticastMembershipRecord:
     
     def get_y_addr_set(self):
         """Returns the set of addresses in the Y set of source records (see IGMPv3 RFC)
+        
         Note: When in INCLUDE mode, his set should always be empty.
         """
         return_set = set()
@@ -174,9 +162,7 @@ class MulticastMembershipRecord:
 
 
 class IGMPv3Router(EventMixin):
-    """
-    Class representing an IGMP v3 router, with IGMP functionality implemented through OpenFlow interaction
-    """
+    """Class representing an IGMP v3 router, with IGMP functionality implemented through OpenFlow interaction."""
 
     def __init__(self, manager):
         self.connection = None
@@ -245,7 +231,8 @@ class IGMPv3Router(EventMixin):
         log.debug('=====================================================')
         log.debug(' ')
     
-    def get_desired_reception_state(self, igmp_trace_event = None):
+    def update_desired_reception_state(self, igmp_trace_event = None):
+        """Updates the object's cached map of desired reception state, and generates a MulticastGroupEvent if state changed."""
         desired_reception = defaultdict(lambda : defaultdict(lambda : None))
         
         for port_index in self.multicast_records:
@@ -406,8 +393,9 @@ class IGMPv3Router(EventMixin):
         
     
     def remove_group_record(self, port, multicast_address):
-        """Removes the group record identified by the provided port and multicast_address from the router's set
-        of records. Does nothing if the record did not exist.
+        """Removes the group record identified by the provided port and multicast_address from the router's set of records.
+
+        Does nothing if the record did not exist.
         """
         
         if not self.multicast_records[port]:
@@ -724,7 +712,7 @@ class IGMPv3Router(EventMixin):
             # Debug - Print a listing of the current group membership state after
             # all group records are processed
             self.debug_print_group_records()
-            self.get_desired_reception_state(igmp_trace_event)
+            self.update_desired_reception_state(igmp_trace_event)
                 
         elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
                 and igmp_pkt.address != IPAddr("0.0.0.0"):
@@ -855,12 +843,11 @@ class IGMPManager(EventMixin):
                 del router.multicast_records[port]
             
             if records_modified:
-                router.get_desired_reception_state()
+                router.update_desired_reception_state()
 
         
     def encapsulate_igmp_packet(self, igmp_pkt):
-        """Encapsulates the provided IGMP packet into IP and Ethernet packets, and returns the
-        encapsulating ethernet packet"""
+        """Encapsulates the provided IGMP packet into IP and Ethernet packets, and returns the encapsulating ethernet packet"""
         
         # Build the encapsulating IP packet
         ip_pkt = pkt.ipv4()
@@ -879,8 +866,7 @@ class IGMPManager(EventMixin):
         return eth_pkt
      
     def send_igmp_query_to_all_networks(self, igmp_pkt):
-        """Encapsulates the provided IGMP packet into IP and Ethernet packets, and sends the packet
-        to all attached network on all routers."""
+        """Encapsulates the provided IGMP packet into IP and Ethernet packets, and sends the packet to all attached network on all routers."""
         # Build the encapsulating IP/ethernet packet
         eth_pkt = self.encapsulate_igmp_packet(igmp_pkt)
         
@@ -899,7 +885,7 @@ class IGMPManager(EventMixin):
                 # log.debug('Router ' + str(sending_router) + ' sending IGMP query on port: ' + str(port_num))
         
     def launch_igmp_general_query(self):
-        """Generates an IGMP general query, broadcasts it from all ports on all routers"""
+        """Generates an IGMP general query, broadcasts it from all ports on all routers."""
         log.debug('Launching IGMP general query from all routers')
         
         # Build the IGMP payload for the message
@@ -915,7 +901,7 @@ class IGMPManager(EventMixin):
         
         
     def drop_packet(self, packet_in_event):
-        """Drops the packet represented by the PacketInEvent without any flow table modification"""
+        """Drops the packet represented by the PacketInEvent without any flow table modification."""
         msg = of.ofp_packet_out()
         msg.data = packet_in_event.ofp
         msg.buffer_id = packet_in_event.ofp.buffer_id
@@ -1119,7 +1105,6 @@ class IGMPManager(EventMixin):
             # Drop the IGMP packet to prevent it from being uneccesarily forwarded to neighbouring routers
             self.drop_packet(event)
             return
-
 
 
 def launch():
