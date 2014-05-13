@@ -1,19 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
-A POX module implementation of the CastFlow clean slate multicast proposal, with modifications to support
-management of group state using an IGMP manager module.
+"""
+A POX module implementation of multicast routing, supported by management of group state using the IGMP manager module.
 
-Implementation adapted from NOX-Classic CastFlow implementation provided by caioviel.
-
-Depends on openflow.igmp_manager, misc.groupflow_event_tracer (optional)
-
-WARNING: This module is not complete, and should currently only be tested on loop free topologies
-
-Created on July 16, 2013
-@author: alexcraig
-'''
+| Implementation adapted from NOX-Classic CastFlow implementation provided by caioviel.
+|
+| Depends on openflow.igmp_manager, misc.groupflow_event_tracer (optional)
+|
+| Created on July 16, 2013
+| @author: alexcraig
+"""
 
 from collections import defaultdict
 from sets import Set
@@ -311,7 +308,8 @@ class GroupFlowManager(EventMixin):
     def get_reception_state(self, mcast_group, src_ip):
         """Returns locations to which traffic must be routed for the specified multicast address and sender IP.
 
-        Returns a list of tuples of the form (router_dpid, output_port)."""
+        Returns a list of tuples of the form (router_dpid, output_port).
+        """
         # log.debug('Calculating reception state for mcast group: ' + str(mcast_group) + ' Source: ' + str(src_ip))
         reception_state = []
         for router_dpid in self.desired_reception_state:

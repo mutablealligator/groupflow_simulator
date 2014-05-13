@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IGMP Manager &mdash; GroupFlow be79542a5cfb1686f73adc81f82c7f5e068e5ecd documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     'be79542a5cfb1686f73adc81f82c7f5e068e5ecd',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GroupFlow be79542a5cfb1686f73adc81f82c7f5e068e5ecd documentation" href="index.html" />
+    <link rel="next" title="GroupFlow Module" href="groupflow.html" />
+    <link rel="prev" title="Welcome to GroupFlow’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="groupflow.html" title="GroupFlow Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to GroupFlow’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">GroupFlow be79542a5cfb1686f73adc81f82c7f5e068e5ecd documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pox.openflow.igmp_manager">
+<span id="igmp-manager"></span><h1>IGMP Manager<a class="headerlink" href="#module-pox.openflow.igmp_manager" title="Permalink to this headline">¶</a></h1>
+<p>A POX module implementation providing IGMP v3 Multicast Router functionality.</p>
+<div class="line-block">
+<div class="line">Depends on openflow.discovery, misc.groupflow_event_tracer (optional)</div>
+<div class="line"><br /></div>
+<div class="line">Created on July 16, 2013</div>
+<div class="line">&#64;author: alexcraig</div>
+</div>
+<dl class="class">
+<dt id="pox.openflow.igmp_manager.IGMPv3Router">
+<em class="property">class </em><tt class="descclassname">pox.openflow.igmp_manager.</tt><tt class="descname">IGMPv3Router</tt><big>(</big><em>manager</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.IGMPv3Router" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing an IGMP v3 router, with IGMP functionality implemented through OpenFlow interaction.</p>
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.IGMPv3Router.create_group_record">
+<tt class="descname">create_group_record</tt><big>(</big><em>event</em>, <em>igmp_group_record</em>, <em>group_timer</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.IGMPv3Router.create_group_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a group record from the specific PacketIn event and associated igmp_group_record read from the packet.</p>
+<p>If the record did not already exist it is initialized with the provided group timer. If it
+did exist, the existing record IS NOT modified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.IGMPv3Router.process_current_state_record">
+<tt class="descname">process_current_state_record</tt><big>(</big><em>event</em>, <em>igmp_group_record</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.IGMPv3Router.process_current_state_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes current state IGMP membership reports according to the following table (See RFC 3376):</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="29%" />
+<col width="31%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Router State</th>
+<th class="head">Report Rec&#8217;d</th>
+<th class="head">New Router State</th>
+<th class="head">Actions</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>INCLUDE (A)</td>
+<td>IS_IN (B)</td>
+<td>INCLUDE (A+B)</td>
+<td>(B)=GMI</td>
+</tr>
+<tr class="row-odd"><td>INCLUDE (A)</td>
+<td>IS_EX (B)</td>
+<td>EXCLUDE (A*B,B-A)</td>
+<td>(B-A)=0,
+Delete (A-B),
+Group Timer=GMI</td>
+</tr>
+<tr class="row-even"><td>EXCLUDE (X,Y)</td>
+<td>IS_IN (A)</td>
+<td>EXCLUDE (X+A,Y-A)</td>
+<td>(A)=GMI</td>
+</tr>
+<tr class="row-odd"><td>EXCLUDE (X,Y)</td>
+<td>IS_EX (A)</td>
+<td>EXCLUDE (A-Y,Y*A)</td>
+<td>(A-X-Y)=GMI,
+Delete (X-A),
+Delete (Y-A),
+Group Timer=GMI</td>
+</tr>
+</tbody>
+</table>
+<p>Note: When the group is in INCLUDE mode, the set of addresses is stored in
+the same list as the X set when in EXCLUDE mode</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.IGMPv3Router.process_igmp_event">
+<tt class="descname">process_igmp_event</tt><big>(</big><em>event</em>, <em>igmp_trace_event=None</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.IGMPv3Router.process_igmp_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes any IGMP event received by the router.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.IGMPv3Router.process_state_change_record">
+<tt class="descname">process_state_change_record</tt><big>(</big><em>event</em>, <em>igmp_group_record</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.IGMPv3Router.process_state_change_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes state change IGMP membership reports according to the following table (See RFC 3376):</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="27%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Router State</th>
+<th class="head">Report Rec&#8217;d</th>
+<th class="head">New Router State</th>
+<th class="head">Actions</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>INCLUDE (A)</td>
+<td>ALLOW (B)</td>
+<td>INCLUDE (A+B)</td>
+<td>(B)=GMI</td>
+</tr>
+<tr class="row-odd"><td>INCLUDE (A)</td>
+<td>BLOCK (B)</td>
+<td>INCLUDE (A)</td>
+<td>Send Q(G,A*B)</td>
+</tr>
+<tr class="row-even"><td>INCLUDE (A)</td>
+<td>TO_EX (B)</td>
+<td>EXCLUDE (A*B,B-A)</td>
+<td>(B-A)=0,
+Delete (A-B),
+Send Q(G,A*B),
+Group Timer=GMI</td>
+</tr>
+<tr class="row-odd"><td>INCLUDE (A)</td>
+<td>TO_IN (B)</td>
+<td>INCLUDE (A+B)</td>
+<td>(B)=GMI,
+Send Q(G,A-B)</td>
+</tr>
+<tr class="row-even"><td>EXCLUDE (X,Y)</td>
+<td>ALLOW (A)</td>
+<td>EXCLUDE (X+A,Y-A)</td>
+<td>(A)=GMI</td>
+</tr>
+<tr class="row-odd"><td>EXCLUDE (X,Y)</td>
+<td>BLOCK (A)</td>
+<td>EXCLUDE(X+(A-Y),Y)</td>
+<td>(A-X-Y)=Group Timer,
+Send Q(G,A-Y)</td>
+</tr>
+<tr class="row-even"><td>EXCLUDE (X,Y)</td>
+<td>TO_EX (A)</td>
+<td>EXCLUDE (A-Y,Y*A)</td>
+<td>(A-X-Y)=Group Timer,
+Delete (X-A),
+Delete (Y-A),
+Send Q(G,A-Y),
+Group Timer=GMI</td>
+</tr>
+<tr class="row-odd"><td>EXCLUDE (X,Y)</td>
+<td>TO_IN (A)</td>
+<td>EXCLUDE (X+A,Y-A)</td>
+<td>(A)=GMI,
+Send Q(G,X-A),
+Send Q(G)</td>
+</tr>
+</tbody>
+</table>
+<p>Note: When the group is in INCLUDE mode, the set of addresses is stored in the same list as the X set when
+in EXCLUDE mode</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.IGMPv3Router.remove_group_record">
+<tt class="descname">remove_group_record</tt><big>(</big><em>port</em>, <em>multicast_address</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.IGMPv3Router.remove_group_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the group record identified by the provided port and multicast_address from the router&#8217;s set of records.</p>
+<p>Does nothing if the record did not exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.IGMPv3Router.update_desired_reception_state">
+<tt class="descname">update_desired_reception_state</tt><big>(</big><em>igmp_trace_event=None</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.IGMPv3Router.update_desired_reception_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the object&#8217;s cached map of desired reception state, and generates a MulticastGroupEvent if state changed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pox.openflow.igmp_manager.MulticastGroupEvent">
+<em class="property">class </em><tt class="descclassname">pox.openflow.igmp_manager.</tt><tt class="descname">MulticastGroupEvent</tt><big>(</big><em>router_dpid</em>, <em>desired_reception</em>, <em>igmp_trace_event=None</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.MulticastGroupEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event which represents the desired reception state for all interfaces/multicast groups on a single router.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pox.openflow.igmp_manager.MulticastMembershipRecord">
+<em class="property">class </em><tt class="descclassname">pox.openflow.igmp_manager.</tt><tt class="descname">MulticastMembershipRecord</tt><big>(</big><em>mcast_address</em>, <em>timer_value</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.MulticastMembershipRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing the group record state maintained by an IGMPv3 multicast router</p>
+<div class="line-block">
+<div class="line">Multicast routers implementing IGMPv3 keep state per group per attached network.  This group state consists of a</div>
+<div class="line">filter-mode, a list of sources, and various timers.  For each attached network running IGMP, a multicast router</div>
+<div class="line">records the desired reception state for that network.  That state conceptually consists of a set of records of the</div>
+<div class="line">form:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">(multicast address, group timer, filter-mode, (source records))</div>
+<div class="line"><br /></div>
+</div>
+<div class="line">Each source record is of the form:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">(source address, source timer)</div>
+</div>
+</div>
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.MulticastMembershipRecord.get_curr_source_timer">
+<tt class="descname">get_curr_source_timer</tt><big>(</big><em>ip_addr</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.MulticastMembershipRecord.get_curr_source_timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current source timer for the specified IP address, or 0 if the specified IP is not known by this
+group record.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.MulticastMembershipRecord.get_x_addr_set">
+<tt class="descname">get_x_addr_set</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.MulticastMembershipRecord.get_x_addr_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the set of addresses in the X set of source records (see IGMPv3 RFC)</p>
+<p>Note: When in INCLUDE mode, all sources are stored in the X set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.MulticastMembershipRecord.get_y_addr_set">
+<tt class="descname">get_y_addr_set</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.MulticastMembershipRecord.get_y_addr_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the set of addresses in the Y set of source records (see IGMPv3 RFC)</p>
+<p>Note: When in INCLUDE mode, his set should always be empty.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.openflow.igmp_manager.MulticastMembershipRecord.remove_source_record">
+<tt class="descname">remove_source_record</tt><big>(</big><em>ip_addr</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.MulticastMembershipRecord.remove_source_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the source record with the specified IP address from the group record</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pox.openflow.igmp_manager.MulticastTopoEvent">
+<em class="property">class </em><tt class="descclassname">pox.openflow.igmp_manager.</tt><tt class="descname">MulticastTopoEvent</tt><big>(</big><em>event_type</em>, <em>link_changes</em>, <em>adjacency_map</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.MulticastTopoEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Event which signifies a change in topology that will be relevant to the multicast routing module.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pox.openflow.igmp_manager.int_to_filter_mode_str">
+<tt class="descclassname">pox.openflow.igmp_manager.</tt><tt class="descname">int_to_filter_mode_str</tt><big>(</big><em>filter_mode</em><big>)</big><a class="headerlink" href="#pox.openflow.igmp_manager.int_to_filter_mode_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an IGMP integer filter mode into the associated string constant.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to GroupFlow&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="groupflow.html"
+                        title="next chapter">GroupFlow Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/igmp_manager.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="groupflow.html" title="GroupFlow Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to GroupFlow’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">GroupFlow be79542a5cfb1686f73adc81f82c7f5e068e5ecd documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Alexander Craig.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

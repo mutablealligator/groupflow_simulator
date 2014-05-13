@@ -1,14 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 A POX module implementation providing IGMP v3 Multicast Router functionality.
 
-Depends on openflow.discovery, misc.groupflow_event_tracer (optional)
-
-Created on July 16, 2013
-@author: alexcraig
-'''
+| Depends on openflow.discovery, misc.groupflow_event_tracer (optional)
+|
+| Created on July 16, 2013
+| @author: alexcraig
+"""
 
 from collections import defaultdict
 
@@ -97,16 +97,17 @@ class MulticastTopoEvent(Event):
 class MulticastMembershipRecord:
     """Class representing the group record state maintained by an IGMPv3 multicast router
 
-    Multicast routers implementing IGMPv3 keep state per group per attached network.  This group state consists of a 
-    filter-mode, a list of sources, and various timers.  For each attached network running IGMP, a multicast router 
-    records the desired reception state for that network.  That state conceptually consists of a set of records of the
-    form:
+    | Multicast routers implementing IGMPv3 keep state per group per attached network.  This group state consists of a
+    | filter-mode, a list of sources, and various timers.  For each attached network running IGMP, a multicast router
+    | records the desired reception state for that network.  That state conceptually consists of a set of records of the
+    | form:
+    |
+    |    (multicast address, group timer, filter-mode, (source records))
+    |
+    | Each source record is of the form:
+    |
+    |    (source address, source timer)
 
-        (multicast address, group timer, filter-mode, (source records))
-
-    Each source record is of the form:
-
-        (source address, source timer)
     """
     
     def __init__(self, mcast_address, timer_value):
@@ -271,8 +272,9 @@ class IGMPv3Router(EventMixin):
         self.prev_desired_reception = desired_reception
     
     def create_group_record(self, event, igmp_group_record, group_timer):
-        """Creates a group record from the specific PacketIn event and associated igmp_group_record read from
-        the packet. If the record did not already exist it is initialized with the provided group timer. If it
+        """Creates a group record from the specific PacketIn event and associated igmp_group_record read from the packet.
+
+        If the record did not already exist it is initialized with the provided group timer. If it
         did exist, the existing record IS NOT modified.
         """
         
@@ -412,40 +414,42 @@ class IGMPv3Router(EventMixin):
                 del self.multicast_records[port]
     
     def process_state_change_record(self, event, igmp_group_record):
-        """Processes state change IGMP membership reports according to the following table:
-        
-        Router State   Report Rec'd New Router State        Actions
-        ------------   ------------ ----------------        -------
+        """Processes state change IGMP membership reports according to the following table (See RFC 3376):
 
-        INCLUDE (A)    ALLOW (B)    INCLUDE (A+B)           (B)=GMI
+        +--------------+--------------+-------------------+-----------------------+
+        | Router State | Report Rec'd | New Router State  |   Actions             |
+        +==============+==============+===================+=======================+
+        | INCLUDE (A)  | ALLOW (B)    | INCLUDE (A+B)     |   (B)=GMI             |
+        +--------------+--------------+-------------------+-----------------------+
+        | INCLUDE (A)  |  BLOCK (B)   | INCLUDE (A)       |   Send Q(G,A*B)       |
+        +--------------+--------------+-------------------+-----------------------+
+        | INCLUDE (A)  | TO_EX (B)    | EXCLUDE (A*B,B-A) |   (B-A)=0,            |
+        |              |              |                   |   Delete (A-B),       |
+        |              |              |                   |   Send Q(G,A*B),      |
+        |              |              |                   |   Group Timer=GMI     |
+        +--------------+--------------+-------------------+-----------------------+
+        | INCLUDE (A)  | TO_IN (B)    | INCLUDE (A+B)     |   (B)=GMI,            |
+        |              |              |                   |   Send Q(G,A-B)       |
+        +--------------+--------------+-------------------+-----------------------+
+        | EXCLUDE (X,Y)| ALLOW (A)    | EXCLUDE (X+A,Y-A) |   (A)=GMI             |
+        +--------------+--------------+-------------------+-----------------------+
+        | EXCLUDE (X,Y)| BLOCK (A)    | EXCLUDE(X+(A-Y),Y)|   (A-X-Y)=Group Timer,|
+        |              |              |                   |   Send Q(G,A-Y)       |
+        +--------------+--------------+-------------------+-----------------------+
+        | EXCLUDE (X,Y)| TO_EX (A)    | EXCLUDE (A-Y,Y*A) |   (A-X-Y)=Group Timer,|
+        |              |              |                   |   Delete (X-A),       |
+        |              |              |                   |   Delete (Y-A),       |
+        |              |              |                   |   Send Q(G,A-Y),      |
+        |              |              |                   |   Group Timer=GMI     |
+        +--------------+--------------+-------------------+-----------------------+
+        | EXCLUDE (X,Y)| TO_IN (A)    | EXCLUDE (X+A,Y-A) |   (A)=GMI,            |
+        |              |              |                   |   Send Q(G,X-A),      |
+        |              |              |                   |   Send Q(G)           |
+        +--------------+--------------+-------------------+-----------------------+
 
-        INCLUDE (A)    BLOCK (B)    INCLUDE (A)             Send Q(G,A*B)
+        Note: When the group is in INCLUDE mode, the set of addresses is stored in the same list as the X set when
+        in EXCLUDE mode
 
-        INCLUDE (A)    TO_EX (B)    EXCLUDE (A*B,B-A)       (B-A)=0
-                                                            Delete (A-B)
-                                                            Send Q(G,A*B)
-                                                            Group Timer=GMI
-
-        INCLUDE (A)    TO_IN (B)    INCLUDE (A+B)           (B)=GMI
-                                                            Send Q(G,A-B)
-
-        EXCLUDE (X,Y)  ALLOW (A)    EXCLUDE (X+A,Y-A)       (A)=GMI
-
-        EXCLUDE (X,Y)  BLOCK (A)    EXCLUDE (X+(A-Y),Y)     (A-X-Y)=Group Timer
-                                                            Send Q(G,A-Y)
-
-        EXCLUDE (X,Y)  TO_EX (A)    EXCLUDE (A-Y,Y*A)       (A-X-Y)=Group Timer
-                                                            Delete (X-A)
-                                                            Delete (Y-A)
-                                                            Send Q(G,A-Y)
-                                                            Group Timer=GMI
-                                                            
-        EXCLUDE (X,Y)  TO_IN (A)    EXCLUDE (X+A,Y-A)       (A)=GMI
-                                                            Send Q(G,X-A)
-                                                            Send Q(G)
-        
-        Note: When the group is in INCLUDE mode, the set of addresses is stored in
-        the same list as the X set when in EXCLUDE mode
         """
         router_group_record = self.create_group_record(event, igmp_group_record,
                     self.igmp_manager.igmp_group_membership_interval)
@@ -598,26 +602,28 @@ class IGMPv3Router(EventMixin):
             self.remove_group_record(event.port, igmp_group_record.multicast_address)
     
     def process_current_state_record(self, event, igmp_group_record):
-        """Processes current state IGMP membership reports according to the following table:
-          
-        Router State   Report Rec'd  New Router State         Actions
-        ------------   ------------  ----------------         -------
-        
-        INCLUDE (A)    IS_IN (B)     INCLUDE (A+B)            (B)=GMI
-        
-        INCLUDE (A)    IS_EX (B)     EXCLUDE (A*B,B-A)        (B-A)=0
-                                                              Delete (A-B)
-                                                              Group Timer=GMI
+        """Processes current state IGMP membership reports according to the following table (See RFC 3376):
 
-        EXCLUDE (X,Y)  IS_IN (A)     EXCLUDE (X+A,Y-A)        (A)=GMI
+        +--------------+--------------+--------------------+----------------------+
+        | Router State | Report Rec'd | New Router State   |     Actions          |
+        +==============+==============+====================+======================+
+        | INCLUDE (A)  | IS_IN (B)    | INCLUDE (A+B)      |     (B)=GMI          |
+        +--------------+--------------+--------------------+----------------------+
+        | INCLUDE (A)  | IS_EX (B)    | EXCLUDE (A*B,B-A)  |    (B-A)=0,          |
+        |              |              |                    |    Delete (A-B),     |
+        |              |              |                    |    Group Timer=GMI   |
+        +--------------+--------------+--------------------+----------------------+
+        | EXCLUDE (X,Y)| IS_IN (A)    | EXCLUDE (X+A,Y-A)  |    (A)=GMI           |
+        +--------------+--------------+--------------------+----------------------+
+        | EXCLUDE (X,Y)| IS_EX (A)    | EXCLUDE (A-Y,Y*A)  |    (A-X-Y)=GMI,      |
+        |              |              |                    |    Delete (X-A),     |
+        |              |              |                    |    Delete (Y-A),     |
+        |              |              |                    |    Group Timer=GMI   |
+        +--------------+--------------+--------------------+----------------------+
 
-        EXCLUDE (X,Y)  IS_EX (A)     EXCLUDE (A-Y,Y*A)        (A-X-Y)=GMI
-                                                              Delete (X-A)
-                                                              Delete (Y-A)
-                                                              Group Timer=GMI
-                                                              
         Note: When the group is in INCLUDE mode, the set of addresses is stored in
         the same list as the X set when in EXCLUDE mode
+
         """
         
         router_group_record = self.create_group_record(event, igmp_group_record,
@@ -791,8 +797,9 @@ class IGMPManager(EventMixin):
         core.call_when_ready(startup, ('openflow', 'openflow_discovery'))
     
     def decrement_all_timers(self):
-        """Decrements the source and group timers for all group_records in the network, and transitions any state
-        as necessary. As long as this is always called from a recoco Timer, mutual exclusion should not be an issue.
+        """Decrements the source and group timers for all group_records in the network, and transitions any state as necessary.
+
+        As long as this is always called from a recoco Timer, mutual exclusion should not be an issue.
         """
         for router_dpid in self.routers:
             router = self.routers[router_dpid]
@@ -1026,8 +1033,7 @@ class IGMPManager(EventMixin):
         self.add_igmp_router(event.dpid, event.connection)
             
     def _handle_ConnectionDown (self, event):
-        """Handler for ConnectionUp from the discovery module, which represent a router leaving the network.
-        """
+        """Handler for ConnectionUp from the discovery module, which represent a router leaving the network."""
         router = self.routers.get(event.dpid)
         if router is None:
             log.warn('Got ConnectionDown for unrecognized router')
@@ -1050,10 +1056,10 @@ class IGMPManager(EventMixin):
     def _handle_PacketIn(self, event):
         """Handler for OpenFlow PacketIn events.
 
-        Two types of packets are of primary importance for this module:
-        1) IGMP packets: All IGMP packets in the network should be directed to the controller, as the controller
+        | Two types of packets are of primary importance for this module:
+        | 1) IGMP packets: All IGMP packets in the network should be directed to the controller, as the controller
         acts as a single, centralized IGMPv3 multicast router for the purposes of determining group membership.
-        2) IP packets destined to a multicast address: When a new multicast flow is received, this should trigger
+        | 2) IP packets destined to a multicast address: When a new multicast flow is received, this should trigger
         a calculation of a multicast tree, and the installation of the appropriate flows in the network.
         """
         # log.debug('Router ' + str(event.connection.dpid) + ':' + str(event.port) + ' PacketIn')

@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>GroupFlow Event Tracker &mdash; GroupFlow be79542a5cfb1686f73adc81f82c7f5e068e5ecd documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     'be79542a5cfb1686f73adc81f82c7f5e068e5ecd',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GroupFlow be79542a5cfb1686f73adc81f82c7f5e068e5ecd documentation" href="index.html" />
+    <link rel="prev" title="FlowTracker Module" href="flowtracker.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="flowtracker.html" title="FlowTracker Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">GroupFlow be79542a5cfb1686f73adc81f82c7f5e068e5ecd documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pox.misc.groupflow_event_tracer">
+<span id="groupflow-event-tracker"></span><h1>GroupFlow Event Tracker<a class="headerlink" href="#module-pox.misc.groupflow_event_tracer" title="Permalink to this headline">¶</a></h1>
+<p>This module allows event traces to be produced by the IGMP Manager and Groupflow modules, with the goal of
+tracing various event processing times for benchmarking and evaluation purposes.</p>
+<div class="line-block">
+<div class="line">Created on Oct 28th, 2013</div>
+<div class="line">&#64;author: alexcraig</div>
+</div>
+<dl class="class">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowEventTracer">
+<em class="property">class </em><tt class="descclassname">pox.misc.groupflow_event_tracer.</tt><tt class="descname">GroupFlowEventTracer</tt><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowEventTracer" title="Permalink to this definition">¶</a></dt>
+<dd><p>The GroupFlowEventTracer is responsible for managing currently active IGMPTraceEvents and GroupFlowTraceEvents</p>
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowEventTracer.archive_trace_event">
+<tt class="descname">archive_trace_event</tt><big>(</big><em>trace_event</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowEventTracer.archive_trace_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Archives the specified event by serializing it to the log file, and removes the event from the module&#8217;s memory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowEventTracer.init_groupflow_event_trace">
+<tt class="descname">init_groupflow_event_trace</tt><big>(</big><em>igmp_trace_event=None</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowEventTracer.init_groupflow_event_trace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new GroupFlowTraceEvent with a unique event_id.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowEventTracer.init_igmp_event_trace">
+<tt class="descname">init_igmp_event_trace</tt><big>(</big><em>router_dpid</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowEventTracer.init_igmp_event_trace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new IGMPTraceEvent with a unique event_id.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowEventTracer.termination_handler">
+<tt class="descname">termination_handler</tt><big>(</big><em>signal</em>, <em>frame</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowEventTracer.termination_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to cleanly terminate the module when a SIGINT signal is received.</p>
+<p>All currently active trace events will be discarded, and the log file will be closed. This function is
+typically called by the BenchmarkTerminator module.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent">
+<em class="property">class </em><tt class="descclassname">pox.misc.groupflow_event_tracer.</tt><tt class="descname">GroupFlowTraceEvent</tt><big>(</big><em>event_id</em>, <em>igmp_trace_event=None</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trace event which records processing times associated with a routing event performed by the GroupFlow module.</p>
+<div class="line-block">
+<div class="line">The following data is recorded:</div>
+<div class="line">igmp_trace_event: The IGMPTraceEvent associated with the IGMP packet which triggered this routing event. Note that
+not all routing events are triggered by IGMP events, and this value will be set to None in cases
+where there is no associated IGMP event. An example of this is when routing is triggered by a new
+multicast sender being detected.</div>
+<div class="line">tree_calc_start_time: Time at which tree calculation was started for this routing event.</div>
+<div class="line">tree_calc_end_time: Time at which tree calculation was completed for this routing event.</div>
+<div class="line-block">
+<div class="line">Note: Due to the tree caching behaviour of the GroupFlow module, not all routing events will require a full
+tree calculation, and in these cases tree_calc_start_time and tree_calc_end_time will be set to None</div>
+</div>
+<div class="line">route_processing_start_time: Time at which route processing was started for this routing event. Route processing is
+defined as the operation of selecting branches from the cached route tree to install for
+this particular routing event.</div>
+<div class="line">route_processing_end_time: Time at which route processing was completed for this routing event.</div>
+<div class="line">flow_installation_start_time: Time at which OpenFlow rule installation was started for this routing event.</div>
+<div class="line">flow_installation_end_time: Time at which OpenFlow rule installation was completed for this routing event.</div>
+<div class="line">multicast_group: Multicast group address which this routing event is associated with.</div>
+<div class="line">src_ip: Multicast sender IP address which this routing event is associated with.</div>
+</div>
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.get_flow_installation_time">
+<tt class="descname">get_flow_installation_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.get_flow_installation_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the length of time (in seconds) associated with OpenFlow rule installation for this routing event.</p>
+<p>Returns None if the associated times have not been recorded.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.get_log_str">
+<tt class="descname">get_log_str</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.get_log_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a plain-text representation of the event that will be used when the event is serialized to a log file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.get_route_processing_time">
+<tt class="descname">get_route_processing_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.get_route_processing_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the length of time (in seconds) associated with route selection for this routing event.</p>
+<p>Returns None if the associated times have not been recorded.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.get_tree_calc_time">
+<tt class="descname">get_tree_calc_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.get_tree_calc_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the length of time (in seconds) associated with tree calculation for this routing event.</p>
+<p>Returns None if no tree calculation was required for this routing event (often the case when the tree is
+already cached), or if the associated times have not been recorded.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_flow_installation_end_time">
+<tt class="descname">set_flow_installation_end_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_flow_installation_end_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current time as the time at which OpenFlow rule installation was completed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_flow_installation_start_time">
+<tt class="descname">set_flow_installation_start_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_flow_installation_start_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current time as the time at which OpenFlow rule installation was initiated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_route_processing_end_time">
+<tt class="descname">set_route_processing_end_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_route_processing_end_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current time as the time at which route selection was completed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_route_processing_start_time">
+<tt class="descname">set_route_processing_start_time</tt><big>(</big><em>multicast_group</em>, <em>src_ip</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_route_processing_start_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current time as the time at which route selection was initiated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_tree_calc_end_time">
+<tt class="descname">set_tree_calc_end_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_tree_calc_end_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current time as the time at which tree calculation was completed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_tree_calc_start_time">
+<tt class="descname">set_tree_calc_start_time</tt><big>(</big><em>multicast_group</em>, <em>src_ip</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.GroupFlowTraceEvent.set_tree_calc_start_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current time as the time at which tree calculation was initiated.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pox.misc.groupflow_event_tracer.IGMPTraceEvent">
+<em class="property">class </em><tt class="descclassname">pox.misc.groupflow_event_tracer.</tt><tt class="descname">IGMPTraceEvent</tt><big>(</big><em>event_id</em>, <em>router_dpid</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.IGMPTraceEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trace event which records processing times associated with a single IGMP packet.</p>
+<div class="line-block">
+<div class="line">The following data is recorded:</div>
+<div class="line">router_dpid: Data plane identifier of the router which received the packet</div>
+<div class="line">igmp_msg_type: The type of IGMP message processed (see constants defined in pox.lib.packet.igmpv3)</div>
+<div class="line">igmp_group_records: A list of tuples specifying the group records contained in the IGMP packet</div>
+<div class="line">Tuples are of the form (group_record_type, multicast_address)</div>
+<div class="line">Valid group records types are defined in pox.lib.packet.igmpv3</div>
+<div class="line">num_igmp_group_records: Number of group records contained in the IGMP packet</div>
+<div class="line">igmp_processing_start_time: Time at which the packet was identified as an IGMP packet</div>
+<div class="line">igmp_prcessing_end_time: Time at which all IGMP processing associated with the IGMP packet was completed</div>
+</div>
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.IGMPTraceEvent.get_igmp_processing_time">
+<tt class="descname">get_igmp_processing_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.IGMPTraceEvent.get_igmp_processing_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the length of time (in seconds) associated with IGMP processing for this event.</p>
+<p>Returns None if no end time has been set for the event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.IGMPTraceEvent.get_log_str">
+<tt class="descname">get_log_str</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.IGMPTraceEvent.get_log_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a plain-text representation of the event that will be used when the event is serialized to a log file.</p>
+<p>Note that the current implementation does not serialize complete IGMP group records.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.IGMPTraceEvent.set_igmp_end_time">
+<tt class="descname">set_igmp_end_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.IGMPTraceEvent.set_igmp_end_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current time as the time at which IGMP processing associated with this event was completed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.IGMPTraceEvent.set_igmp_start_time">
+<tt class="descname">set_igmp_start_time</tt><big>(</big><em>igmp_packet_in_event</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.IGMPTraceEvent.set_igmp_start_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes a PacketIn event containing an IGMP packet, and sets associated data fields in the trace event.</p>
+<div class="line-block">
+<div class="line">Fields which are populated by this method:</div>
+<div class="line">igmp_msg_type, igmp_group_records, num_igmp_group_records, igmp_processing_start_time</div>
+<div class="line"><br /></div>
+<div class="line">For best benchmarking accuracy, this method should be called as soon as the PacketIn is determined to contain an IGMP packet</div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pox.misc.groupflow_event_tracer.TraceEvent">
+<em class="property">class </em><tt class="descclassname">pox.misc.groupflow_event_tracer.</tt><tt class="descname">TraceEvent</tt><big>(</big><em>event_id=0</em><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.TraceEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Superclass for trace events. Stores only the event ID and time of the event&#8217;s creation.</p>
+<dl class="method">
+<dt id="pox.misc.groupflow_event_tracer.TraceEvent.get_curr_time">
+<tt class="descname">get_curr_time</tt><big>(</big><big>)</big><a class="headerlink" href="#pox.misc.groupflow_event_tracer.TraceEvent.get_curr_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current time, using the method selected by the TIMING_MODE constant</p>
+<p>This method is used to record time values in all subclasses of this class.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pox.misc.benchmark_terminator">
+<span id="benchmark-terminator"></span><h1>Benchmark Terminator<a class="headerlink" href="#module-pox.misc.benchmark_terminator" title="Permalink to this headline">¶</a></h1>
+<p>The purpose of this module is to capture a SIGINT signal, and terminate the benchmarking functionality
+of the FlowTracker and GroupFlowEventTracer modules, before rethrowing the signal so that POX can catch it and terminate
+entirely.</p>
+<div class="line-block">
+<div class="line">Depends on misc.groupflow_event_tracer and openflow.flow_tracker</div>
+<div class="line"><br /></div>
+<div class="line">Created on Nov 4, 2013</div>
+<div class="line">&#64;author: alexcraig</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">GroupFlow Event Tracker</a></li>
+<li><a class="reference internal" href="#module-pox.misc.benchmark_terminator">Benchmark Terminator</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="flowtracker.html"
+                        title="previous chapter">FlowTracker Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/benchmarking.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="flowtracker.html" title="FlowTracker Module"
+             >previous</a> |</li>
+        <li><a href="index.html">GroupFlow be79542a5cfb1686f73adc81f82c7f5e068e5ecd documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Alexander Craig.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

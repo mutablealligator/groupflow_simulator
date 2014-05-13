@@ -6,10 +6,10 @@ The purpose of this module is to capture a SIGINT signal, and terminate the benc
 of the FlowTracker and GroupFlowEventTracer modules, before rethrowing the signal so that POX can catch it and terminate
 entirely.
 
-Depends on misc.groupflow_event_tracer and openflow.flow_tracker
-
-Created on Nov 4, 2013
-@author: alexcraig
+| Depends on misc.groupflow_event_tracer and openflow.flow_tracker
+|
+| Created on Nov 4, 2013
+| @author: alexcraig
 """
 
 import time

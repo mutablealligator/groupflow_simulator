@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 This module allows event traces to be produced by the IGMP Manager and Groupflow modules, with the goal of
 tracing various event processing times for benchmarking and evaluation purposes.
 
-Created on Oct 28th, 2013
-@author: alexcraig
-'''
+| Created on Oct 28th, 2013
+| @author: alexcraig
+"""
 
 import time
 import datetime
@@ -48,17 +48,18 @@ class TraceEvent(EventMixin):
 
 
 class IGMPTraceEvent(TraceEvent):
+
     """Trace event which records processing times associated with a single IGMP packet.
 
-    The following data is recorded:
-    router_dpid: Data plane identifier of the router which received the packet
-    igmp_msg_type: The type of IGMP message processed (see constants defined in pox.lib.packet.igmpv3)
-    igmp_group_records: A list of tuples specifying the group records contained in the IGMP packet
-                        Tuples are of the form (group_record_type, multicast_address)
-                        Valid group records types are defined in pox.lib.packet.igmpv3
-    num_igmp_group_records: Number of group records contained in the IGMP packet
-    igmp_processing_start_time: Time at which the packet was identified as an IGMP packet
-    igmp_prcessing_end_time: Time at which all IGMP processing associated with the IGMP packet was completed
+    | The following data is recorded:
+    | router_dpid: Data plane identifier of the router which received the packet
+    | igmp_msg_type: The type of IGMP message processed (see constants defined in pox.lib.packet.igmpv3)
+    | igmp_group_records: A list of tuples specifying the group records contained in the IGMP packet
+    | Tuples are of the form (group_record_type, multicast_address)
+    | Valid group records types are defined in pox.lib.packet.igmpv3
+    | num_igmp_group_records: Number of group records contained in the IGMP packet
+    | igmp_processing_start_time: Time at which the packet was identified as an IGMP packet
+    | igmp_prcessing_end_time: Time at which all IGMP processing associated with the IGMP packet was completed
     """
 
     def __init__(self, event_id, router_dpid):
@@ -75,11 +76,11 @@ class IGMPTraceEvent(TraceEvent):
     def set_igmp_start_time(self, igmp_packet_in_event):
         """Processes a PacketIn event containing an IGMP packet, and sets associated data fields in the trace event.
 
-        Field which are populated by this method:
-        igmp_msg_type, igmp_group_records, num_igmp_group_records, igmp_processing_start_time
-
-        For best benchmarking accuracy, this method should be called as soon as the PacketIn is determined to contain
-        an IGMP packet"""
+        | Fields which are populated by this method:
+        | igmp_msg_type, igmp_group_records, num_igmp_group_records, igmp_processing_start_time
+        |
+        | For best benchmarking accuracy, this method should be called as soon as the PacketIn is determined to contain an IGMP packet
+        """
         igmp_pkt = igmp_packet_in_event.parsed.find(pkt.igmpv3)
         self.igmp_msg_type = igmp_pkt.msg_type
         for igmp_group_record in igmp_pkt.group_records:
@@ -115,25 +116,26 @@ class IGMPTraceEvent(TraceEvent):
 
 
 class GroupFlowTraceEvent(TraceEvent):
+
     """Trace event which records processing times associated with a routing event performed by the GroupFlow module.
 
-    The following data is recorded:
-    igmp_trace_event: The IGMPTraceEvent associated with the IGMP packet which triggered this routing event. Note that
-                      not all routing events are triggered by IGMP events, and this value will be set to None in cases
-                      where there is no associated IGMP event. An example of this is when routing is triggered by a new
-                      multicast sender being detected.
-    tree_calc_start_time: Time at which tree calculation was started for this routing event.
-    tree_calc_end_time: Time at which tree calculation was completed for this routing event.
-    Note: Due to the tree caching behaviour of the GroupFlow module, not all routing events will require a full tree
-          calculation, and in these cases tree_calc_start_time and tree_calc_end_time will be set to None
-    route_processing_start_time: Time at which route processing was started for this routing event. Route processing is
-                                 defined as the operation of selecting branches from the cached route tree to install for
-                                 this particular routing event.
-    route_processing_end_time: Time at which route processing was completed for this routing event.
-    flow_installation_start_time: Time at which OpenFlow rule installation was started for this routing event.
-    flow_installation_end_time: Time at which OpenFlow rule installation was completed for this routing event.
-    multicast_group: Multicast group address which this routing event is associated with.
-    src_ip: Multicast sender IP address which this routing event is associated with.
+    | The following data is recorded:
+    | igmp_trace_event: The IGMPTraceEvent associated with the IGMP packet which triggered this routing event. Note that
+                        not all routing events are triggered by IGMP events, and this value will be set to None in cases
+                        where there is no associated IGMP event. An example of this is when routing is triggered by a new
+                        multicast sender being detected.
+    | tree_calc_start_time: Time at which tree calculation was started for this routing event.
+    | tree_calc_end_time: Time at which tree calculation was completed for this routing event.
+    |       Note: Due to the tree caching behaviour of the GroupFlow module, not all routing events will require a full
+            tree calculation, and in these cases tree_calc_start_time and tree_calc_end_time will be set to None
+    | route_processing_start_time: Time at which route processing was started for this routing event. Route processing is
+                                   defined as the operation of selecting branches from the cached route tree to install for
+                                   this particular routing event.
+    | route_processing_end_time: Time at which route processing was completed for this routing event.
+    | flow_installation_start_time: Time at which OpenFlow rule installation was started for this routing event.
+    | flow_installation_end_time: Time at which OpenFlow rule installation was completed for this routing event.
+    | multicast_group: Multicast group address which this routing event is associated with.
+    | src_ip: Multicast sender IP address which this routing event is associated with.
     """
 
     def __init__(self, event_id, igmp_trace_event=None):

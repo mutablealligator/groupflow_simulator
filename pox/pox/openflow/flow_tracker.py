@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-A POX module which periodically queries the network to learn the following information:
-- Bandwidth usage on all links in the network (using both FlowStats on the transmission side, and PortStats on the
+A POX module which periodically queries the network to estimate link utilization.
+
+| - Bandwidth usage is tracked on selected links in the network (using both FlowStats on the transmission side, and PortStats on the
   receive side)
-- Number of flow table installations on all switches in the network
-
-Depends on openflow.discovery
-
-Created on Oct 16, 2013
-@author: alexcraig
+| - Number of flow table installations is tracked on all switches in the network
+|
+| Depends on openflow.discovery
+|
+| Created on Oct 16, 2013
+| @author: alexcraig
 """
 
 # POX dependencies
@@ -38,8 +39,9 @@ LINK_CONGESTION_THRESHOLD_MbPS = 0.95 * LINK_MAX_BANDWIDTH_MbPS
 PERIODIC_QUERY_INTERVAL = 2 # Seconds
 
 class FlowTrackedSwitch(EventMixin):
-    """Class used to manage statistics querying and processing for a single OpenFlow switch. The FlowTracker module
-    implements bandwidth tracking by managing a map of these objects."""
+    """Class used to manage statistics querying and processing for a single OpenFlow switch.
+
+    The FlowTracker module implements bandwidth tracking by managing a map of these objects."""
 
     def __init__(self, flow_tracker):
         """Initializes a new FlowTrackedSwitch"""
