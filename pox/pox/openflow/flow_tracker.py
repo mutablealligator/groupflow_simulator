@@ -71,6 +71,7 @@ class FlowTrackedSwitch(EventMixin):
         self.flow_interval_byte_count = {}
         self.flow_interval_bandwidth_Mbps = {}
         self.flow_average_bandwidth_Mbps = {}
+        self.flow_total_average_bandwidth_Mbps = {} # This map stores the total estimated bandwidth on a per port basis
         self.flow_average_switch_load = 0
 
         # Port maps record reception statistics based on PortStats queries
@@ -105,7 +106,9 @@ class FlowTrackedSwitch(EventMixin):
                 self._periodic_query_timer = None
 
     def listen_on_connection(self, connection):
-        """Configures listener methods to handle query responses, and starts the periodic query timer."""
+        """Configures listener methods to handle query responses, and starts the periodic query timer.
+        
+        connection - Connection object for this switch (usually obtained from a ConnectionUp event)"""
         if self.dpid is None:
             self.dpid = connection.dpid
         assert self.dpid == connection.dpid
@@ -125,7 +128,9 @@ class FlowTrackedSwitch(EventMixin):
         self.ignore_connection()
 
     def set_tracked_ports(self, tracked_ports):
-        """Sets the port numbers on which bandwidth utilization should be tracked for this switch."""
+        """Sets the port numbers on which bandwidth utilization should be tracked for this switch.
+        
+        tracked_ports -- List on integer port numbers on which utilization should be tracked for this switch"""
         self.tracked_ports = tracked_ports
         log.debug('Switch ' + dpid_to_str(self.dpid) + ' set tracked ports: ' + str(tracked_ports))
         # Delete any stored state on ports which are no longer tracked
@@ -396,6 +401,7 @@ class FlowTrackedSwitch(EventMixin):
             return
 
         # Update bandwidth estimates
+        self.flow_total_average_bandwidth_Mbps = {}
         for port_num in self.flow_interval_byte_count:
             if port_num not in self.flow_interval_bandwidth_Mbps:
                 self.flow_interval_bandwidth_Mbps[port_num] = {}
@@ -407,15 +413,15 @@ class FlowTrackedSwitch(EventMixin):
                     self.flow_average_bandwidth_Mbps[port_num][flow_cookie] = 0
 
                 # Update instant bandwidth
-                self.flow_interval_bandwidth_Mbps[port_num][flow_cookie] = ((self.flow_interval_byte_count[port_num][
-                                                                             flow_cookie] * 8.0) / 1048576.0) / (
-                interval_len)
+                self.flow_interval_bandwidth_Mbps[port_num][flow_cookie] = \
+                        ((self.flow_interval_byte_count[port_num][flow_cookie] * 8.0) / 1048576.0) / (interval_len)
                 # Update running average bandwidth
                 self.flow_average_bandwidth_Mbps[port_num][flow_cookie] = min(
-                    (self.flow_tracker.avg_smooth_factor * self.flow_interval_bandwidth_Mbps[port_num][flow_cookie]) +\
-                    (
-                    (1 - self.flow_tracker.avg_smooth_factor) * self.flow_average_bandwidth_Mbps[port_num][flow_cookie])
+                    (self.flow_tracker.avg_smooth_factor * self.flow_interval_bandwidth_Mbps[port_num][flow_cookie]) + \
+                    ((1 - self.flow_tracker.avg_smooth_factor) * self.flow_average_bandwidth_Mbps[port_num][flow_cookie])
                     , self.flow_tracker.link_max_bw)
+            
+            self.flow_total_average_bandwidth_Mbps[port_num] = sum(self.flow_average_bandwidth_Mbps[port_num].itervalues())
 
         flow_average_switch_load = 0
         for port_num in self.flow_average_bandwidth_Mbps:
@@ -531,7 +537,7 @@ class FlowTracker(EventMixin):
             log.info('Network avg link throughout (Mbps): ' + str(total_usage / float(num_links)))
 
     def _handle_ConnectionUp(self, event):
-        """Handler for ConnectionUp from the discovery module, which represents a new switche joining the network."""
+        """Handler for ConnectionUp from the discovery module, which represents a new switch joining the network."""
         if not event.dpid in self.switches:
             # New switch
             switch = FlowTrackedSwitch(self)
@@ -599,11 +605,8 @@ class FlowTracker(EventMixin):
             # Reception statistics unavailable, use the transmission statistics if available
             log.warn("PortStats unavailable for Switch: " + dpid_to_str(switch_dpid) + ' Port: ' + str(output_port))
             if switch_dpid in self.switches:
-                if output_port in self.switches[switch_dpid].port_average_bandwidth_Mbps:
-                    bandwidth_total = 0
-                    for flow_cookie in self.switches[switch_dpid].port_average_bandwidth_Mbps[output_port]:
-                        bandwidth_total += self.switches[switch_dpid].port_average_bandwidth_Mbps[output_port][flow_cookie]
-                    return bandwidth_total
+                if output_port in self.switches[switch_dpid].flow_total_average_bandwidth_Mbps:
+                    return flow_total_average_bandwidth_Mbps[output_port]
             return 0    # TODO: May want to throw exception here
 
         if receive_switch_dpid in self.switches:
@@ -613,11 +616,36 @@ class FlowTracker(EventMixin):
         return 0    # TODO: May want to throw exception here
 
     def get_link_utilization_normalized(self, switch_dpid, output_port):
-        """Returns the current estimated utilization (as a normalized value between 0 and 1) on the specified switch and output port.
-
-        Note: Current implementation assumes all links have equal maximum bandwidth which is defined by self.link_max_bw"""
+        """Returns the current estimated utilization (as a normalized value between 0 and 1) on a particular link.
+        
+        | switch_dpid - The dataplane identifier of the switch on the transmitting side of the link
+        | output_port - The output port on switch with dpid switch_dpid corresponding to the link
+        | Note: Current implementation assumes all links have equal maximum bandwidth which is defined by self.link_max_bw
+        """
         return self.get_link_utilization_mbps(switch_dpid, output_port) / self.link_max_bw
 
+    def get_flow_utilization_normalized(self, switch_dpid, output_port, flow_cookie):
+        """Returns the percentage of link utilization on a particular link contributed by a particular flow (as a normalized value between 0 and 1).
+        
+        | switch_dpid - The dataplane identifier of the switch on the transmitting side of the link
+        | output_port - The output port on switch with dpid switch_dpid corresponding to the link
+        | flow_cookie - The flow cookie assigned to the link of interest
+        """
+        flow_bw_usage = 0
+        if switch_dpid in self.switches:
+            if output_port in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
+                if flow_cookie in self.switches[switch_dpid].flow_average_bandwidth_Mbps[output_port]:
+                    flow_bw_usage = self.switches[switch_dpid].flow_average_bandwidth_Mbps[output_port][flow_cookie]
+        
+        total_link_bw_usage = 0
+        if switch_dpid in self.switches:
+            if output_port in self.switches[switch_dpid].flow_total_average_bandwidth_Mbps:
+                total_link_bw_usage = self.switches[switch_dpid].flow_total_average_bandwidth_Mbps[output_port]
+        
+        if flow_bw_usage == 0 or total_link_bw_usage == 0:
+            return 0
+        else:
+            return flow_bw_usage / total_link_bw_usage
 
 def launch(query_interval=PERIODIC_QUERY_INTERVAL, link_max_bw=LINK_MAX_BANDWIDTH_MbPS,
            link_cong_threshold=LINK_CONGESTION_THRESHOLD_MbPS, avg_smooth_factor=AVERAGE_SMOOTHING_FACTOR,

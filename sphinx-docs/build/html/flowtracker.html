@@ -88,6 +88,7 @@ receive side)</div>
 <dt id="pox.openflow.flow_tracker.FlowTrackedSwitch.listen_on_connection">
 <tt class="descname">listen_on_connection</tt><big>(</big><em>connection</em><big>)</big><a class="headerlink" href="#pox.openflow.flow_tracker.FlowTrackedSwitch.listen_on_connection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configures listener methods to handle query responses, and starts the periodic query timer.</p>
+<p>connection - Connection object for this switch (usually obtained from a ConnectionUp event)</p>
 </dd></dl>
 
 <dl class="method">
@@ -123,6 +124,7 @@ is set by flow_tracker.avg_smooth_factor.</p>
 <dt id="pox.openflow.flow_tracker.FlowTrackedSwitch.set_tracked_ports">
 <tt class="descname">set_tracked_ports</tt><big>(</big><em>tracked_ports</em><big>)</big><a class="headerlink" href="#pox.openflow.flow_tracker.FlowTrackedSwitch.set_tracked_ports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the port numbers on which bandwidth utilization should be tracked for this switch.</p>
+<p>tracked_ports &#8211; List on integer port numbers on which utilization should be tracked for this switch</p>
 </dd></dl>
 
 </dd></dl>
@@ -131,6 +133,17 @@ is set by flow_tracker.avg_smooth_factor.</p>
 <dt id="pox.openflow.flow_tracker.FlowTracker">
 <em class="property">class </em><tt class="descclassname">pox.openflow.flow_tracker.</tt><tt class="descname">FlowTracker</tt><big>(</big><em>query_interval</em>, <em>link_max_bw</em>, <em>link_cong_threshold</em>, <em>avg_smooth_factor</em>, <em>log_peak_usage</em><big>)</big><a class="headerlink" href="#pox.openflow.flow_tracker.FlowTracker" title="Permalink to this definition">¶</a></dt>
 <dd><p>Module which implements bandwidth utilization tracking by managing a map of FlowTrackedSwitches.</p>
+<dl class="method">
+<dt id="pox.openflow.flow_tracker.FlowTracker.get_flow_utilization_normalized">
+<tt class="descname">get_flow_utilization_normalized</tt><big>(</big><em>switch_dpid</em>, <em>output_port</em>, <em>flow_cookie</em><big>)</big><a class="headerlink" href="#pox.openflow.flow_tracker.FlowTracker.get_flow_utilization_normalized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the percentage of link utilization on a particular link contributed by a particular flow (as a normalized value between 0 and 1).</p>
+<div class="line-block">
+<div class="line">switch_dpid - The dataplane identifier of the switch on the transmitting side of the link</div>
+<div class="line">output_port - The output port on switch with dpid switch_dpid corresponding to the link</div>
+<div class="line">flow_cookie - The flow cookie assigned to the link of interest</div>
+</div>
+</dd></dl>
+
 <dl class="method">
 <dt id="pox.openflow.flow_tracker.FlowTracker.get_link_utilization_mbps">
 <tt class="descname">get_link_utilization_mbps</tt><big>(</big><em>switch_dpid</em>, <em>output_port</em><big>)</big><a class="headerlink" href="#pox.openflow.flow_tracker.FlowTracker.get_link_utilization_mbps" title="Permalink to this definition">¶</a></dt>
@@ -144,8 +157,12 @@ flow stats will be returned.</p>
 <dl class="method">
 <dt id="pox.openflow.flow_tracker.FlowTracker.get_link_utilization_normalized">
 <tt class="descname">get_link_utilization_normalized</tt><big>(</big><em>switch_dpid</em>, <em>output_port</em><big>)</big><a class="headerlink" href="#pox.openflow.flow_tracker.FlowTracker.get_link_utilization_normalized" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the current estimated utilization (as a normalized value between 0 and 1) on the specified switch and output port.</p>
-<p>Note: Current implementation assumes all links have equal maximum bandwidth which is defined by self.link_max_bw</p>
+<dd><p>Returns the current estimated utilization (as a normalized value between 0 and 1) on a particular link.</p>
+<div class="line-block">
+<div class="line">switch_dpid - The dataplane identifier of the switch on the transmitting side of the link</div>
+<div class="line">output_port - The output port on switch with dpid switch_dpid corresponding to the link</div>
+<div class="line">Note: Current implementation assumes all links have equal maximum bandwidth which is defined by self.link_max_bw</div>
+</div>
 </dd></dl>
 
 <dl class="method">
