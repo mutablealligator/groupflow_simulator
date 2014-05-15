@@ -426,6 +426,13 @@ class GroupFlowManager(EventMixin):
                 if group_reception:
                     if not self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] is None:
                         log.debug('Got multicast packet from source which should already be configured Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
+                        # Send the packet back to the switch for forwarding
+                        msg = of.ofp_packet_out()
+                        msg.data = event.ofp
+                        msg.buffer_id = event.ofp.buffer_id
+                        msg.in_port = event.port
+                        msg.actions = [of.ofp_action_output(port = of.OFPP_TABLE)]
+                        event.connection.send(msg)
                         return
                         
                     log.debug('Got multicast packet from new source. Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
@@ -440,7 +447,6 @@ class GroupFlowManager(EventMixin):
                     except:
                         pass
                     path_setup = MulticastPath(ipv4_pkt.srcip, router_dpid, event.port, ipv4_pkt.dstip, self, groupflow_trace_event)
-                    # TODO: This may cause memory leaks, figure out how to properly reuse existing MulticastPath objects
                     self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] = path_setup
                     path_setup.install_openflow_rules(groupflow_trace_event)
     
