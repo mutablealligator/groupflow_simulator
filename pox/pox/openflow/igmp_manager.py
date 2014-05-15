@@ -1,13 +1,31 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#  Copyright 2014 Alexander Craig
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 """
 A POX module implementation providing IGMP v3 Multicast Router functionality.
 
-| Depends on openflow.discovery, misc.groupflow_event_tracer (optional)
-|
-| Created on July 16, 2013
-| @author: alexcraig
+This module does not support any command line arguments. All IGMP parameters are set to RFC
+recommended defaults (see RFC 3376).
+
+Depends on openflow.discovery, misc.groupflow_event_tracer (optional)
+
+Created on July 16, 2013
+
+Author: Alexander Craig - alexcraig1@gmail.com
 """
 
 from collections import defaultdict
@@ -45,13 +63,27 @@ def int_to_filter_mode_str(filter_mode):
     return 'UNKNOWN_FILTER_MODE'
 
 class MulticastGroupEvent(Event):
-    """Event which represents the desired reception state for all interfaces/multicast groups on a single router."""
+
+    """Event which represents the desired reception state for all interfaces/multicast groups on a single router.
+    
+    This class contains the following public attributes:
+    
+    * desired_reception - Records the desired reception state of the router with DPID router_dpid, and
+      is formatted as a two dimensional map of lists:
+    
+    ::
+        
+        desired_reception[multicast_address][port_index] = [list of desired source addresses]
+    
+    An empty list in any map entry specifies that reception is desired from all available sources.
+    """
+    
     def __init__ (self, router_dpid, desired_reception, igmp_trace_event = None):
         Event.__init__(self)
         self.router_dpid = router_dpid
         self.igmp_trace_event = igmp_trace_event
         
-        # self.receiving_interfaces[multicast_address][port_index] = [list of desired sources]
+        # self.desired_reception[multicast_address][port_index] = [list of desired sources]
         # An empty list indicates reception from all sources is desired
         self.desired_reception = desired_reception
         
@@ -71,7 +103,22 @@ class MulticastGroupEvent(Event):
         
     
 class MulticastTopoEvent(Event):
-    """Event which signifies a change in topology that will be relevant to the multicast routing module."""
+
+    """Event which signifies a change in topology that will be relevant to the multicast routing module.
+    
+    This class contains the following public attributes:
+    
+    * event_type: One of LINK_UP (0) or LINK_DOWN (1). Records which type of topology change triggered this event.
+    * link_changes: A list of tuples specifying which links changed state (type of state change determined by event_type).
+      The tuples are formatted as (Egress Router DPID, Ingress Router DPID, Egress Router Port)
+    * adjacency_map: A map of all adjacencies between switches learned by the IGMP module, formatted as follows:
+    
+    ::
+        
+        adjacency_map[egress_router_dpid][ingress_router_dpid] = egress_router_port
+    
+    """
+    
     LINK_UP     = 0
     LINK_DOWN   = 1
     
@@ -97,17 +144,21 @@ class MulticastTopoEvent(Event):
 class MulticastMembershipRecord:
     """Class representing the group record state maintained by an IGMPv3 multicast router
 
-    | Multicast routers implementing IGMPv3 keep state per group per attached network.  This group state consists of a
-    | filter-mode, a list of sources, and various timers.  For each attached network running IGMP, a multicast router
-    | records the desired reception state for that network.  That state conceptually consists of a set of records of the
-    | form:
-    |
-    |    (multicast address, group timer, filter-mode, (source records))
-    |
-    | Each source record is of the form:
-    |
-    |    (source address, source timer)
-
+    Multicast routers implementing IGMPv3 keep state per group per attached network.  This group state consists of a
+    filter-mode, a list of sources, and various timers.  For each attached network running IGMP, a multicast router
+    records the desired reception state for that network.  That state conceptually consists of a set of records of the
+    form:
+    
+    ::
+        
+        (multicast address, group timer, filter-mode, (source records))
+    
+    Each source record is of the form:
+    
+    ::
+        
+        (source address, source timer)
+    
     """
     
     def __init__(self, mcast_address, timer_value):
@@ -118,9 +169,7 @@ class MulticastMembershipRecord:
         self.y_source_records = [] # Source records with a zero source timer are stored separately
     
     def get_curr_source_timer(self, ip_addr):
-        """Returns the current source timer for the specified IP address, or 0 if the specified IP is not known by this
-        group record.
-        """
+        """Returns the current source timer for the specified IP address, or 0 if the specified IP is not known by this group record."""
         for record in self.x_source_records:
             if record[0] == ip_addr:
                 return record[1]
@@ -128,7 +177,7 @@ class MulticastMembershipRecord:
         return 0
         
     def get_x_addr_set(self):
-        """Returns the set of addresses in the X set of source records (see IGMPv3 RFC)
+        """Returns the set of addresses in the X set of source records (see RFC 3376)
         
         Note: When in INCLUDE mode, all sources are stored in the X set.
         """
@@ -139,7 +188,7 @@ class MulticastMembershipRecord:
         return return_set
     
     def get_y_addr_set(self):
-        """Returns the set of addresses in the Y set of source records (see IGMPv3 RFC)
+        """Returns the set of addresses in the Y set of source records (see RFC 3376)
         
         Note: When in INCLUDE mode, his set should always be empty.
         """
@@ -286,6 +335,7 @@ class IGMPv3Router(EventMixin):
         return self.multicast_records[event.port][igmp_group_record.multicast_address]
     
     def send_group_specific_query(self, port, multicast_address, group_record, retransmissions = -1):
+        """Generates a group specific query, and sends a PacketOut message to deliver it to the specified port"""
         if self.connection is None:
             log.warn('Unable to access connection with switch: ' + dpid_to_str(self.dpid))
             return
@@ -319,6 +369,7 @@ class IGMPv3Router(EventMixin):
                     args = [port, multicast_address, group_record, retransmissions - 1], recurring = False)
                     
     def send_group_and_source_specific_query(self, port, multicast_address, group_record, sources, retransmissions = -1):
+        """Generates a group and source specific query, and sends a PacketOut message to deliver it to the specified port"""
         # TODO: Retransmissions may not properly handle the source timers, as they will be based on the timers
         # at the time of retransmission
         if self.connection is None:
@@ -751,6 +802,9 @@ class IGMPv3Router(EventMixin):
 
 
 class IGMPManager(EventMixin):
+    
+    """Class which stores global IGMP settings, and manages a map of IGMPv3Router objects to implement IGMP support for OpenFlow switches."""
+    
     _eventMixin_events = set([
         MulticastGroupEvent,
         MulticastTopoEvent
@@ -917,6 +971,7 @@ class IGMPManager(EventMixin):
         packet_in_event.connection.send(msg)
     
     def add_igmp_router(self, router_dpid, connection):
+        """Registers a new router for management by the IGMP module."""
         if not router_dpid in self.routers:
             # New router
             router = IGMPv3Router(self)
@@ -1026,14 +1081,14 @@ class IGMPManager(EventMixin):
                     
 
     def _handle_ConnectionUp(self, event):
-        """Handler for ConnectionUp from the discovery module, which represent new routers joining the network.
+        """Handler for ConnectionUp from the discovery module, which represents a new router joining the network.
         
-        TODO: Investigate whether this should throw MulticastTopoEvents (LinkEvents should cover the same information)
+        TODO: Investigate whether this should throw MulticastTopoEvents (LinkEvents should really cover the same information)
         """
         self.add_igmp_router(event.dpid, event.connection)
             
     def _handle_ConnectionDown (self, event):
-        """Handler for ConnectionUp from the discovery module, which represent a router leaving the network."""
+        """Handler for ConnectionDown from the discovery module, which represents a router leaving the network."""
         router = self.routers.get(event.dpid)
         if router is None:
             log.warn('Got ConnectionDown for unrecognized router')
@@ -1054,13 +1109,14 @@ class IGMPManager(EventMixin):
             self.raiseEvent(event)
     
     def _handle_PacketIn(self, event):
-        """Handler for OpenFlow PacketIn events.
+        """Handler for OpenFlow PacketIn events. Ignores all packets except IGMPv3 packets.
 
-        | Two types of packets are of primary importance for this module:
-        | 1) IGMP packets: All IGMP packets in the network should be directed to the controller, as the controller
-        acts as a single, centralized IGMPv3 multicast router for the purposes of determining group membership.
-        | 2) IP packets destined to a multicast address: When a new multicast flow is received, this should trigger
-        a calculation of a multicast tree, and the installation of the appropriate flows in the network.
+        Two types of packets are of primary importance for this module:
+        
+        1. IGMP packets: All IGMP packets in the network should be directed to the controller, as the controller
+           acts as a single, centralized IGMPv3 multicast router for the purposes of determining group membership.
+        2. IP packets destined to a multicast address: When a new multicast flow is received, this should trigger
+           a calculation of a multicast tree, and the installation of the appropriate flows in the network.
         """
         # log.debug('Router ' + str(event.connection.dpid) + ':' + str(event.port) + ' PacketIn')
         
@@ -1114,4 +1170,5 @@ class IGMPManager(EventMixin):
 
 
 def launch():
+    # Method called by the POX core when launching the module
     core.registerNew(IGMPManager)

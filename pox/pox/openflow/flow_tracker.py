@@ -1,17 +1,48 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#  Copyright 2014 Alexander Craig
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 """
 A POX module which periodically queries the network to estimate link utilization.
 
-| - Bandwidth usage is tracked on selected links in the network (using both FlowStats on the transmission side, and PortStats on the
-  receive side)
-| - Number of flow table installations is tracked on all switches in the network
-|
-| Depends on openflow.discovery
-|
-| Created on Oct 16, 2013
-| @author: alexcraig
+Bandwidth usage is tracked on selected links in the network (using both FlowStats on the transmission side, and PortStats on the
+receive side). Number of flow table installations is tracked on all switches in the network.
+
+The following command line arguments are supported:
+
+* query_interval: The length of time (in seconds) which should elapse between consecutive flow/port stats queries to switches. 
+  Default: 2
+* link_max_bw: The maximum bandwidth (in Mbps) of network links. Note that in the current implementation, all links must have
+  uniform bandwidth.
+  Default: 30
+* link_cong_threshold: The utilization (in Mbps) above which a link should be considered as congested. Must be <= link_max_bw.
+  Default: 28.5 
+* avg_smooth_factor: The alpha value to use for the bandwidth estimation exponential average. The bandwidth utilization
+  at each monitoring interval i is specified by BW_est_i = (alpha * BW_val_(i)) + ((1 - alpha) * BW_est_(i-1)). Higher alpha values
+  therefore result in an average that more heavily weights recent samples.
+  Default: 0.7  
+* log_peak_usage: (True/False) If true, the peak and average utilization in the network are logged to debug.info at an interval of
+  (query_interval / 1.5) seconds.
+  Default: False.
+
+Depends on openflow.discovery
+
+Created on Oct 16, 2013
+
+Author: Alexander Craig - alexcraig1@gmail.com
 """
 
 # POX dependencies
@@ -41,7 +72,8 @@ PERIODIC_QUERY_INTERVAL = 2 # Seconds
 class FlowTrackedSwitch(EventMixin):
     """Class used to manage statistics querying and processing for a single OpenFlow switch.
 
-    The FlowTracker module implements bandwidth tracking by managing a map of these objects."""
+    The FlowTracker module implements bandwidth tracking by managing a map of these objects.
+    """
 
     def __init__(self, flow_tracker):
         """Initializes a new FlowTrackedSwitch"""
@@ -108,7 +140,8 @@ class FlowTrackedSwitch(EventMixin):
     def listen_on_connection(self, connection):
         """Configures listener methods to handle query responses, and starts the periodic query timer.
         
-        connection - Connection object for this switch (usually obtained from a ConnectionUp event)"""
+        * connection: Connection object for this switch (usually obtained from a ConnectionUp event)
+        """
         if self.dpid is None:
             self.dpid = connection.dpid
         assert self.dpid == connection.dpid
@@ -130,7 +163,8 @@ class FlowTrackedSwitch(EventMixin):
     def set_tracked_ports(self, tracked_ports):
         """Sets the port numbers on which bandwidth utilization should be tracked for this switch.
         
-        tracked_ports -- List on integer port numbers on which utilization should be tracked for this switch"""
+        * tracked_ports: List of integer port numbers on which utilization should be tracked for this switch
+        """
         self.tracked_ports = tracked_ports
         log.debug('Switch ' + dpid_to_str(self.dpid) + ' set tracked ports: ' + str(tracked_ports))
         # Delete any stored state on ports which are no longer tracked
@@ -463,16 +497,7 @@ class FlowTracker(EventMixin):
     _core_name = "openflow_flow_tracker"
 
     def __init__(self, query_interval, link_max_bw, link_cong_threshold, avg_smooth_factor, log_peak_usage):
-        """Initializes the FlowTracker module, and configures all required listener's once dependencies have loaded.
-
-        Initialization parameters:
-        query_interval: The time interval (in seconds) between subsequent queries to a particular switch
-        link_max_bw: The maximum supported bandwidth of links in the network in Mbps (all tracked links must have uniform
-                     bandwidth in the current implementation, due to limitations of OpenFlow 1.0).
-        link_cong_threshold: The threshold above which links are considered to be congested in Mbps.
-        avg_smooth_factor: The alpha value used for exponential average smoothing of bandwidth estimations
-        log_peak_usage: If true, periodically output peak and average link usage to log.info
-        """
+        """Initializes the FlowTracker module, and configures all required listeners once dependencies have loaded."""
         # Listen to dependencies
         def startup():
             core.openflow.addListeners(self, priority=101)
@@ -509,7 +534,8 @@ class FlowTracker(EventMixin):
     def termination_handler(self, signal, frame):
         """Method to cleanly terminate the module (i.e. close the log file) when a SIGINT signal is received.
 
-        This function is typically called by the BenchmarkTerminator module."""
+        This function is typically called by the BenchmarkTerminator module.
+        """
         if not self._log_file is None:
             self._log_file.close()
             self._log_file = None
@@ -618,18 +644,19 @@ class FlowTracker(EventMixin):
     def get_link_utilization_normalized(self, switch_dpid, output_port):
         """Returns the current estimated utilization (as a normalized value between 0 and 1) on a particular link.
         
-        | switch_dpid - The dataplane identifier of the switch on the transmitting side of the link
-        | output_port - The output port on switch with dpid switch_dpid corresponding to the link
-        | Note: Current implementation assumes all links have equal maximum bandwidth which is defined by self.link_max_bw
+        * switch_dpid: The dataplane identifier of the switch on the transmitting side of the link
+        * output_port: The output port on switch with dpid switch_dpid corresponding to the link
+        
+        Note: Current implementation assumes all links have equal maximum bandwidth which is defined by self.link_max_bw
         """
         return self.get_link_utilization_mbps(switch_dpid, output_port) / self.link_max_bw
 
     def get_flow_utilization_normalized(self, switch_dpid, output_port, flow_cookie):
         """Returns the percentage of link utilization on a particular link contributed by a particular flow (as a normalized value between 0 and 1).
         
-        | switch_dpid - The dataplane identifier of the switch on the transmitting side of the link
-        | output_port - The output port on switch with dpid switch_dpid corresponding to the link
-        | flow_cookie - The flow cookie assigned to the link of interest
+        * switch_dpid: The dataplane identifier of the switch on the transmitting side of the link
+        * output_port: The output port on switch with dpid switch_dpid corresponding to the link
+        * flow_cookie: The flow cookie assigned to the link of interest
         """
         flow_bw_usage = 0
         if switch_dpid in self.switches:
@@ -650,6 +677,7 @@ class FlowTracker(EventMixin):
 def launch(query_interval=PERIODIC_QUERY_INTERVAL, link_max_bw=LINK_MAX_BANDWIDTH_MbPS,
            link_cong_threshold=LINK_CONGESTION_THRESHOLD_MbPS, avg_smooth_factor=AVERAGE_SMOOTHING_FACTOR,
            log_peak_usage=False):
+    # Method called by the POX core when launching the module
     flow_tracker = FlowTracker(float(query_interval), float(link_max_bw), float(link_cong_threshold),
         float(avg_smooth_factor), bool(log_peak_usage))
     core.register('openflow_flow_tracker', flow_tracker)

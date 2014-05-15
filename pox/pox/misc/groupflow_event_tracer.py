@@ -1,12 +1,29 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#  Copyright 2014 Alexander Craig
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 """
 This module allows event traces to be produced by the IGMP Manager and Groupflow modules, with the goal of
 tracing various event processing times for benchmarking and evaluation purposes.
 
-| Created on Oct 28th, 2013
-| @author: alexcraig
+This module does not support any command line arguments.
+
+Created on Oct 28th, 2013
+
+Author: Alexander Craig - alexcraig1@gmail.com
 """
 
 import time
@@ -26,7 +43,11 @@ TIMING_MODE = USE_TIME_TIME
 log = core.getLogger()
 
 class TraceEvent(EventMixin):
-    """Superclass for trace events. Stores only the event ID and time of the event's creation."""
+    
+    """Superclass for trace events. Stores only the event ID and time of the event's creation.
+    
+    Subclassed by IGMPTraceEvent and GroupFlowTraceEvent.
+    """
 
     def __init__(self, event_id=0):
         """Initializes a new event with the specified integer event_id."""
@@ -34,9 +55,12 @@ class TraceEvent(EventMixin):
         self.event_id = event_id
 
     def get_curr_time(self):
-        """Returns the current time, using the method selected by the TIMING_MODE constant
+        """Returns the current time, using the method selected by the TIMING_MODE constant.
 
-        This method is used to record time values in all subclasses of this class."""
+        This method is used to record time values in all subclasses of this class. Valid values
+        for TIMING_MODE are USE_TIME_TIME (which uses time.time() to get the current time) and
+        USE_TIME_CLOCK (which uses time.clock() to get the current time)
+        """
         global TIMING_MODE
         if TIMING_MODE == USE_TIME_TIME:
             return time.time()
@@ -51,15 +75,16 @@ class IGMPTraceEvent(TraceEvent):
 
     """Trace event which records processing times associated with a single IGMP packet.
 
-    | The following data is recorded:
-    | router_dpid: Data plane identifier of the router which received the packet
-    | igmp_msg_type: The type of IGMP message processed (see constants defined in pox.lib.packet.igmpv3)
-    | igmp_group_records: A list of tuples specifying the group records contained in the IGMP packet
-    | Tuples are of the form (group_record_type, multicast_address)
-    | Valid group records types are defined in pox.lib.packet.igmpv3
-    | num_igmp_group_records: Number of group records contained in the IGMP packet
-    | igmp_processing_start_time: Time at which the packet was identified as an IGMP packet
-    | igmp_prcessing_end_time: Time at which all IGMP processing associated with the IGMP packet was completed
+    The following data is recorded:
+    
+    * router_dpid: Data plane identifier of the router which received the packet
+    * igmp_msg_type: The type of IGMP message processed (see constants defined in pox.lib.packet.igmpv3)
+    * igmp_group_records: A list of tuples specifying the group records contained in the IGMP packet.
+      Tuples are of the form (group_record_type, multicast_address).
+      Valid group records types are defined in pox.lib.packet.igmpv3.
+    * num_igmp_group_records: Number of group records contained in the IGMP packet
+    * igmp_processing_start_time: Time at which the packet was identified as an IGMP packet
+    * igmp_prcessing_end_time: Time at which all IGMP processing associated with the IGMP packet was completed
     """
 
     def __init__(self, event_id, router_dpid):
@@ -76,10 +101,10 @@ class IGMPTraceEvent(TraceEvent):
     def set_igmp_start_time(self, igmp_packet_in_event):
         """Processes a PacketIn event containing an IGMP packet, and sets associated data fields in the trace event.
 
-        | Fields which are populated by this method:
-        | igmp_msg_type, igmp_group_records, num_igmp_group_records, igmp_processing_start_time
-        |
-        | For best benchmarking accuracy, this method should be called as soon as the PacketIn is determined to contain an IGMP packet
+        Fields which are populated by this method:
+        * igmp_msg_type, igmp_group_records, num_igmp_group_records, igmp_processing_start_time
+        
+        For best benchmarking accuracy, this method should be called as soon as the PacketIn is determined to contain an IGMP packet
         """
         igmp_pkt = igmp_packet_in_event.parsed.find(pkt.igmpv3)
         self.igmp_msg_type = igmp_pkt.msg_type
@@ -96,7 +121,8 @@ class IGMPTraceEvent(TraceEvent):
     def get_igmp_processing_time(self):
         """Returns the length of time (in seconds) associated with IGMP processing for this event.
 
-        Returns None if no end time has been set for the event."""
+        Returns None if no end time has been set for the event.
+        """
         if not self._processing_complete:
             return None
 
@@ -105,7 +131,8 @@ class IGMPTraceEvent(TraceEvent):
     def get_log_str(self):
         """Returns a plain-text representation of the event that will be used when the event is serialized to a log file.
 
-        Note that the current implementation does not serialize complete IGMP group records."""
+        Note that the current implementation does not serialize complete IGMP group records.
+        """
         return_string = str(self.event_id) + ' - ' + '{:10.8f}'.format(self.init_time) + '\n'
         return_string += 'Router: ' + dpid_to_str(self.router_dpid) + ' IGMP Msg type: ' + str(
             self.igmp_msg_type) + ' Num Records: ' + str(self.num_igmp_group_records) + '\n'
@@ -119,23 +146,25 @@ class GroupFlowTraceEvent(TraceEvent):
 
     """Trace event which records processing times associated with a routing event performed by the GroupFlow module.
 
-    | The following data is recorded:
-    | igmp_trace_event: The IGMPTraceEvent associated with the IGMP packet which triggered this routing event. Note that
-                        not all routing events are triggered by IGMP events, and this value will be set to None in cases
-                        where there is no associated IGMP event. An example of this is when routing is triggered by a new
-                        multicast sender being detected.
-    | tree_calc_start_time: Time at which tree calculation was started for this routing event.
-    | tree_calc_end_time: Time at which tree calculation was completed for this routing event.
-    |       Note: Due to the tree caching behaviour of the GroupFlow module, not all routing events will require a full
-            tree calculation, and in these cases tree_calc_start_time and tree_calc_end_time will be set to None
-    | route_processing_start_time: Time at which route processing was started for this routing event. Route processing is
-                                   defined as the operation of selecting branches from the cached route tree to install for
-                                   this particular routing event.
-    | route_processing_end_time: Time at which route processing was completed for this routing event.
-    | flow_installation_start_time: Time at which OpenFlow rule installation was started for this routing event.
-    | flow_installation_end_time: Time at which OpenFlow rule installation was completed for this routing event.
-    | multicast_group: Multicast group address which this routing event is associated with.
-    | src_ip: Multicast sender IP address which this routing event is associated with.
+    The following data is recorded:
+    
+    * igmp_trace_event: The IGMPTraceEvent associated with the IGMP packet which triggered this routing event. Note that
+      not all routing events are triggered by IGMP events, and this value will be set to None in cases
+      where there is no associated IGMP event. An example of this is when routing is triggered by a new
+      multicast sender being detected.            
+    * tree_calc_start_time: Time at which tree calculation was started for this routing event.
+    * tree_calc_end_time: Time at which tree calculation was completed for this routing event.
+    * route_processing_start_time: Time at which route processing was started for this routing event. Route processing is
+      defined as the operation of selecting branches from the cached route tree to install for
+      this particular routing event.
+    * route_processing_end_time: Time at which route processing was completed for this routing event.
+    * flow_installation_start_time: Time at which OpenFlow rule installation was started for this routing event.
+    * flow_installation_end_time: Time at which OpenFlow rule installation was completed for this routing event.
+    * multicast_group: Multicast group address which this routing event is associated with.
+    * src_ip: Multicast sender IP address which this routing event is associated with.
+    
+    Note: Due to the tree caching behaviour of the GroupFlow module, not all routing events will require a full
+    tree calculation, and in these cases tree_calc_start_time and tree_calc_end_time will be set to None
     """
 
     def __init__(self, event_id, igmp_trace_event=None):
@@ -195,7 +224,8 @@ class GroupFlowTraceEvent(TraceEvent):
         """Returns the length of time (in seconds) associated with tree calculation for this routing event.
 
         Returns None if no tree calculation was required for this routing event (often the case when the tree is
-        already cached), or if the associated times have not been recorded."""
+        already cached), or if the associated times have not been recorded.
+        """
         if not self._complete_tree_calc:
             return None
         return self.tree_calc_end_time - self.tree_calc_start_time
@@ -203,7 +233,8 @@ class GroupFlowTraceEvent(TraceEvent):
     def get_route_processing_time(self):
         """Returns the length of time (in seconds) associated with route selection for this routing event.
 
-        Returns None if the associated times have not been recorded."""
+        Returns None if the associated times have not been recorded.
+        """
         if not self._complete_route_processing:
             return None
 
@@ -212,7 +243,8 @@ class GroupFlowTraceEvent(TraceEvent):
     def get_flow_installation_time(self):
         """Returns the length of time (in seconds) associated with OpenFlow rule installation for this routing event.
 
-        Returns None if the associated times have not been recorded."""
+        Returns None if the associated times have not been recorded.
+        """
         if not self._complete_flow_installation:
             return None
 
@@ -266,7 +298,8 @@ class GroupFlowEventTracer(EventMixin):
         """Method to cleanly terminate the module when a SIGINT signal is received.
 
         All currently active trace events will be discarded, and the log file will be closed. This function is
-        typically called by the BenchmarkTerminator module."""
+        typically called by the BenchmarkTerminator module.
+        """
         if not self._log_file is None:
             self._log_file.close()
             self._log_file = None
@@ -312,4 +345,5 @@ class GroupFlowEventTracer(EventMixin):
 
 
 def launch():
+    # Method called by the POX core when launching the module
     core.registerNew(GroupFlowEventTracer)

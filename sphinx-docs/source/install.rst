@@ -36,8 +36,14 @@ To start POX with GroupFlow functionality, POX must be launched with the "openfl
 
 For more details on optional command line arguments, please see the API documentation for the relevant modules.
 
-The modules can be tested with the provided Mininet automation script, which will generate a simple topology and manage the launch of POX with GroupFlow modules enabled (using default settings). Note that as this script invoke Mininet, it must be run as root. For example:
+The modules can be tested with the provided Mininet automation script, which will generate a simple topology and manage the launch of POX with GroupFlow modules enabled (using default settings). Note that as this script invokes Mininet, it must be run as root. For example:
 
 ::
     
     ./sudo python mininet_multicast_pox.py
+
+The provided test scripts require the ``pox`` executable to be located somewhere on the system path. If you've installed GroupFlow on the Mininet provided VM image using the standard POX install path, you can do this by running the following command:
+
+::
+    
+    export PATH=$PATH:/home/mininet/pox
