@@ -125,9 +125,9 @@ def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10
     if interactive:
         CLI(net)
     else:
-        iperf_mcast(net, [net.get('h0'), net.get('h1')], udpBw='15M')
+        iperf_mcast(net, [net.get('h0'), net.get('h1')], udpBw='3M')
         sleep(10)
-        iperf_mcast(net, [net.get('h1'), net.get('h0')], udpBw='15M')
+        iperf_mcast(net, [net.get('h1'), net.get('h0')], udpBw='3M')
         sleep(2)
     
     print 'Terminating controller'
