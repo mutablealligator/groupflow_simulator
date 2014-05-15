@@ -71,6 +71,11 @@ LINK_WEIGHT_EXPONENTIAL = 2
 STATIC_LINK_WEIGHT = 1    # Scaling factor for link weight which is statically assigned (implements shortest hop routing if no dynamic link weight is set)
 UTILIZATION_LINK_WEIGHT = 10   # Scaling factor for link weight which is determined by current link utilization
 
+# Developer constants
+# The below constants enable/configure experimental features which have not yet been integrated into the module API
+ENABLE_FLOW_REPLACEMENT = False
+FLOW_REPLACEMENT_INTERVAL_SECONDS = 10
+
 class MulticastPath(object):
     """Manages multicast route calculation and installation for a single pair of multicast group and multicast sender."""
 
@@ -87,6 +92,7 @@ class MulticastPath(object):
         self.groupflow_manager = groupflow_manager
         self.flow_cookie = self.groupflow_manager.get_new_mcast_group_cookie()
         self.calc_path_tree_dijkstras(groupflow_trace_event)
+        self._flow_replacement_timer = None
 
     def calc_path_tree_dijkstras(self, groupflow_trace_event = None):
         """Calculates a shortest path tree from the group sender to all network switches, and caches the resulting tree.
@@ -143,6 +149,11 @@ class MulticastPath(object):
         for edge in curr_topo_graph:
             output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
             link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
+            link_util_mcast_flow = core.openflow_flow_tracker.get_flow_utilization_normalized(edge[0], output_port, self.flow_cookie)
+            
+            # log.debug('Router DPID: ' + dpid_to_str(edge[0]) + ' Port: ' + str(output_port) + ' Total Util: ' + str(link_util) + ' Flow Util: ' + str(link_util_mcast_flow))
+            
+            link_util = min(0, link_util - link_util_mcast_flow)
             
             link_weight = 1
             if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
@@ -267,6 +278,9 @@ class MulticastPath(object):
             else:
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         
+        if ENABLE_FLOW_REPLACEMENT and self._flow_replacement_timer is None:
+            self._flow_replacement_timer = Timer(FLOW_REPLACEMENT_INTERVAL_SECONDS, self.update_flow_placement, recurring=True)
+        
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_flow_installation_end_time()
             core.groupflow_event_tracer.archive_trace_event(groupflow_trace_event)
@@ -292,8 +306,12 @@ class MulticastPath(object):
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         self.installed_node_list = []
         
-    def handle_topology_change(self, groupflow_trace_event = None):
-        """Handles topology changes by recalculating the cached shortest path tree, and installing new OpenFlow rules."""
+        if self._flow_replacement_timer is not None:
+            self._flow_replacement_timer.cancel()
+            self._flow_replacement_timer = None
+        
+    def update_flow_placement(self, groupflow_trace_event = None):
+        """Replaces the existing flows by recalculating the cached shortest path tree, and installing new OpenFlow rules."""
         self.calc_path_tree_dijkstras(groupflow_trace_event)
         self.install_openflow_rules(groupflow_trace_event)
     
@@ -500,7 +518,7 @@ class GroupFlowManager(EventMixin):
                         groupflow_trace_event = core.groupflow_event_tracer.init_groupflow_event_trace()
                     except:
                         pass
-                    self.multicast_paths[multicast_addr][source].handle_topology_change(groupflow_trace_event)
+                    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
 
 def launch(link_weight_type = 'linear', static_link_weight = STATIC_LINK_WEIGHT, util_link_weight = UTILIZATION_LINK_WEIGHT):
     # Method called by the POX core when launching the module
