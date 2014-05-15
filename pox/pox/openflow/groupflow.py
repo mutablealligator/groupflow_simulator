@@ -18,7 +18,12 @@
 """
 A POX module implementation of multicast routing, supported by management of group state using the IGMP manager module.
 
-Implementation adapted from NOX-Classic CastFlow implementation provided by caioviel.
+Implementation adapted from NOX-Classic CastFlow implementation provided by caioviel. Multicast routing records are stored for each 
+combination of multicast group and source address. For each of these records the GroupFlow module will calculate a shortest path tree 
+using Dijkstra's algorithm from the multicast source to all routers in the network (where each edge is weighted according to the number 
+of hops from the multicast source). Branches of this tree which correspond to active multicast receivers are installed into the network
+through OpenFlow, and the spanning tree is only recalculated when the network topology changes. This should enable rapid changes of 
+multicast group, as there is no need to completely recalculate the multicast tree when new receivers join a group.
 
 The following command line arguments are supported:
 
