@@ -24,11 +24,8 @@ Contents:
    :maxdepth: 2
    
    install.rst
-   igmp_manager.rst
-   groupflow.rst
-   flowtracker.rst
-   benchmarking.rst
-   
+   issues.rst
+   module_api.rst
 
 Indices and tables
 ==================

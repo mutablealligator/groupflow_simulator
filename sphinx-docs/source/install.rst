@@ -2,7 +2,8 @@ Installation and Usage
 ======================
 
 Installing Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
+
 GroupFlow is implemented as a set of modules for `POX <http://www.noxrepo.org/pox/about-pox/>`_, a Python based SDN controller. POX is available at the `POX GitHub Repository <https://github.com/noxrepo/pox>`_, and further instructions on POX installation and usage can be found at the `POX Wiki <https://openflow.stanford.edu/display/ONL/POX+Wiki>`_.
 
 GroupFlow is designed for use with real SDN networks, as well as Mininet emulated networks. Details on the installation and usage of Mininet can be found at `mininet.org <http://mininet.org/download/>`_.
@@ -11,7 +12,7 @@ The core POX modules do not have any further dependencies, but the supporting te
 
 
 Downloading GroupFlow
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 The latest version of GroupFlow can be downloaded directly from the GroupFlow github repository, as follows:
 
@@ -25,7 +26,7 @@ The "groupflow_scripts" directory contains test scripts which are capable of sen
 
 
 Usage
-~~~~~
+-----
 
 To start POX with GroupFlow functionality, POX must be launched with the "openflow.discovery", "openflow.igmp_manager", "openflow.flow_tracker" and "openflow.groupflow" modules enabled. For example:
 
