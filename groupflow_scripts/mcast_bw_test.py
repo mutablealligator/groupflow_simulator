@@ -33,6 +33,7 @@ def iperf_mcast(net, hosts=None, udpBw='10M'):
     client, server = hosts
     output( '*** Iperf: Testing UDP bandwidth between ' )
     output( "%s and %s\n" % ( client.name, server.name ) )
+    output( '*** Iperf: Sending UDP bandwidth: %s\n' % udpBw)
     server.cmd( 'killall -9 iperf' )
     iperfArgs = 'iperf -u '
     bwArgs = '-b ' + udpBw + ' '
@@ -87,7 +88,7 @@ class BandwidthTestTopo( Topo ):
 def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10, link_weight_type = 'linear'):
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-            'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=30', '--link_cong_threshold=30', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
+            'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=5', '--link_cong_threshold=4.5', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
             'misc.benchmark_terminator', 'openflow.igmp_manager', 
             'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type,
             'log.level', '--WARNING', '--openflow.flow_tracker=INFO', '--openflow.igmp_manager=DEBUG']
