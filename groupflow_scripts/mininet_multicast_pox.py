@@ -16,7 +16,7 @@ from datetime import datetime
 from multiprocessing import Process
 import numpy as np
         
-def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear'):
+def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none'):
     membership_mean = 0.1
     membership_std_dev = 0.25
     membership_avg_bound = float(len(hosts)) / 8.0
@@ -25,9 +25,9 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-            'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=30', '--link_cong_threshold=30', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
-            'misc.benchmark_terminator', 'openflow.igmp_manager', 
-            'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type,
+            'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=27', '--link_cong_threshold=24', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
+            'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
+            'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
             'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     print 'Launching external controller: ' + str(pox_arguments[0])
     print 'Launch arguments:'
@@ -41,9 +41,9 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     # Determine the flow tracker log file
     pox_log_file = open('./pox.log', 'r')
     flow_log_path = None
-    event_log_path = ''
+    event_log_path = None
     got_flow_log_path = False
-    got_event_log_path = True
+    got_event_log_path = False
     while (not got_flow_log_path) or (not got_event_log_path):
         pox_log = pox_log_file.readline()
 
@@ -135,19 +135,19 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             pox_log_file = open('./pox.log', 'r')
             pox_log_file.seek(pox_log_offset)
             for line in pox_log_file:
-                if 'Network peak link throughout (MBps):' in line:
+                if 'Network peak link throughout' in line:
                     line_split = line.split(' ')
                     print 'Peak Usage (Mbps): ' + line_split[-1],
-                if 'Network avg link throughout (MBps):' in line:
+                if 'Network avg link throughout:' in line:
                     line_split = line.split(' ')
                     print 'Mean Usage (Mbps): ' + line_split[-1],
-                if 'Congested link detected!' in line:
+                if 'Link Fully Utilized!' in line:
                     congested_link = True
                     break
             pox_log_offset = pox_log_file.tell()
             pox_log_file.close()
             if congested_link:
-                print 'Detected congested link, terminating simulation.'
+                print 'Detected fully utilized link, terminating simulation.'
                 break
             else:
                 print 'No congestion detected.'
@@ -175,8 +175,27 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
+def print_usage_text():
+    print 'GroupFlow Multicast Testing with Mininet'
+    print 'Usage:'
+    print '1) No arguments:'
+    print '> mininet_multicast_pox'
+    print 'If no arguments are provided, the script will launch a hard-coded test topology with Mininet in interactive mode.'
+    print ''
+    print '2) Custom topology:'
+    print '> mininet_multicast_pox <topology_path>'
+    print 'topology_path: If a single argument is given, the argument will be interpreted as a path to a BRITE topology. Otherwise, this functions identically to the no argument mode.'
+    print ''
+    print '3) Automated benchmarking:'
+    print '> mininet_multicast_pox <topology_path> <iterations_to_run> <log_file_prefix> <index_of_first_log_file> <parameter_sets (number is variable and unlimited)>'
+    print 'Parameter sets have the form: flow_replacement_mode,link_weight_type,util_link_weight'
+
 if __name__ == '__main__':
     setLogLevel( 'info' )
+    if len(sys.argv) >= 2:
+        if '-h' in str(sys.argv[1]) or 'help' in str(sys.argv[1]):
+            print_usage_text()
+            sys.exit()
     
     if len(sys.argv) >= 6:
         # Automated simulations - Differing link usage weights in Groupflow Module
@@ -186,24 +205,24 @@ if __name__ == '__main__':
         util_params = []
         for param_index in range(5, len(sys.argv)):
             param_split = sys.argv[param_index].split(',')
-            util_params.append((param_split[0], float(param_split[1])))
+            util_params.append((param_split[0], param_split[1], float(param_split[2])))
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
         start_time = time()
         print 'Simulations started at: ' + str(datetime.now())
         for i in range(0,num_iterations):
             for util_param in util_params:
-                p = Process(target=mcastTest, args=(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0]))
+                p = Process(target=mcastTest, args=(topo, False, hosts, log_prefix + '_' + ','.join([util_param[0], util_param[1], str(util_param[2])]) + '_' + str(i + first_index) + '.log', util_param[2], util_param[1], util_param[0]))
                 sim_start_time = time()
                 p.start()
-                # mcastTest(topo, False, hosts, log_prefix + '_' + ''.join([util_param[0], str(util_param[1])]) + '_' + str(i + first_index) + '.log', util_param[1], util_param[0])
                 p.join()
                 sim_end_time = time()
                 
                 # Make extra sure the network terminated cleanly
                 call(['python', 'kill_running_test.py'])
 
-                print 'Simulation ' + str(i+1) + '_u' + ''.join([util_param[0], str(util_param[1])]) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
+                print 'Simulation ' + str(i+1) + '_' + ','.join([util_param[0], util_param[1], str(util_param[2])]) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
+                
         end_time = time()
         print ' '
         print 'Simulations completed at: ' + str(datetime.now())

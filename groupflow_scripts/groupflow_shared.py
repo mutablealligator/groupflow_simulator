@@ -148,7 +148,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
     
     for line in flow_log_file:
         # This line specifies that start of stats for a new switch and time instant
-        if 'FlowStats' in line:
+        if 'PortStats' in line:
             line_split = line.split()
             switch_dpid = line_split[1][len('Switch:'):]
             num_flows = int(line_split[2][len('NumFlows:'):])
@@ -179,10 +179,10 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
             switch_average_load[cur_switch_dpid] = avg_load
             
         # This line specifies port specific stats for the last referenced switch
-        if 'Port' in line:
+        if 'PSPort' in line:
             line_split = line.split()
-            port_no = int(line_split[0][5:])
-            bandwidth_usage = float(line_split[3][13:])
+            port_no = int(line_split[0][len('PSPort:'):])
+            bandwidth_usage = float(line_split[3][len('AvgBandwidth:'):])
             if(port_no == 65533):
                 # Ignore connections to the controller for these calculations
                 continue
