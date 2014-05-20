@@ -61,6 +61,8 @@ import datetime
 
 log = core.getLogger()
 
+PORT_STATS_GENERATE_LINK_EVENTS = False
+
 # Note: These constants provide default values, which can be overridden by passing command
 # line parameters when the module launches
 OUTPUT_PEAK_USAGE = False
@@ -342,25 +344,26 @@ class FlowTrackedSwitch(EventMixin):
                     + ' InstBandwidth:' + str(self.port_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(
                         self.port_average_bandwidth_Mbps[port_num]) + '\n')
                 
-                if(self.port_average_bandwidth_Mbps[port_num] >= (self.flow_tracker.link_cong_threshold)):
-                    # Generate an event if the link is congested
-                    # First, get the switch on the other side of this link
-                    send_switch_dpid = None
-                    send_port = None
-                    for link in core.openflow_discovery.adjacency:
-                        if link.dpid1 == self.dpid and link.port1 == port_num:
-                            send_switch_dpid = link.dpid2
-                            send_port = link.port2
-                            break
+                if PORT_STATS_GENERATE_LINK_EVENTS:
+                    if(self.port_average_bandwidth_Mbps[port_num] >= (self.flow_tracker.link_cong_threshold)):
+                        # Generate an event if the link is congested
+                        # First, get the switch on the other side of this link
+                        send_switch_dpid = None
+                        send_port = None
+                        for link in core.openflow_discovery.adjacency:
+                            if link.dpid1 == self.dpid and link.port1 == port_num:
+                                send_switch_dpid = link.dpid2
+                                send_port = link.port2
+                                break
+                                
+                        if send_switch_dpid is None or send_port is None:
+                            continue
                             
-                    if send_switch_dpid is None or send_port is None:
-                        continue
-                        
-                    log.debug('PortStats: Congested link detected! SendSw: ' + dpid_to_str(send_switch_dpid) + ' Port: ' + str(send_port))
-                    event = LinkUtilizationEvent(send_switch_dpid, send_port, self.flow_tracker.link_cong_threshold,
-                            self.port_average_bandwidth_Mbps[port_num], LinkUtilizationEvent.PORT_STATS,
-                            self.flow_tracker.switches[send_switch_dpid].flow_average_bandwidth_Mbps[port_num])
-                    self.flow_tracker.raiseEvent(event)
+                        log.debug('PortStats: Congested link detected! SendSw: ' + dpid_to_str(send_switch_dpid) + ' Port: ' + str(send_port))
+                        event = LinkUtilizationEvent(send_switch_dpid, send_port, self.flow_tracker.link_cong_threshold,
+                                self.port_average_bandwidth_Mbps[port_num], LinkUtilizationEvent.PORT_STATS,
+                                self.flow_tracker.switches[send_switch_dpid].flow_average_bandwidth_Mbps[port_num])
+                        self.flow_tracker.raiseEvent(event)
 
             self.flow_tracker._log_file.write('\n')
 
@@ -548,7 +551,7 @@ class FlowTrackedSwitch(EventMixin):
                             self.flow_average_bandwidth_Mbps[port_num][flow_cookie]) + '\n')
                     
                     # Generate an event if the link is congested
-                    if self.flow_total_average_bandwidth_Mbps[port_num] > self.flow_tracker.link_cong_threshold:
+                    if self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num) > self.flow_tracker.link_cong_threshold:
                         log.debug('FlowStats: Congested link detected! SendSw: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num))
                         event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.link_cong_threshold,
                                 self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num), LinkUtilizationEvent.FLOW_STATS,
