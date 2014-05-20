@@ -77,9 +77,11 @@ class LinkUtilizationEvent(Event):
     
     * router_dpid: The egress router of the link on which status is being reported
     * output_port: The output port of the link on which status is being reported
-    * link_utilization: The normalized utilization of the link, as determined from PortStats on the ingress router.
-      If port stats are not available on the ingress router, the normalized utilization as determined from the
-      egress router ports tats will be included instead)
+    * cong_threshold: The flow tracker's congestion threshold (in Mbps)
+    * link_utilization: The utilization (in Mbps) of the link, as determined from PortStats on the ingress router.
+      If port stats are not available on the ingress router, the utilization as determined from the
+      egress router ports stats will be included instead.
+    * stats_type: One of FLOW_STATS (0) or PORT_STATS (1). Records which type of stats reception triggered this event.
     * flow_map: A map of normalized bandwidth utilizations keyed by flow_cookie. This should be used to determine
       which flows should be replaced.
     ::
@@ -87,11 +89,16 @@ class LinkUtilizationEvent(Event):
         flow_map[flow_cookie] = normalized bandwidth of flow with flow cookie flow_cookie
     """
     
-    def __init__ (self, router_dpid, output_port, link_utilization, flow_map):
+    FLOW_STATS = 0
+    PORT_STATS = 1
+    
+    def __init__ (self, router_dpid, output_port, cong_threshold, link_utilization, stats_type, flow_map):
         Event.__init__(self)
         self.router_dpid = router_dpid
         self.output_port = output_port
+        self.cong_threshold = cong_threshold
         self.link_utilization = link_utilization
+        self.stats_type = stats_type
         self.flow_map = flow_map
 
 
@@ -335,7 +342,6 @@ class FlowTrackedSwitch(EventMixin):
                     + ' InstBandwidth:' + str(self.port_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(
                         self.port_average_bandwidth_Mbps[port_num]) + '\n')
                 
-                
                 if(self.port_average_bandwidth_Mbps[port_num] >= (self.flow_tracker.link_cong_threshold)):
                     # Generate an event if the link is congested
                     # First, get the switch on the other side of this link
@@ -351,7 +357,8 @@ class FlowTrackedSwitch(EventMixin):
                         continue
                         
                     log.debug('PortStats: Congested link detected! SendSw: ' + dpid_to_str(send_switch_dpid) + ' Port: ' + str(send_port))
-                    event = LinkUtilizationEvent(send_switch_dpid, send_port, self.port_average_bandwidth_Mbps[port_num] / self.flow_tracker.link_max_bw,
+                    event = LinkUtilizationEvent(send_switch_dpid, send_port, self.flow_tracker.link_cong_threshold,
+                            self.port_average_bandwidth_Mbps[port_num], LinkUtilizationEvent.PORT_STATS,
                             self.flow_tracker.switches[send_switch_dpid].flow_average_bandwidth_Mbps[port_num])
                     self.flow_tracker.raiseEvent(event)
 
@@ -420,8 +427,8 @@ class FlowTrackedSwitch(EventMixin):
                             curr_event_byte_count[action.port] = {}
                             curr_event_byte_count[action.port][flow_stat.cookie] = flow_stat.byte_count
 
-        # Determine the number of new bytes that appeared this interval, and set the flow removed flag to true if
-        # any port count is lower than in the previous interval
+        # Determine the number of new bytes that appeared this interval
+        negative_byte_count = False
         for port_num in curr_event_byte_count:
             if port_num in self.tracked_ports:
                 if not port_num in self.flow_total_byte_count:
@@ -430,8 +437,7 @@ class FlowTrackedSwitch(EventMixin):
                     self.flow_interval_byte_count[port_num] = {}
                     for flow_cookie in curr_event_byte_count[port_num]:
                         self.flow_total_byte_count[port_num][flow_cookie] = curr_event_byte_count[port_num][flow_cookie]
-                        self.flow_interval_byte_count[port_num][flow_cookie] = curr_event_byte_count[port_num][
-                                                                               flow_cookie]
+                        self.flow_interval_byte_count[port_num][flow_cookie] = curr_event_byte_count[port_num][flow_cookie]
                 else:
                     for flow_cookie in curr_event_byte_count[port_num]:
                         if flow_cookie not in self.flow_total_byte_count[port_num]:
@@ -441,15 +447,20 @@ class FlowTrackedSwitch(EventMixin):
                             self.flow_interval_byte_count[port_num][flow_cookie] = curr_event_byte_count[port_num][
                                                                                    flow_cookie]
                         else:
-                            self.flow_interval_byte_count[port_num][flow_cookie] = (curr_event_byte_count[port_num][
-                                                                                   flow_cookie] -
-                                                                                   self.flow_total_byte_count[port_num][
-                                                                                   flow_cookie])
-                            self.flow_total_byte_count[port_num][flow_cookie] = curr_event_byte_count[port_num][
-                                                                                flow_cookie]
-
-                            # TODO: Handle the case where a flow reports less bytes forwarded than the previous interval
-                            # (not sure if this can ever actually happen)
+                            if curr_event_byte_count[port_num][flow_cookie] < self.flow_total_byte_count[port_num][flow_cookie]:
+                                # TODO: Find a better way to handle the case where a flow reports less bytes forwarded than the previous interval
+                                log.info('Switch: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num) + ' FlowCookie: ' + str(flow_cookie) + '\n\tReported negative byte count: '
+                                        + str(curr_event_byte_count[port_num][flow_cookie] - self.flow_total_byte_count[port_num][flow_cookie]))
+                                self.flow_total_byte_count[port_num][flow_cookie] = curr_event_byte_count[port_num][flow_cookie]
+                                self.flow_interval_byte_count[port_num][flow_cookie] = 0
+                                negative_byte_count = True
+                            else:
+                                self.flow_interval_byte_count[port_num][flow_cookie] = (curr_event_byte_count[port_num][
+                                                                                       flow_cookie] -
+                                                                                       self.flow_total_byte_count[port_num][
+                                                                                       flow_cookie])
+                                self.flow_total_byte_count[port_num][flow_cookie] = curr_event_byte_count[port_num][
+                                                                                    flow_cookie]
 
         # Remove counters for flows that were removed in this interval
         flows_to_remove = []
@@ -469,7 +480,7 @@ class FlowTrackedSwitch(EventMixin):
                 del self.flow_average_bandwidth_Mbps[removal[0]][removal[1]]
 
         # Skip further processing if this was the first measurement interval, or if the measurement interval had an unreasonable duration
-        if self._last_flow_stats_query_response_time is None:
+        if negative_byte_count or self._last_flow_stats_query_response_time is None:
             self._last_flow_stats_query_response_time = reception_time
             return
         interval_len = reception_time - self._last_flow_stats_query_response_time
@@ -498,6 +509,11 @@ class FlowTrackedSwitch(EventMixin):
                     (self.flow_tracker.avg_smooth_factor * self.flow_interval_bandwidth_Mbps[port_num][flow_cookie]) + \
                     ((1 - self.flow_tracker.avg_smooth_factor) * self.flow_average_bandwidth_Mbps[port_num][flow_cookie])
                     , self.flow_tracker.link_max_bw)
+                
+                if(self.flow_average_bandwidth_Mbps[port_num][flow_cookie] < 0):
+                    log.warn('FlowStats reported negative bandwidth (' + str(self.flow_average_bandwidth_Mbps[port_num][flow_cookie]) + ' Mbps) '
+                            + 'on \n\tSwitch: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num) + ' Flow Cookie: ' + str(flow_cookie)
+                            + '\n\tInterval Len: ' + str(interval_len))
             
             self.flow_total_average_bandwidth_Mbps[port_num] = sum(self.flow_average_bandwidth_Mbps[port_num].itervalues())
 
@@ -534,7 +550,8 @@ class FlowTrackedSwitch(EventMixin):
                     # Generate an event if the link is congested
                     if self.flow_total_average_bandwidth_Mbps[port_num] > self.flow_tracker.link_cong_threshold:
                         log.debug('FlowStats: Congested link detected! SendSw: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num))
-                        event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.get_link_utilization_normalized(self.dpid, port_num),
+                        event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.link_cong_threshold,
+                                self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num), LinkUtilizationEvent.FLOW_STATS,
                                 self.flow_average_bandwidth_Mbps[port_num])
                         self.flow_tracker.raiseEvent(event)
                         
