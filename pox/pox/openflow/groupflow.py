@@ -93,6 +93,7 @@ CONG_THRESHOLD_FLOW_REPLACEMENT = 2
 # Developer constants
 # The below constants enable/configure experimental features which have not yet been integrated into the module API
 FLOW_REPLACEMENT_INTERVAL_SECONDS = 10
+ENABLE_OUT_OF_ORDER_PACKET_DELIVERY = False
 
 class MulticastPath(object):
     """Manages multicast route calculation and installation for a single pair of multicast group and multicast sender."""
@@ -214,7 +215,7 @@ class MulticastPath(object):
             # log.debug('Building path for receiver on router: ' + dpid_to_str(receiver[0]))
             receiver_path = self.path_tree_map[receiver[0]]
             if receiver_path is None:
-                log.warning('Path could not be determined for receiver ' + dpid_to_str(receiver[0]) + ' (network is not fully connected)')
+                log.warn('Path could not be determined for receiver ' + dpid_to_str(receiver[0]) + ' (network is not fully connected)')
                 continue
                 
             while receiver_path[1]:
@@ -244,6 +245,8 @@ class MulticastPath(object):
             else:
                 # Otherwise, generate a new flow mod
                 msg = of.ofp_flow_mod()
+                msg.hard_timeout = 0
+                msg.idle_timeout = 0
                 if edge[0] in self.installed_node_list:
                     msg.command = of.OFPFC_MODIFY
                 else:
@@ -269,6 +272,8 @@ class MulticastPath(object):
             else:
                 # Otherwise, generate a new flow mod
                 msg = of.ofp_flow_mod()
+                msg.hard_timeout = 0
+                msg.idle_timeout = 0
                 if receiver[0] in self.installed_node_list:
                     msg.command = of.OFPFC_MODIFY
                 else:
@@ -388,6 +393,7 @@ class GroupFlowManager(EventMixin):
         bandwidth utilization on a per-flow basis.
         """
         self._next_mcast_group_cookie += 1
+        log.debug('Generated new flow cookie: ' + str(self._next_mcast_group_cookie - 1))
         return self._next_mcast_group_cookie - 1
     
     def get_reception_state(self, mcast_group, src_ip):
@@ -461,13 +467,15 @@ class GroupFlowManager(EventMixin):
                 if group_reception:
                     if not self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] is None:
                         log.debug('Got multicast packet from source which should already be configured Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
-                        # Send the packet back to the switch for forwarding
-                        msg = of.ofp_packet_out()
-                        msg.data = event.ofp
-                        msg.buffer_id = event.ofp.buffer_id
-                        msg.in_port = event.port
-                        msg.actions = [of.ofp_action_output(port = of.OFPP_TABLE)]
-                        event.connection.send(msg)
+                        if ENABLE_OUT_OF_ORDER_PACKET_DELIVERY:
+                            # This may cause OFPBRC_BUFFER_UNKNOWN errors if the controller takes too long to respond
+                            # Send the packet back to the switch for forwarding
+                            msg = of.ofp_packet_out()
+                            msg.data = event.ofp
+                            msg.buffer_id = event.ofp.buffer_id
+                            msg.in_port = event.port
+                            msg.actions = [of.ofp_action_output(port = of.OFPP_TABLE)]
+                            event.connection.send(msg)
                         return
                         
                     log.debug('Got multicast packet from new source. Router: ' + dpid_to_str(event.dpid) + ' Port: ' + str(event.port))
