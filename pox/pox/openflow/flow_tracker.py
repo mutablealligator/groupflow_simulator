@@ -350,7 +350,7 @@ class FlowTrackedSwitch(EventMixin):
                     if send_switch_dpid is None or send_port is None:
                         continue
                         
-                    log.warn('PortStats: Congested link detected! SendSw: ' + dpid_to_str(send_switch_dpid) + ' Port: ' + str(send_port))
+                    log.debug('PortStats: Congested link detected! SendSw: ' + dpid_to_str(send_switch_dpid) + ' Port: ' + str(send_port))
                     event = LinkUtilizationEvent(send_switch_dpid, send_port, self.port_average_bandwidth_Mbps[port_num] / self.flow_tracker.link_max_bw,
                             self.flow_tracker.switches[send_switch_dpid].flow_average_bandwidth_Mbps[port_num])
                     self.flow_tracker.raiseEvent(event)
@@ -533,7 +533,7 @@ class FlowTrackedSwitch(EventMixin):
                     
                     # Generate an event if the link is congested
                     if self.flow_total_average_bandwidth_Mbps[port_num] > self.flow_tracker.link_cong_threshold:
-                        log.warn('FlowStats: Congested link detected! SendSw: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num))
+                        log.debug('FlowStats: Congested link detected! SendSw: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num))
                         event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.get_link_utilization_normalized(self.dpid, port_num),
                                 self.flow_average_bandwidth_Mbps[port_num])
                         self.flow_tracker.raiseEvent(event)
