@@ -253,6 +253,15 @@ class IGMPv3Router(EventMixin):
         self.connection = connection
         self._listeners = self.listenTo(connection)
         self._connected_at = time.time()
+        
+        # Add a flow mod which sends complete IGMP packets to the controller
+        msg = of.ofp_flow_mod()
+        msg.match.dl_type = 0x0800 # IPv4
+        msg.match.nw_proto = IGMP_PROTOCOL # IGMP
+        msg.hard_timeout = 0
+        msg.idle_timeout = 0
+        msg.actions.append(of.ofp_action_output(port = of.OFPP_CONTROLLER))
+        connection.send(msg)
 
     def _handle_ConnectionDown(self, event):
         self.ignore_connection()
@@ -1146,7 +1155,6 @@ class IGMPManager(EventMixin):
                     # msg.match.dl_type = ipv4_pkt.protocol
                     # msg.match.nw_dst = ipv4_pkt.dstip
                     # msg.match.in_port = event.port
-                    ## msg.actions.append(of.ofp_action_output(port = of.OFPP_NONE))
                     # msg.action = []     # No actions = drop packet
                     # event.connection.send(msg)
                     # log.info(str(receiving_router) + ':' + str(event.port) + '| Installed flow to drop all IGMP packets on port: ' + str(event.port))
