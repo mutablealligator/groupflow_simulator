@@ -127,7 +127,10 @@ class FlowTrackedSwitch(EventMixin):
         self._last_flow_stats_query_total_time = None
 
         self._last_port_stats_query_send_time = None
+        self._last_port_stats_query_response_time = None
+        self._last_port_stats_query_network_time = None
         self._last_port_stats_query_processing_time = None
+        self._last_port_stats_query_total_time = None
 
         self.num_flows = 0
 
@@ -244,6 +247,8 @@ class FlowTrackedSwitch(EventMixin):
             return
 
         log.debug('== PortStatsReceived - Switch: ' + dpid_to_str(self.dpid) + ' - Time: ' + str(reception_time))
+        
+        self._last_port_stats_query_network_time = reception_time - self._last_port_stats_query_send_time
 
         # Clear byte counts for this interval
         for port in self.port_interval_byte_count:
@@ -334,13 +339,17 @@ class FlowTrackedSwitch(EventMixin):
 
         # Print log information to file
         if not self.flow_tracker._log_file is None:
-            self.flow_tracker._log_file.write('PortStats Switch:' + dpid_to_str(self.dpid) + ' IntervalLen:' + str(
-                interval_len) + ' IntervalEndTime:' + str(reception_time) + ' AvgSwitchLoad:' + str(
-                self.port_average_switch_load) + '\n')
+            # Note: NumFlows is only included here so that the PortStats logs will exactly match the format of FlowStats
+            # (makes for easier log processing)
+            self.flow_tracker._log_file.write('PortStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:0 IntervalLen:' + str(
+                interval_len) + ' IntervalEndTime:' + str(reception_time) 
+                + ' ResponseTime:' + str(self._last_port_stats_query_total_time) + ' NetworkTime:' + str(
+                self._last_port_stats_query_network_time) + ' ProcessingTime:' + str(self._last_port_stats_query_processing_time) 
+                + ' AvgSwitchLoad:' + str(self.port_average_switch_load) + '\n')
 
             for port_num in self.port_interval_bandwidth_Mbps:
                 self.flow_tracker._log_file.write(
-                    'Port:' + str(port_num) + ' BytesThisInterval:' + str(self.port_interval_byte_count[port_num])
+                    'PSPort:' + str(port_num) + ' BytesThisInterval:' + str(self.port_interval_byte_count[port_num])
                     + ' InstBandwidth:' + str(self.port_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(
                         self.port_average_bandwidth_Mbps[port_num]) + '\n')
                 
@@ -544,7 +553,7 @@ class FlowTrackedSwitch(EventMixin):
             for port_num in self.flow_interval_bandwidth_Mbps:
                 for flow_cookie in self.flow_interval_bandwidth_Mbps[port_num]:
                     self.flow_tracker._log_file.write(
-                        'Port:' + str(port_num) + ' FlowCookie: ' + str(flow_cookie) + ' BytesThisInterval:' + str(
+                        'FSPort:' + str(port_num) + ' FlowCookie: ' + str(flow_cookie) + ' BytesThisInterval:' + str(
                             self.flow_interval_byte_count[port_num][flow_cookie])
                         + ' InstBandwidth:' + str(
                             self.flow_interval_bandwidth_Mbps[port_num][flow_cookie]) + ' AvgBandwidth:' + str(
