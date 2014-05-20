@@ -244,6 +244,10 @@ class MulticastPath(object):
             else:
                 # Otherwise, generate a new flow mod
                 msg = of.ofp_flow_mod()
+                if edge[0] in self.installed_node_list:
+                    msg.command = of.OFPFC_MODIFY
+                else:
+                    msg.command = of.OFPFC_ADD
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
                 msg.match.nw_src = self.src_ip
@@ -265,6 +269,10 @@ class MulticastPath(object):
             else:
                 # Otherwise, generate a new flow mod
                 msg = of.ofp_flow_mod()
+                if receiver[0] in self.installed_node_list:
+                    msg.command = of.OFPFC_MODIFY
+                else:
+                    msg.command = of.OFPFC_ADD
                 msg.cookie = self.flow_cookie
                 msg.match.dl_type = 0x800   # IPV4
                 msg.match.nw_dst = self.dst_mcast_address
