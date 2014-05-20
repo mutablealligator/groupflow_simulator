@@ -69,6 +69,32 @@ LINK_MAX_BANDWIDTH_MbPS = 30 # MegaBits per second
 LINK_CONGESTION_THRESHOLD_MbPS = 0.95 * LINK_MAX_BANDWIDTH_MbPS
 PERIODIC_QUERY_INTERVAL = 2 # Seconds
 
+class LinkUtilizationEvent(Event):
+
+    """Event which reports link status in the event of link congestion, or under under other conditions (TBD).
+    
+    This class contains the following public attributes:
+    
+    * router_dpid: The egress router of the link on which status is being reported
+    * output_port: The output port of the link on which status is being reported
+    * link_utilization: The normalized utilization of the link, as determined from PortStats on the ingress router.
+      If port stats are not available on the ingress router, the normalized utilization as determined from the
+      egress router ports tats will be included instead)
+    * flow_map: A map of normalized bandwidth utilizations keyed by flow_cookie. This should be used to determine
+      which flows should be replaced.
+    ::
+        
+        flow_map[flow_cookie] = normalized bandwidth of flow with flow cookie flow_cookie
+    """
+    
+    def __init__ (self, router_dpid, output_port, link_utilization, flow_map):
+        Event.__init__(self)
+        self.router_dpid = router_dpid
+        self.output_port = output_port
+        self.link_utilization = link_utilization
+        self.flow_map = flow_map
+
+
 class FlowTrackedSwitch(EventMixin):
     """Class used to manage statistics querying and processing for a single OpenFlow switch.
 
@@ -308,8 +334,26 @@ class FlowTrackedSwitch(EventMixin):
                     'Port:' + str(port_num) + ' BytesThisInterval:' + str(self.port_interval_byte_count[port_num])
                     + ' InstBandwidth:' + str(self.port_interval_bandwidth_Mbps[port_num]) + ' AvgBandwidth:' + str(
                         self.port_average_bandwidth_Mbps[port_num]) + '\n')
+                
+                
                 if(self.port_average_bandwidth_Mbps[port_num] >= (self.flow_tracker.link_cong_threshold)):
-                    log.warn('Congested link detected! RecvSw:' + dpid_to_str(self.dpid) + ' Port:' + str(port_num))
+                    # Generate an event if the link is congested
+                    # First, get the switch on the other side of this link
+                    send_switch_dpid = None
+                    send_port = None
+                    for link in core.openflow_discovery.adjacency:
+                        if link.dpid1 == self.dpid and link.port1 == port_num:
+                            send_switch_dpid = link.dpid2
+                            send_port = link.port2
+                            break
+                            
+                    if send_switch_dpid is None or send_port is None:
+                        continue
+                        
+                    log.warn('PortStats: Congested link detected! SendSw: ' + dpid_to_str(send_switch_dpid) + ' Port: ' + str(send_port))
+                    event = LinkUtilizationEvent(send_switch_dpid, send_port, self.port_average_bandwidth_Mbps[port_num] / self.flow_tracker.link_max_bw,
+                            self.flow_tracker.switches[send_switch_dpid].flow_average_bandwidth_Mbps[port_num])
+                    self.flow_tracker.raiseEvent(event)
 
             self.flow_tracker._log_file.write('\n')
 
@@ -486,6 +530,14 @@ class FlowTrackedSwitch(EventMixin):
                         + ' InstBandwidth:' + str(
                             self.flow_interval_bandwidth_Mbps[port_num][flow_cookie]) + ' AvgBandwidth:' + str(
                             self.flow_average_bandwidth_Mbps[port_num][flow_cookie]) + '\n')
+                    
+                    # Generate an event if the link is congested
+                    if self.flow_total_average_bandwidth_Mbps[port_num] > self.flow_tracker.link_cong_threshold:
+                        log.warn('FlowStats: Congested link detected! SendSw: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num))
+                        event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.get_link_utilization_normalized(self.dpid, port_num),
+                                self.flow_average_bandwidth_Mbps[port_num])
+                        self.flow_tracker.raiseEvent(event)
+                        
 
             self.flow_tracker._log_file.write('\n')
 
@@ -493,8 +545,14 @@ class FlowTrackedSwitch(EventMixin):
 
 
 class FlowTracker(EventMixin):
+
     """Module which implements bandwidth utilization tracking by managing a map of FlowTrackedSwitches."""
+    
     _core_name = "openflow_flow_tracker"
+    
+    _eventMixin_events = set([
+        LinkUtilizationEvent
+    ])
 
     def __init__(self, query_interval, link_max_bw, link_cong_threshold, avg_smooth_factor, log_peak_usage):
         """Initializes the FlowTracker module, and configures all required listeners once dependencies have loaded."""
