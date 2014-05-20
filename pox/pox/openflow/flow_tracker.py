@@ -472,7 +472,7 @@ class FlowTrackedSwitch(EventMixin):
                 if port_num not in curr_event_byte_count or flow_cookie not in curr_event_byte_count[port_num]:
                     flows_to_remove.append((port_num, flow_cookie))
         for removal in flows_to_remove:
-            log.info('Removing bandwidth counters for port: ' + str(removal[0]) + ' flow cookie: ' + str(removal[1]))
+            log.debug('Removing bandwidth counters for port: ' + str(removal[0]) + ' flow cookie: ' + str(removal[1]))
             if removal[1] in self.flow_interval_byte_count[removal[0]]:
                 del self.flow_interval_byte_count[removal[0]][removal[1]]
             if removal[1] in self.flow_total_byte_count[removal[0]]:
