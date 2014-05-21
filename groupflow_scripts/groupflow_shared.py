@@ -138,7 +138,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
     final_log_file.write('GroupFlow Performance Simulation: ' + str(datetime.now()) + '\n')
     final_log_file.write('FlowStatsLogFile:' + str(flow_stats_file_path) + '\n')
     final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
-    final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' NumGroups:' + str(len(test_groups)) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
+    final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' NumGroups:' + str(len(test_groups) - 1) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
     final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n')
     
     flow_log_file = open(flow_stats_file_path, 'r')
