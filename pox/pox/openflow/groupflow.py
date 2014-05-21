@@ -85,6 +85,9 @@ LINK_WEIGHT_EXPONENTIAL = 2
 STATIC_LINK_WEIGHT = 1    # Scaling factor for link weight which is statically assigned (implements shortest hop routing if no dynamic link weight is set)
 UTILIZATION_LINK_WEIGHT = 10   # Scaling factor for link weight which is determined by current link utilization
 
+# Default flow replacement interval
+FLOW_REPLACEMENT_INTERVAL_SECONDS = 10
+
 # Constants to determine flow replacement mode
 NO_FLOW_REPLACEMENT = 0
 PERIODIC_FLOW_REPLACEMENT = 1
@@ -92,7 +95,6 @@ CONG_THRESHOLD_FLOW_REPLACEMENT = 2
 
 # Developer constants
 # The below constants enable/configure experimental features which have not yet been integrated into the module API
-FLOW_REPLACEMENT_INTERVAL_SECONDS = 10
 ENABLE_OUT_OF_ORDER_PACKET_DELIVERY = False
 
 class MulticastPath(object):
@@ -169,12 +171,11 @@ class MulticastPath(object):
         weighted_topo_graph = []
         for edge in curr_topo_graph:
             output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
-            link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
+            raw_link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
             link_util_mcast_flow = core.openflow_flow_tracker.get_flow_utilization_normalized(edge[0], output_port, self.flow_cookie)
             
-            # log.debug('Router DPID: ' + dpid_to_str(edge[0]) + ' Port: ' + str(output_port) + ' Total Util: ' + str(link_util) + ' Flow Util: ' + str(link_util_mcast_flow))
-            
-            link_util = min(0, link_util - link_util_mcast_flow)
+            link_util = min(0, raw_link_util * (1 - link_util_mcast_flow))
+            # link_util = raw_link_util # Uncommenting this line will cause flows to reroute around their own traffic, good for testing
             
             link_weight = 1
             if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
@@ -184,9 +185,11 @@ class MulticastPath(object):
                     link_weight = sys.float_info.max
                 else:
                     link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * (1 / (1 - link_util)))
-                
-            if(link_util > 0):
-                log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' Util: ' + str(link_util) + ' Weight: ' + str(link_weight))
+            
+            log.debug('Router DPID: ' + dpid_to_str(edge[0]) + ' Port: ' + str(output_port) + 
+                    'TotalUtil: ' + str(raw_link_util) + ' FlowUtil: ' + str(link_util_mcast_flow) + ' OtherFlowUtil: ' + str(link_util) 
+                    + ' Weight: ' + str(link_weight))
+
             weighted_topo_graph.append([edge[0], edge[1], link_weight])
         self.weighted_topo_graph = weighted_topo_graph
         
