@@ -15,7 +15,10 @@ from time import sleep, time
 from datetime import datetime
 from multiprocessing import Process
 import numpy as np
-        
+
+ENABLE_FIXED_GROUP_SIZE = True
+FIXED_GROUP_SIZE = 4
+
 def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none'):
     membership_mean = 0.1
     membership_std_dev = 0.25
@@ -107,14 +110,19 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             sender_index = randint(0,len(hosts))
             sender_host = hosts[sender_index]
             
-            # Choose a random number of receivers by comparing a uniform random variable
-            # against the previously generated group membership probabilities
             receivers = []
-            for host_prob in host_join_probabilities:
-                p = uniform(0, 1)
-                if p <= host_prob[1]:
-                    receivers.append(host_prob[0])
-            
+            if ENABLE_FIXED_GROUP_SIZE:
+                while len(receivers) < FIXED_GROUP_SIZE:
+                    receivers.append(hosts[randint(0,len(hosts))])
+                    receivers = list(set(receivers))
+            else:
+                # Choose a random number of receivers by comparing a uniform random variable
+                # against the previously generated group membership probabilities
+                for host_prob in host_join_probabilities:
+                    p = uniform(0, 1)
+                    if p <= host_prob[1]:
+                        receivers.append(host_prob[0])
+
             # Initialize the group
             # Note - This method of group IP generation will need to be modified slightly to support more than
             # 255 groups
