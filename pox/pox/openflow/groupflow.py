@@ -187,7 +187,7 @@ class MulticastPath(object):
                     link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * (1 / (1 - link_util)))
             
             log.debug('Router DPID: ' + dpid_to_str(edge[0]) + ' Port: ' + str(output_port) + 
-                    'TotalUtil: ' + str(raw_link_util) + ' FlowUtil: ' + str(link_util_mcast_flow) + ' OtherFlowUtil: ' + str(link_util) 
+                    ' TotalUtil: ' + str(raw_link_util) + ' FlowUtil: ' + str(link_util_mcast_flow) + ' OtherFlowUtil: ' + str(link_util) 
                     + ' Weight: ' + str(link_weight))
 
             weighted_topo_graph.append([edge[0], edge[1], link_weight])
@@ -582,10 +582,6 @@ class GroupFlowManager(EventMixin):
         
         # Ignore the event if congestion threshold based flow replacement is not enabled
         if self.flow_replacement_mode != CONG_THRESHOLD_FLOW_REPLACEMENT:
-            return
-            
-        # Disregard events originating from flow stats (port stats should generate an equivalent event for bidirectional core links)
-        if event.stats_type == LinkUtilizationEvent.FLOW_STATS:
             return
             
         log.debug('Got LinkUtilEvent - Switch: ' + dpid_to_str(event.router_dpid) + ' Port: ' + str(event.output_port) 
