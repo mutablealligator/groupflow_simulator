@@ -26,7 +26,7 @@ def mean_confidence_interval(data, confidence=0.95):
 	return m-h, m+h
     
 
-def read_log_set(filepath_prefix, num_logs, output_filepath):
+def read_log_set(filepath_prefix, num_logs):
     group_records = []  # list of lists -> group_records[group_index] = list of MulticastGroupStatRecords
     num_groups_list = []
     
@@ -69,12 +69,12 @@ def read_log_set(filepath_prefix, num_logs, output_filepath):
     return group_records, num_groups_list
 
 
-def print_group_record_statistics(group_records, num_groups_list):
+def print_group_record_statistics(group_records, num_groups_list, output_prefix):
     avg_num_groups_supported = float(sum(num_groups_list)) / len(num_groups_list)
     ci_upper, ci_lower = mean_confidence_interval(num_groups_list)
     print 'Average # Groups Supported: ' + str(avg_num_groups_supported) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
-    print 'num_groups = ' + str(avg_num_groups_supported) + ';'
-    print 'num_groups_ci = ' + str(abs(ci_upper - ci_lower) / 2) + ';'
+    print str(output_prefix) + 'num_groups = ' + str(avg_num_groups_supported) + ';'
+    print str(output_prefix) + 'num_groups_ci = ' + str(abs(ci_upper - ci_lower) / 2) + ';'
     print ' '
     
     traffic_conc_avgs = []
@@ -171,32 +171,33 @@ def print_group_record_statistics(group_records, num_groups_list):
         ci_upper, ci_lower = mean_confidence_interval(processing_time_list)
         processing_time_cis.append(abs(ci_upper - ci_lower) / 2)
         print 'ProcessingTime:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
-        
+    
+    # Print output in MATLAB matrix format
     print ' '
-    print 'traffic_conc = [' + ', '.join([str(r) for r in traffic_conc_avgs]) + '];'
-    print 'traffic_conc_ci = [' + ', '.join([str(r) for r in traffic_conc_cis]) + '];'
-    print 'link_std_dev = [' + ', '.join([str(r) for r in link_std_dev_avgs]) + '];'
-    print 'link_std_dev_ci = [' + ', '.join([str(r) for r in link_std_dev_cis]) + '];'
-    print 'link_avg_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
-    print 'link_avg_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
-    print 'link_max_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
-    print 'link_max_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
-    print 'switch_load_mbps = [' + ', '.join([str(r) for r in switch_load_mbps_avgs]) + '];'
-    print 'switch_load_mbps_ci = [' + ', '.join([str(r) for r in switch_load_mbps_cis]) + '];'
-    print 'num_flows = [' + ', '.join([str(r) for r in num_flows_avgs]) + '];'
-    print 'num_flows_ci = [' + ', '.join([str(r) for r in num_flows_cis]) + '];'
-    print 'response_time = [' + ', '.join([str(r) for r in response_time_avgs]) + '];'
-    print 'response_time_ci = [' + ', '.join([str(r) for r in response_time_cis]) + '];'
-    print 'network_time = [' + ', '.join([str(r) for r in network_time_avgs]) + '];'
-    print 'network_time_ci = [' + ', '.join([str(r) for r in network_time_cis]) + '];'
-    print 'processing_time = [' + ', '.join([str(r) for r in processing_time_avgs]) + '];'
-    print 'processing_time_ci = [' + ', '.join([str(r) for r in processing_time_cis]) + '];'
+    print str(output_prefix) + 'traffic_conc = [' + ', '.join([str(r) for r in traffic_conc_avgs]) + '];'
+    print str(output_prefix) + 'traffic_conc_ci = [' + ', '.join([str(r) for r in traffic_conc_cis]) + '];'
+    print str(output_prefix) + 'link_std_dev = [' + ', '.join([str(r) for r in link_std_dev_avgs]) + '];'
+    print str(output_prefix) + 'link_std_dev_ci = [' + ', '.join([str(r) for r in link_std_dev_cis]) + '];'
+    print str(output_prefix) + 'link_avg_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
+    print str(output_prefix) + 'link_avg_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
+    print str(output_prefix) + 'link_max_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
+    print str(output_prefix) + 'link_max_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
+    print str(output_prefix) + 'switch_load_mbps = [' + ', '.join([str(r) for r in switch_load_mbps_avgs]) + '];'
+    print str(output_prefix) + 'switch_load_mbps_ci = [' + ', '.join([str(r) for r in switch_load_mbps_cis]) + '];'
+    print str(output_prefix) + 'num_flows = [' + ', '.join([str(r) for r in num_flows_avgs]) + '];'
+    print str(output_prefix) + 'num_flows_ci = [' + ', '.join([str(r) for r in num_flows_cis]) + '];'
+    print str(output_prefix) + 'response_time = [' + ', '.join([str(r) for r in response_time_avgs]) + '];'
+    print str(output_prefix) + 'response_time_ci = [' + ', '.join([str(r) for r in response_time_cis]) + '];'
+    print str(output_prefix) + 'network_time = [' + ', '.join([str(r) for r in network_time_avgs]) + '];'
+    print str(output_prefix) + 'network_time_ci = [' + ', '.join([str(r) for r in network_time_cis]) + '];'
+    print str(output_prefix) + 'processing_time = [' + ', '.join([str(r) for r in processing_time_avgs]) + '];'
+    print str(output_prefix) + 'processing_time_ci = [' + ', '.join([str(r) for r in processing_time_cis]) + '];'
 
 if __name__ == '__main__':
     if len(sys.argv) >= 4:
         filepath_prefix = sys.argv[1]
         num_logs = int(sys.argv[2])
-        output_filepath = sys.argv[3]
-        group_records, num_groups_list = read_log_set(filepath_prefix, num_logs, output_filepath)
-        print_group_record_statistics(group_records, num_groups_list)
+        output_prefix = sys.argv[3]
+        group_records, num_groups_list = read_log_set(filepath_prefix, num_logs)
+        print_group_record_statistics(group_records, num_groups_list, output_prefix)
     
