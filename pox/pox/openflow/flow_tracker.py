@@ -559,13 +559,13 @@ class FlowTrackedSwitch(EventMixin):
                             self.flow_interval_bandwidth_Mbps[port_num][flow_cookie]) + ' AvgBandwidth:' + str(
                             self.flow_average_bandwidth_Mbps[port_num][flow_cookie]) + '\n')
                     
-                    # Generate an event if the link is congested
-                    if self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num) > self.flow_tracker.link_cong_threshold:
-                        log.debug('FlowStats: Congested link detected! SendSw: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num))
-                        event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.link_cong_threshold,
-                                self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num), LinkUtilizationEvent.FLOW_STATS,
-                                self.flow_average_bandwidth_Mbps[port_num])
-                        self.flow_tracker.raiseEvent(event)
+                # Generate an event if the link is congested
+                if self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num) > self.flow_tracker.link_cong_threshold:
+                    log.debug('FlowStats: Congested link detected! SendSw: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num))
+                    event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.link_cong_threshold,
+                            self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num), LinkUtilizationEvent.FLOW_STATS,
+                            self.flow_average_bandwidth_Mbps[port_num])
+                    self.flow_tracker.raiseEvent(event)
                         
 
             self.flow_tracker._log_file.write('\n')
