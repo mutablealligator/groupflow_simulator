@@ -314,8 +314,10 @@ class MulticastPath(object):
             else:
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         
+        log.debug('New flows installed for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
+        
         if self.groupflow_manager.flow_replacement_mode == PERIODIC_FLOW_REPLACEMENT and self._flow_replacement_timer is None:
-            log.info('Starting flow replacement timer for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
+            log.debug('Starting flow replacement timer for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
             self._flow_replacement_timer = Timer(self.groupflow_manager.flow_replacement_interval, self.update_flow_placement, recurring=True)
         
         if not groupflow_trace_event is None:
@@ -349,9 +351,9 @@ class MulticastPath(object):
         
     def update_flow_placement(self, groupflow_trace_event = None):
         """Replaces the existing flows by recalculating the cached shortest path tree, and installing new OpenFlow rules."""
-        log.info('Replacing flows for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
         self.calc_path_tree_dijkstras(groupflow_trace_event)
         self.install_openflow_rules(groupflow_trace_event)
+        log.warn('Replaced flows for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
     
 
 
@@ -584,9 +586,7 @@ class GroupFlowManager(EventMixin):
         if self.flow_replacement_mode != CONG_THRESHOLD_FLOW_REPLACEMENT:
             return
             
-        log.debug('Got LinkUtilEvent - Switch: ' + dpid_to_str(event.router_dpid) + ' Port: ' + str(event.output_port) 
-                + '\n\tUtil: ' + str(event.link_utilization) + ' CongThreshold: ' + str(event.cong_threshold) + ' StatsType: ' + str(event.stats_type)
-                + '\n\tFlowMap: ' + str(event.flow_map))
+        log.warn('Got LinkUtilEvent - Switch: ' + dpid_to_str(event.router_dpid) + ' Port: ' + str(event.output_port) + '\n\tUtil: ' + str(event.link_utilization))
             
         replacement_time = time.time()
         
@@ -595,6 +595,7 @@ class GroupFlowManager(EventMixin):
         if replacement_utilization < 0:
             log.warn('LinkUtilizationEvent specified negative replacement utilization.')
             return
+        log.warn('Replacing ' + str(replacement_utilization) + ' Mbps of flows')
         
         # 2) Build a list of the flows managed by this module that are contributing to congestion, sorted by decreasing utilization
         replacement_flows = []
@@ -608,14 +609,23 @@ class GroupFlowManager(EventMixin):
         # Note that flows which have been recently replaced will not be replaced again
         replaced_utilization = 0
         for flow in replacement_flows:
-            if (self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time is None or 
+            log.debug('FlowCookie: ' + str(flow[0]) + ' CurrentTime: ' + str(replacement_time) + ' LastReplacementTime: ' + str(self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time))
+            if self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time is not None:
+                log.debug('Replacement Interval: ' + str(self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time))
+                
+            if (self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time is None) or (
                     replacement_time - self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time >= self.flow_replacement_interval):
+                log.warn('Replacing multicast flow with cookie: ' + str(flow[0]) + ' Bitrate: ' + str(flow[1]) + ' Mbps')
                 self.multicast_paths_by_flow_cookie[flow[0]].update_flow_placement()
-                log.info('Replaced multicast flow with cookie: ' + str(flow[0]))
-                replaced_utilization += flow[1]
-                if replaced_utilization >= replacement_utilization:
-                    break
-
+            
+            # Note: Flows which are not actually replaced are counted toward the replacement utilization here, as it assumed that these flows
+            # are already in the process of being replaced (this assumption should hold valid as long as the flow replacement interval is not
+            # greater than 3 sampling intervals of the flow tracker)
+            replaced_utilization += flow[1]
+            if replaced_utilization >= replacement_utilization:
+                break
+        
+        log.warn('Replaced ' + str(replaced_utilization) + ' Mbps of flows')
 
 
 def launch(link_weight_type = 'linear', static_link_weight = STATIC_LINK_WEIGHT, util_link_weight = UTILIZATION_LINK_WEIGHT, 
