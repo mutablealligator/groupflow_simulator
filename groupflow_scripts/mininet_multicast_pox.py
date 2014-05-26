@@ -13,25 +13,26 @@ import sys
 import signal
 from time import sleep, time
 from datetime import datetime
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 import numpy as np
 
 ENABLE_FIXED_GROUP_SIZE = True
 FIXED_GROUP_SIZE = 4
 
-def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none'):
+def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none', pipe = None):
     membership_mean = 0.1
     membership_std_dev = 0.25
     membership_avg_bound = float(len(hosts)) / 8.0
     test_groups = []
     test_group_launch_times = []
+    test_success = True
     
     # Launch the external controller
     pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
             'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=28.25', '--link_cong_threshold=20', '--avg_smooth_factor=0.65', '--log_peak_usage=True',
             'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
             'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
-            '--flow_replacement_interval=7.5',
+            '--flow_replacement_interval=4',
             'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     print 'Launching external controller: ' + str(pox_arguments[0])
     print 'Launch arguments:'
@@ -153,10 +154,17 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 if 'Link Fully Utilized!' in line:
                     congested_link = True
                     break
+                if 'Path could not be determined for receiver' in line:
+                    print 'ERROR: Network connectivity was broken (i.e. route could not be determined for one or more multicast groups)'
+                    test_success =  False
+                    break
             pox_log_offset = pox_log_file.tell()
             pox_log_file.close()
             if congested_link:
                 print 'Detected fully utilized link, terminating simulation.'
+                break
+            if not test_success:
+                print 'Detected network connectivity error, terminating simulation.'
                 break
             else:
                 print 'No congestion detected.'
@@ -179,8 +187,12 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     pox_process = None
     net.stop()
 
-    if not interactive:
+    if not interactive and test_success:
         write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
+    
+    if pipe is not None:
+        pipe.send(test_success)
+        pipe.close()
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
@@ -218,18 +230,30 @@ if __name__ == '__main__':
         topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
         start_time = time()
+        num_success = 0
+        num_failure = 0
         print 'Simulations started at: ' + str(datetime.now())
         for i in range(0,num_iterations):
             for util_param in util_params:
-                p = Process(target=mcastTest, args=(topo, False, hosts, log_prefix + '_' + ','.join([util_param[0], util_param[1], str(util_param[2])]) + '_' + str(i + first_index) + '.log', util_param[2], util_param[1], util_param[0]))
-                sim_start_time = time()
-                p.start()
-                p.join()
-                sim_end_time = time()
-                
-                # Make extra sure the network terminated cleanly
-                call(['python', 'kill_running_test.py'])
-
+                test_success = False
+                while not test_success:
+                    parent_pipe, child_pipe = Pipe()
+                    p = Process(target=mcastTest, args=(topo, False, hosts, log_prefix + '_' + ','.join([util_param[0], util_param[1], str(util_param[2])]) + '_' + str(i + first_index) + '.log', util_param[2], util_param[1], util_param[0], child_pipe))
+                    sim_start_time = time()
+                    p.start()
+                    p.join()
+                    sim_end_time = time()
+                    
+                    # Make extra sure the network terminated cleanly
+                    call(['python', 'kill_running_test.py'])
+                    
+                    test_success = parent_pipe.recv()
+                    parent_pipe.close()
+                    print 'Test Success: ' + str(test_success)
+                    if test_success:
+                        num_success += 1
+                    else:
+                        num_failure += 1
                 print 'Simulation ' + str(i+1) + '_' + ','.join([util_param[0], util_param[1], str(util_param[2])]) + ' completed at: ' + str(datetime.now()) + ' (runtime: ' + str(sim_end_time - sim_start_time) + ' seconds)'
                 
         end_time = time()
@@ -237,6 +261,8 @@ if __name__ == '__main__':
         print 'Simulations completed at: ' + str(datetime.now())
         print 'Total runtime: ' + str(end_time - start_time) + ' seconds'
         print 'Average runtime per sim: ' + str((end_time - start_time) / (num_iterations * len(util_params))) + ' seconds'
+        print 'Number of failed sims: ' + str(num_failure)
+        print 'Number of successful sims: ' + str(num_success)
         
     elif len(sys.argv) >= 2:
         # Interactive mode - configures POX and multicast routes, but no automatic traffic generation
