@@ -115,6 +115,8 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
         print 'Measured mean join probability: ' + str(host_join_sum / len(host_join_probabilities))
         print 'Predicted average group size: ' + str(host_join_sum)
         i = 1
+        congested_switch_num_links = 0
+        
         while True:
             print 'Generating multicast group #' + str(i)
             # Choose a sending host using a uniform random distribution
@@ -160,11 +162,13 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 if 'Network avg link throughout:' in line:
                     line_split = line.split(' ')
                     print 'Mean Usage (Mbps): ' + line_split[-1],
-                if 'Link Fully Utilized!' in line:
+                if 'FlowStats: Fully utilized link detected!' in line:
+                    line_split = line.split(' ')
+                    congested_switch_num_links = int(line_split[7][len('MinNodeDegree:'):])
                     congested_link = True
                     break
-                if 'Path could not be determined for receiver' in line:
-                    print 'ERROR: Network connectivity was broken (i.e. route could not be determined for one or more multicast groups)'
+                if 'Multicast topology changed, recalculating all paths' in line or 'Path could not be determined for receiver' in line:
+                    print 'ERROR: Network topology changed unexpectedly.'
                     test_success =  False
                     break
             pox_log_offset = pox_log_file.tell()
@@ -197,7 +201,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     net.stop()
 
     if not interactive and test_success:
-        write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
+        write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo, congested_switch_num_links)
     
     if pipe is not None:
         pipe.send(test_success)

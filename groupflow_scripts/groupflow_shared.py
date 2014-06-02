@@ -81,7 +81,7 @@ def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size
     return prob_tuples
 
 
-def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography):
+def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography, congested_switch_num_links):
     def write_current_stats(log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_group_index, group):
         link_bandwidth_list = []
         total_num_flows = 0
@@ -140,6 +140,7 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
     final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
     final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' NumGroups:' + str(len(test_groups) - 1) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
     final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n')
+    final_log_file.write('CongestedSwitchNodeDegree:' + str(congested_switch_num_links) + '\n')
     
     flow_log_file = open(flow_stats_file_path, 'r')
     response_times = []

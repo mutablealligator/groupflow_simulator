@@ -558,15 +558,28 @@ class FlowTrackedSwitch(EventMixin):
                         + ' InstBandwidth:' + str(
                             self.flow_interval_bandwidth_Mbps[port_num][flow_cookie]) + ' AvgBandwidth:' + str(
                             self.flow_average_bandwidth_Mbps[port_num][flow_cookie]) + '\n')
-                    
+                
+                link_util_Mbps = self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num)
                 # Generate an event if the link is congested
-                if self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num) > self.flow_tracker.link_cong_threshold:
-                    log.debug('FlowStats: Congested link detected! SendSw: ' + dpid_to_str(self.dpid) + ' Port: ' + str(port_num))
+                if link_util_Mbps > self.flow_tracker.link_cong_threshold:
                     event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.link_cong_threshold,
-                            self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num), LinkUtilizationEvent.FLOW_STATS,
-                            self.flow_average_bandwidth_Mbps[port_num])
+                            link_util_Mbps, LinkUtilizationEvent.FLOW_STATS, self.flow_average_bandwidth_Mbps[port_num])
                     self.flow_tracker.raiseEvent(event)
-                        
+                
+                # Log to console if a link is fully utilized
+                if link_util_Mbps > self.flow_tracker.link_max_bw:
+                    # Get the DPID of the switch on the other side of the link
+                    receive_switch_dpid = None
+                    for link in core.openflow_discovery.adjacency:
+                        if link.dpid1 == self.dpid and link.port1 == port_num:
+                            receive_switch_dpid = link.dpid2
+                            break
+                    
+                    # Calculate the minimum node degree of the two switches
+                    min_node_degree = min(len(self.tracked_ports), len(self.flow_tracker.switches[receive_switch_dpid].tracked_ports))
+                    
+                    log.warn('FlowStats: Fully utilized link detected! SendSw:' + dpid_to_str(self.dpid) + ' Port:' + str(port_num) 
+                            + ' MinNodeDegree:' + str(min_node_degree) + ' UtilMbps:' + str(link_util_Mbps))
 
             self.flow_tracker._log_file.write('\n')
 
