@@ -28,6 +28,7 @@ def mean_confidence_interval(data, confidence=0.95):
 
 def read_log_set(filepath_prefix, num_logs):
     group_records = []  # list of lists -> group_records[group_index] = list of MulticastGroupStatRecords
+    congested_switch_node_degree = []
     num_groups_list = []
     
     for log_index in range(0, num_logs):
@@ -35,6 +36,9 @@ def read_log_set(filepath_prefix, num_logs):
         log_file = open(filepath, 'r')
         num_groups = 0
         for line in log_file:
+            if 'CongestedSwitchNodeDegree' in line:
+                congested_switch_node_degree.append(int(line[len('CongestedSwitchNodeDegree:'):]))
+            
             if 'Group:' in line:
                 #print line,
                 num_groups += 1
@@ -66,15 +70,21 @@ def read_log_set(filepath_prefix, num_logs):
         log_file.close()
         print 'Processed log: ' + str(filepath)
         
-    return group_records, num_groups_list
+    return group_records, num_groups_list, congested_switch_node_degree
 
 
-def print_group_record_statistics(group_records, num_groups_list, output_prefix):
+def print_group_record_statistics(group_records, num_groups_list, congested_switch_node_degree_list, output_prefix):
     avg_num_groups_supported = float(sum(num_groups_list)) / len(num_groups_list)
     ci_upper, ci_lower = mean_confidence_interval(num_groups_list)
     print 'Average # Groups Supported: ' + str(avg_num_groups_supported) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
     print str(output_prefix) + 'num_groups = ' + str(avg_num_groups_supported) + ';'
     print str(output_prefix) + 'num_groups_ci = ' + str(abs(ci_upper - ci_lower) / 2) + ';'
+    print ' '
+    
+    avg_cong_switch_node_degree = float(sum(congested_switch_node_degree_list)) / len(congested_switch_node_degree_list)
+    ci_upper, ci_lower = mean_confidence_interval(congested_switch_node_degree_list)
+    print str(output_prefix) + 'cong_switch_node_degree = ' + str(avg_cong_switch_node_degree) + ';'
+    print str(output_prefix) + 'cong_switch_node_degree = ' + str(abs(ci_upper - ci_lower) / 2) + ';'
     print ' '
     
     traffic_conc_avgs = []
@@ -198,6 +208,6 @@ if __name__ == '__main__':
         filepath_prefix = sys.argv[1]
         num_logs = int(sys.argv[2])
         output_prefix = sys.argv[3]
-        group_records, num_groups_list = read_log_set(filepath_prefix, num_logs)
-        print_group_record_statistics(group_records, num_groups_list, output_prefix)
+        group_records, num_groups_list, congested_switch_node_degree_list = read_log_set(filepath_prefix, num_logs)
+        print_group_record_statistics(group_records, num_groups_list, congested_switch_node_degree_list, output_prefix)
     
