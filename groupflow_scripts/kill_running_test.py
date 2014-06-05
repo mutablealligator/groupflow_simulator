@@ -43,6 +43,5 @@ for line in ps_out:
             print str(e.strerror)
 
 call(['mn', '-c'])
-
-call(['rm', '-rf', 'flowtracker*'])
-call(['rm', '-rf', 'eventtrace*'])
+call('rm -rfv flowtracker*', shell=True)
+call('rm -rfv eventtrace*', shell=True)
