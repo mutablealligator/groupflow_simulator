@@ -657,13 +657,14 @@ class FlowTracker(EventMixin):
             if not self.switches[switch_dpid].is_connected:
                 continue
 
-            for port_no in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
+            for port_no in self.switches[switch_dpid].tracked_ports:
                 if port_no == of.OFPP_LOCAL or port_no == of.OFPP_CONTROLLER:
                     continue
-                total_usage += self.switches[switch_dpid].port_average_bandwidth_Mbps[port_no]
+                util = self.get_link_utilization_mbps(switch_dpid, port_no)
+                total_usage += util
                 num_links += 1
-                if self.switches[switch_dpid].port_average_bandwidth_Mbps[port_no] > peak_usage:
-                    peak_usage = self.switches[switch_dpid].port_average_bandwidth_Mbps[port_no]
+                if util > peak_usage:
+                    peak_usage = util
 
         log.info('Network peak link throughput (Mbps): ' + str(peak_usage))
         if num_links > 0:
