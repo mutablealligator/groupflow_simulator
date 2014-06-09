@@ -210,6 +210,10 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     if not interactive and test_success:
         write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo, congested_switch_num_links)
     
+    if not test_success:
+        call('rm -rfv ' + str(flow_log_path), shell=True)
+    call('rm -rfv ' + str(event_log_path), shell=True)
+    
     if pipe is not None:
         pipe.send(test_success)
         pipe.close()
