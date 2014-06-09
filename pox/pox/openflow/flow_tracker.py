@@ -315,9 +315,10 @@ class FlowTrackedSwitch(EventMixin):
             if port_num in invalid_stat_ports:
                 continue
 
-            # Update instant bandwidth
-            self.port_interval_bandwidth_Mbps[port_num] = ((self.port_interval_byte_count[
-                                                            port_num] * 8.0) / 1048576.0) / (interval_len)
+            # Update instant bandwidth - Note that this is capped at 10% above the link's maximum supported bandwidth
+            self.port_interval_bandwidth_Mbps[port_num] = min(((self.port_interval_byte_count[
+                                                            port_num] * 8.0) / 1048576.0) / (interval_len),
+                                                            self.flow_tracker.link_max_bw * 1.1)
             # Update running average bandwidth
             if port_num in self.port_average_bandwidth_Mbps:
                 self.port_average_bandwidth_Mbps[port_num] = (self.flow_tracker.avg_smooth_factor *
@@ -513,14 +514,16 @@ class FlowTrackedSwitch(EventMixin):
                     self.flow_interval_bandwidth_Mbps[port_num][flow_cookie] = 0
                     self.flow_average_bandwidth_Mbps[port_num][flow_cookie] = 0
 
-                # Update instant bandwidth
+                # Update instant bandwidth - Note that this is capped at 10% above the link's maximum supported bandwidth
                 self.flow_interval_bandwidth_Mbps[port_num][flow_cookie] = \
-                        ((self.flow_interval_byte_count[port_num][flow_cookie] * 8.0) / 1048576.0) / (interval_len)
+                        min(((self.flow_interval_byte_count[port_num][flow_cookie] * 8.0) / 1048576.0) / (interval_len),
+                        self.flow_tracker.link_max_bw * 1.10)
+                        
                 # Update running average bandwidth
-                self.flow_average_bandwidth_Mbps[port_num][flow_cookie] = min(
+                self.flow_average_bandwidth_Mbps[port_num][flow_cookie] = \
                     (self.flow_tracker.avg_smooth_factor * self.flow_interval_bandwidth_Mbps[port_num][flow_cookie]) + \
                     ((1 - self.flow_tracker.avg_smooth_factor) * self.flow_average_bandwidth_Mbps[port_num][flow_cookie])
-                    , self.flow_tracker.link_max_bw)
+                    
                 
                 if(self.flow_average_bandwidth_Mbps[port_num][flow_cookie] < 0):
                     log.warn('FlowStats reported negative bandwidth (' + str(self.flow_average_bandwidth_Mbps[port_num][flow_cookie]) + ' Mbps) '
@@ -561,13 +564,13 @@ class FlowTrackedSwitch(EventMixin):
                 
                 link_util_Mbps = self.flow_tracker.get_link_utilization_mbps(self.dpid, port_num)
                 # Generate an event if the link is congested
-                if link_util_Mbps > self.flow_tracker.link_cong_threshold:
+                if link_util_Mbps >= self.flow_tracker.link_cong_threshold:
                     event = LinkUtilizationEvent(self.dpid, port_num, self.flow_tracker.link_cong_threshold,
                             link_util_Mbps, LinkUtilizationEvent.FLOW_STATS, self.flow_average_bandwidth_Mbps[port_num])
                     self.flow_tracker.raiseEvent(event)
                 
                 # Log to console if a link is fully utilized
-                if link_util_Mbps > self.flow_tracker.link_max_bw:
+                if link_util_Mbps >= self.flow_tracker.link_max_bw:
                     # Get the DPID of the switch on the other side of the link
                     receive_switch_dpid = None
                     for link in core.openflow_discovery.adjacency:
