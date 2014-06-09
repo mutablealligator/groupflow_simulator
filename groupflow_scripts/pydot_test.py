@@ -3,7 +3,7 @@ import sys
 import pydot
 
 def plot_network_util(flowtracker_log_filepath, topology_filepath):
-    graph = pydot.Dot(graph_type='digraph', layout='neato', dim='2', overlap='prism', colorscheme='rdylgn11')
+    graph = pydot.Dot(graph_type='digraph', layout='neato', dim='2', overlap='prism', colorscheme='rdylgn11', splines='spline')
     
     # Generate nodes
     topology_file = open(topology_filepath, 'r')
@@ -17,6 +17,7 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
             break
     
     # In the nodes section now, generate a switch and host for each node
+    num_nodes = 0
     while in_node_section:
         line = topology_file.readline().strip()
         if not line:
@@ -25,6 +26,7 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
         
         line_split = line.split('\t')
         node_id = int(line_split[0])
+        num_nodes += 1
         node_x_pos = float(line_split[1]) / 72
         node_y_pos = float(line_split[2]) / 72
         position = '%f,%f!' % (node_x_pos, node_y_pos)
@@ -36,6 +38,7 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
     # Generate edges
     flowtracker_log_file = open(flowtracker_log_filepath, 'r')
     reached_net_summary = False
+    num_edges = 0
     for line in flowtracker_log_file:
         if 'Final Network Topology:' in line:
             reached_net_summary = True
@@ -44,11 +47,12 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
         if reached_net_summary:
             split_line = line.split(' ')
             switch1 = split_line[0]
-            if '7004852015439' in switch1:
-                switch1 = '0'
-            
             switch2 = split_line[3]
-            if '7004852015439' in switch2:
+            
+            # KLUDGE: Workaround to deal with Mininet assigning a random DPID to node 0
+            if int(switch1) > 255:
+                switch1 = '0'
+            if int(switch2) > 255:
                 switch2 = '0'
                 
             util = float(split_line[5][len('U:'):])
@@ -77,9 +81,16 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
             else:
                 color = '11';
             print 'Adding Edge between Switch %s and Switch %s' % (switch1, switch2)
-            edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(2)')
+            num_edges += 1
+            
+            edge = None
+            if util < 1:
+                edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(2)')
+            else:
+                edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)', label=str(util_string))
             graph.add_edge(edge)
     flowtracker_log_file.close()
+    print 'Processed network: %d Switches, %d Links' % (num_nodes, num_edges)
     
     graph.write_png(flowtracker_log_filepath + '.png')
     
