@@ -159,10 +159,10 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             while not done_reading:
                 line = pox_log_file.readline()
  
-                if 'Network peak link throughout' in line:
+                if 'Network peak link throughput (Mbps):' in line:
                     line_split = line.split(' ')
                     print 'Peak Usage (Mbps): ' + line_split[-1],
-                if 'Network avg link throughout:' in line:
+                if 'Network avg link throughput (Mbps):' in line:
                     line_split = line.split(' ')
                     print 'Mean Usage (Mbps): ' + line_split[-1],
                 if 'FlowStats: Fully utilized link detected!' in line:

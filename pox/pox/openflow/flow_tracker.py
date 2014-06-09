@@ -665,9 +665,9 @@ class FlowTracker(EventMixin):
                 if self.switches[switch_dpid].port_average_bandwidth_Mbps[port_no] > peak_usage:
                     peak_usage = self.switches[switch_dpid].port_average_bandwidth_Mbps[port_no]
 
-        log.info('Network peak link throughout (Mbps): ' + str(peak_usage))
+        log.info('Network peak link throughput (Mbps): ' + str(peak_usage))
         if num_links > 0:
-            log.info('Network avg link throughout (Mbps): ' + str(total_usage / float(num_links)))
+            log.info('Network avg link throughput (Mbps): ' + str(total_usage / float(num_links)))
 
     def _handle_ConnectionUp(self, event):
         """Handler for ConnectionUp from the discovery module, which represents a new switch joining the network."""
