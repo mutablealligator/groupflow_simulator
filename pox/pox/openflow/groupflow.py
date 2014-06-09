@@ -174,7 +174,7 @@ class MulticastPath(object):
             raw_link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
             link_util_mcast_flow = core.openflow_flow_tracker.get_flow_utilization_normalized(edge[0], output_port, self.flow_cookie)
             
-            link_util = min(0, raw_link_util * (1 - link_util_mcast_flow))
+            link_util = max(0, raw_link_util * (1 - link_util_mcast_flow))
             # link_util = raw_link_util # Uncommenting this line will cause flows to reroute around their own traffic, good for testing
             
             link_weight = 1
@@ -184,7 +184,7 @@ class MulticastPath(object):
                 if link_util > 1:
                     link_weight = sys.float_info.max
                 else:
-                    link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * (1 / (1 - link_util)))
+                    link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * ((1 / (1 - link_util)) - 1))
             
             log.debug('Router DPID: ' + dpid_to_str(edge[0]) + ' Port: ' + str(output_port) + 
                     ' TotalUtil: ' + str(raw_link_util) + ' FlowUtil: ' + str(link_util_mcast_flow) + ' OtherFlowUtil: ' + str(link_util) 
@@ -193,7 +193,7 @@ class MulticastPath(object):
             weighted_topo_graph.append([edge[0], edge[1], link_weight])
         self.weighted_topo_graph = weighted_topo_graph
         
-        # log.debug('Calculated link weights for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
+        log.debug('Calculated link weights for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
         for edge in self.weighted_topo_graph:
             log.debug(dpid_to_str(edge[0]) + ' -> ' + dpid_to_str(edge[1]) + ' W: ' + str(edge[2]))
     
