@@ -637,6 +637,13 @@ class FlowTracker(EventMixin):
         This function is typically called by the BenchmarkTerminator module.
         """
         if not self._log_file is None:
+            # Write out the final topology of the network
+            self._log_file.write('Final Network Topology:\n')
+            for link in core.openflow_discovery.adjacency:
+                if link.dpid1 in self.switches and link.port1 in self.switches[link.dpid1].tracked_ports:
+                    self._log_file.write(str(link.dpid1) + ' P:' + str(link.port1) + ' -> ' + str(link.dpid2) 
+                            + ' P:' + str(link.port2) + ' U:' + str(self.get_link_utilization_normalized(link.dpid1, link.port1))
+                            + '\n')
             self._log_file.close()
             self._log_file = None
             log.info('Termination signalled, closed log file: ' + str(self._log_file_name))
