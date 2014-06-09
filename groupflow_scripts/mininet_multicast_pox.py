@@ -148,14 +148,17 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             mcast_group_last_octet = mcast_group_last_octet + 1
             mcast_port = mcast_port + 2
             i += 1
-            sleep(5 + uniform(0, 5))
+            wait_time = 5 + uniform(0, 5)
             
             # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
             print 'Check for congested link...'
             congested_link = False
             pox_log_file = open('./pox.log', 'r')
             pox_log_file.seek(pox_log_offset)
-            for line in pox_log_file:
+            done_reading = False
+            while not done_reading:
+                line = pox_log_file.readline()
+ 
                 if 'Network peak link throughout' in line:
                     line_split = line.split(' ')
                     print 'Peak Usage (Mbps): ' + line_split[-1],
@@ -166,11 +169,15 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                     line_split = line.split(' ')
                     congested_switch_num_links = int(line_split[7][len('MinNodeDegree:'):])
                     congested_link = True
-                    break
+                    done_reading = True
                 if 'Multicast topology changed, recalculating all paths' in line or 'Path could not be determined for receiver' in line:
                     print 'ERROR: Network topology changed unexpectedly.'
                     test_success =  False
-                    break
+                    done_reading = True
+                
+                if time() - launch_time > wait_time:
+                    done_reading = True
+                    
             pox_log_offset = pox_log_file.tell()
             pox_log_file.close()
             if congested_link:
