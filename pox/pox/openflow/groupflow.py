@@ -181,7 +181,7 @@ class MulticastPath(object):
             if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
                 link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util)
             elif self.groupflow_manager.link_weight_type == LINK_WEIGHT_EXPONENTIAL:
-                if link_util == 1:
+                if link_util > 1:
                     link_weight = sys.float_info.max
                 else:
                     link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * (1 / (1 - link_util)))
