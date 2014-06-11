@@ -3,7 +3,7 @@ import sys
 import pydot
 
 def plot_network_util(flowtracker_log_filepath, topology_filepath):
-    graph = pydot.Dot(graph_type='digraph', layout='neato', dim='2', overlap='prism', colorscheme='rdylgn11', splines='spline')
+    graph = pydot.Dot(graph_type='digraph', layout='dot', dim='2', overlap='scale', colorscheme='rdylgn11', splines='spline')
     
     # Generate nodes
     topology_file = open(topology_filepath, 'r')
@@ -56,38 +56,41 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
                 switch2 = '0'
                 
             util = float(split_line[5][len('U:'):])
-            util_string = '{:1.2f}'.format(util)
+            num_flows = int(split_line[6][len('NF:'):])
+            label = 'NF ' + str(num_flows) + ' Util {:1.2f}'.format(util)
             color = None
-            if util > 1:
+            
+            if util >= 1:
                 color = '1'
-            elif util > 0.9:
+            elif util > 0.90:
                 color = '2'
-            elif util > 0.8:
+            elif util > 0.80:
                 color = '3'
-            elif util > 0.7:
+            elif util > 0.70:
                 color = '4'
-            elif util > 0.6:
+            elif util > 0.60:
                 color = '5'
-            elif util > 0.5:
-                color = '6'
-            elif util > 0.4:
+            elif util > 0.50:
                 color = '7'
-            elif util > 0.3:
+            elif util > 0.40:
                 color = '8'
-            elif util > 0.2:
+            elif util > 0.30:
                 color = '9'
-            elif util > 0.1:
+            elif util > 0.20:
                 color = '10'
             else:
-                color = '11';
-            print 'Adding Edge between Switch %s and Switch %s' % (switch1, switch2)
+                color = '11'
+                
+            print 'Adding Edge between Switch %s and Switch %s, Label: %s' % (switch1, switch2, label)
             num_edges += 1
             
             edge = None
-            if util < 1:
-                edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(2)')
+            # edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)', label=str(label))
+            if util > 1:
+                edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)', label='Congested')
             else:
-                edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)', label=str(util_string))
+                edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)')
+            
             graph.add_edge(edge)
     flowtracker_log_file.close()
     print 'Processed network: %d Switches, %d Links' % (num_nodes, num_edges)
