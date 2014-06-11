@@ -147,7 +147,7 @@ class MulticastPath(object):
         
         self.path_tree_map = path_tree_map
         
-        log.debug('Calculated MST for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
+        log.debug('Calculated shortest path tree for source at router_dpid: ' + dpid_to_str(self.src_router_dpid))
         for node in self.path_tree_map:
             log.debug('Path to Node ' + dpid_to_str(node) + ': ' + str(self.path_tree_map[node]))
         
@@ -217,6 +217,7 @@ class MulticastPath(object):
             
             # log.debug('Building path for receiver on router: ' + dpid_to_str(receiver[0]))
             receiver_path = self.path_tree_map[receiver[0]]
+            log.debug('Receiver path for receiver ' + str(receiver[0]) + ': ' + str(receiver_path))
             if receiver_path is None:
                 log.warn('Path could not be determined for receiver ' + dpid_to_str(receiver[0]) + ' (network is not fully connected)')
                 continue
@@ -617,11 +618,11 @@ class GroupFlowManager(EventMixin):
                     replacement_time - self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time >= self.flow_replacement_interval):
                 log.warn('Replacing multicast flow with cookie: ' + str(flow[0]) + ' Bitrate: ' + str(flow[1]) + ' Mbps')
                 self.multicast_paths_by_flow_cookie[flow[0]].update_flow_placement()
+                replaced_utilization += flow[1]
             
             # Note: Flows which are not actually replaced are counted toward the replacement utilization here, as it assumed that these flows
             # are already in the process of being replaced (this assumption should hold valid as long as the flow replacement interval is not
             # greater than 3 sampling intervals of the flow tracker)
-            replaced_utilization += flow[1]
             if replaced_utilization >= replacement_utilization:
                 break
         
