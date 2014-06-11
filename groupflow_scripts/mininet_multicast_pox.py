@@ -27,18 +27,19 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     test_group_launch_times = []
     test_success = True
     
+
     # Launch the external controller
     pox_arguments = []
     if 'periodic' in replacement_mode:
         pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13.45', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
+                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=18', '--link_cong_threshold=12', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=10',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     else:
         pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13.45', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
+                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=18', '--link_cong_threshold=12', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=4',
@@ -101,118 +102,124 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     print 'Waiting ' + str(sleep_time) + ' seconds to allow for controller topology discovery'
     sleep(sleep_time)   # Allow time for the controller to detect the topology
     
-    if interactive:
-        CLI(net)
-    else:
-        mcast_group_last_octet = 1
-        mcast_port = 5010
-        rand_seed = int(time())
-        print 'Using random seed: ' + str(rand_seed)
-        np.random.seed(rand_seed)
-        host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
-        print 'Host join probabilities: ' + ', '.join(str(p) for p in host_join_probabilities)
-        host_join_sum = sum(p[1] for p in host_join_probabilities)
-        print 'Measured mean join probability: ' + str(host_join_sum / len(host_join_probabilities))
-        print 'Predicted average group size: ' + str(host_join_sum)
-        i = 1
-        congested_switch_num_links = 0
-        
-        while True:
-            print 'Generating multicast group #' + str(i)
-            # Choose a sending host using a uniform random distribution
-            sender_index = randint(0,len(hosts))
-            sender_host = hosts[sender_index]
+    try:
+        if interactive:
+            CLI(net)
+        else:
+            mcast_group_last_octet = 1
+            mcast_port = 5010
+            rand_seed = int(time())
+            print 'Using random seed: ' + str(rand_seed)
+            np.random.seed(rand_seed)
+            host_join_probabilities = generate_group_membership_probabilities(hosts, membership_mean, membership_std_dev, membership_avg_bound)
+            print 'Host join probabilities: ' + ', '.join(str(p) for p in host_join_probabilities)
+            host_join_sum = sum(p[1] for p in host_join_probabilities)
+            print 'Measured mean join probability: ' + str(host_join_sum / len(host_join_probabilities))
+            print 'Predicted average group size: ' + str(host_join_sum)
+            i = 1
+            congested_switch_num_links = 0
             
-            receivers = []
-            if ENABLE_FIXED_GROUP_SIZE:
-                while len(receivers) < FIXED_GROUP_SIZE:
-                    receivers.append(hosts[randint(0,len(hosts))])
-                    receivers = list(set(receivers))
-            else:
-                # Choose a random number of receivers by comparing a uniform random variable
-                # against the previously generated group membership probabilities
-                for host_prob in host_join_probabilities:
-                    p = uniform(0, 1)
-                    if p <= host_prob[1]:
-                        receivers.append(host_prob[0])
-
-            # Initialize the group
-            # Note - This method of group IP generation will need to be modified slightly to support more than
-            # 255 groups
-            mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
-            test_groups.append(MulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
-            launch_time = time()
-            test_group_launch_times.append(launch_time)
-            print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
-            test_groups[-1].launch_mcast_applications(net)
-            mcast_group_last_octet = mcast_group_last_octet + 1
-            mcast_port = mcast_port + 2
-            i += 1
-            wait_time = 5 + uniform(0, 5)
-            
-            # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
-            print 'Check for congested link...'
-            congested_link = False
-            pox_log_file = open('./pox.log', 'r')
-            pox_log_file.seek(pox_log_offset)
-            done_reading = False
-            while not done_reading:
-                line = pox_log_file.readline()
- 
-                if 'Network peak link throughput (Mbps):' in line:
-                    line_split = line.split(' ')
-                    print 'Peak Usage (Mbps): ' + line_split[-1],
-                if 'Network avg link throughput (Mbps):' in line:
-                    line_split = line.split(' ')
-                    print 'Mean Usage (Mbps): ' + line_split[-1],
-                if 'FlowStats: Fully utilized link detected!' in line:
-                    line_split = line.split(' ')
-                    congested_switch_num_links = int(line_split[7][len('MinNodeDegree:'):])
-                    congested_link = True
-                    done_reading = True
-                if 'Multicast topology changed, recalculating all paths' in line or 'Path could not be determined for receiver' in line:
-                    print 'ERROR: Network topology changed unexpectedly.'
-                    test_success =  False
-                    done_reading = True
+            while True:
+                print 'Generating multicast group #' + str(i)
+                # Choose a sending host using a uniform random distribution
+                sender_index = randint(0,len(hosts))
+                sender_host = hosts[sender_index]
                 
-                if time() - launch_time > wait_time:
-                    done_reading = True
+                receivers = []
+                if ENABLE_FIXED_GROUP_SIZE:
+                    while len(receivers) < FIXED_GROUP_SIZE:
+                        receivers.append(hosts[randint(0,len(hosts))])
+                        receivers = list(set(receivers))
+                else:
+                    # Choose a random number of receivers by comparing a uniform random variable
+                    # against the previously generated group membership probabilities
+                    for host_prob in host_join_probabilities:
+                        p = uniform(0, 1)
+                        if p <= host_prob[1]:
+                            receivers.append(host_prob[0])
+
+                # Initialize the group
+                # Note - This method of group IP generation will need to be modified slightly to support more than
+                # 255 groups
+                mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
+                test_groups.append(MulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
+                launch_time = time()
+                test_group_launch_times.append(launch_time)
+                print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
+                test_groups[-1].launch_mcast_applications(net)
+                mcast_group_last_octet = mcast_group_last_octet + 1
+                mcast_port = mcast_port + 2
+                i += 1
+                wait_time = 5 + uniform(0, 5)
+                
+                # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
+                print 'Check for congested link...'
+                congested_link = False
+                pox_log_file = open('./pox.log', 'r')
+                pox_log_file.seek(pox_log_offset)
+                done_reading = False
+                while not done_reading:
+                    line = pox_log_file.readline()
+     
+                    if 'Network peak link throughput (Mbps):' in line:
+                        line_split = line.split(' ')
+                        print 'Peak Usage (Mbps): ' + line_split[-1],
+                    if 'Network avg link throughput (Mbps):' in line:
+                        line_split = line.split(' ')
+                        print 'Mean Usage (Mbps): ' + line_split[-1],
+                    if 'FlowStats: Fully utilized link detected!' in line:
+                        line_split = line.split(' ')
+                        congested_switch_num_links = int(line_split[7][len('MinNodeDegree:'):])
+                        congested_link = True
+                        done_reading = True
+                    if 'Multicast topology changed, recalculating all paths' in line or 'Path could not be determined for receiver' in line:
+                        print 'ERROR: Network topology changed unexpectedly.'
+                        print line
+                        test_success =  False
+                        done_reading = True
                     
-            pox_log_offset = pox_log_file.tell()
-            pox_log_file.close()
-            if congested_link:
-                print 'Detected fully utilized link, terminating simulation.'
-                break
-            if not test_success:
-                print 'Detected network connectivity error, terminating simulation.'
-                break
-            else:
-                print 'No congestion detected.'
+                    if time() - launch_time > wait_time:
+                        done_reading = True
+                        
+                pox_log_offset = pox_log_file.tell()
+                pox_log_file.close()
+                if congested_link:
+                    print 'Detected fully utilized link, terminating simulation.'
+                    break
+                if not test_success:
+                    print 'Detected network connectivity error, terminating simulation.'
+                    break
+                else:
+                    print 'No congestion detected.'
 
-    
-    print 'Terminating network applications'
-    for group in test_groups:
-        group.terminate_mcast_applications()
-    print 'Terminating controller'
-    pox_process.send_signal(signal.SIGINT)
-    sleep(1)
-    print 'Waiting for network application termination...'
-    for group in test_groups:
-        group.wait_for_application_termination()
-    print 'Network applications terminated'
-    print 'Waiting for controller termination...'
-    pox_process.send_signal(signal.SIGKILL)
-    pox_process.wait()
-    print 'Controller terminated'
-    pox_process = None
-    net.stop()
+        
+        print 'Terminating network applications'
+        for group in test_groups:
+            group.terminate_mcast_applications()
+        print 'Terminating controller'
+        pox_process.send_signal(signal.SIGINT)
+        sleep(1)
+        print 'Waiting for network application termination...'
+        for group in test_groups:
+            group.wait_for_application_termination()
+        print 'Network applications terminated'
+        print 'Waiting for controller termination...'
+        pox_process.send_signal(signal.SIGKILL)
+        pox_process.wait()
+        print 'Controller terminated'
+        pox_process = None
+        net.stop()
 
-    if not interactive and test_success:
-        write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo, congested_switch_num_links)
-    
-    if not test_success:
-        call('rm -rfv ' + str(flow_log_path), shell=True)
-    call('rm -rfv ' + str(event_log_path), shell=True)
+        if not interactive and test_success:
+            write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo, congested_switch_num_links)
+        
+        if not test_success:
+            call('rm -rfv ' + str(flow_log_path), shell=True)
+        call('rm -rfv ' + str(event_log_path), shell=True)
+        
+    except BaseException as e:
+        print str(e)
+        test_success = False
     
     if pipe is not None:
         pipe.send(test_success)
