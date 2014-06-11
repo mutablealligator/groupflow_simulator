@@ -315,10 +315,10 @@ class FlowTrackedSwitch(EventMixin):
             if port_num in invalid_stat_ports:
                 continue
 
-            # Update instant bandwidth - Note that this is capped at 10% above the link's maximum supported bandwidth
+            # Update instant bandwidth - Note that this is capped at 5% above the link's maximum supported bandwidth
             self.port_interval_bandwidth_Mbps[port_num] = min(((self.port_interval_byte_count[
                                                             port_num] * 8.0) / 1048576.0) / (interval_len),
-                                                            self.flow_tracker.link_max_bw * 1.1)
+                                                            self.flow_tracker.link_max_bw * 1.05)
             # Update running average bandwidth
             if port_num in self.port_average_bandwidth_Mbps:
                 self.port_average_bandwidth_Mbps[port_num] = (self.flow_tracker.avg_smooth_factor *
@@ -514,10 +514,10 @@ class FlowTrackedSwitch(EventMixin):
                     self.flow_interval_bandwidth_Mbps[port_num][flow_cookie] = 0
                     self.flow_average_bandwidth_Mbps[port_num][flow_cookie] = 0
 
-                # Update instant bandwidth - Note that this is capped at 10% above the link's maximum supported bandwidth
+                # Update instant bandwidth - Note that this is capped at 5% above the link's maximum supported bandwidth
                 self.flow_interval_bandwidth_Mbps[port_num][flow_cookie] = \
                         min(((self.flow_interval_byte_count[port_num][flow_cookie] * 8.0) / 1048576.0) / (interval_len),
-                        self.flow_tracker.link_max_bw * 1.10)
+                        self.flow_tracker.link_max_bw * 1.05)
                         
                 # Update running average bandwidth
                 self.flow_average_bandwidth_Mbps[port_num][flow_cookie] = \
@@ -767,7 +767,7 @@ class FlowTracker(EventMixin):
         
         * switch_dpid: The dataplane identifier of the switch on the transmitting side of the link
         * output_port: The output port on switch with dpid switch_dpid corresponding to the link
-        * flow_cookie: The flow cookie assigned to the link of interest
+        * flow_cookie: The flow cookie assigned to the flow of interest
         """
         flow_bw_usage = 0
         if switch_dpid in self.switches:
@@ -784,6 +784,29 @@ class FlowTracker(EventMixin):
             return 0
         else:
             return flow_bw_usage / total_link_bw_usage
+    
+    def get_max_flow_utilization(self, flow_cookie):
+        """Returns the maximum estimated utilization (in Mbps) for the specified flow cookie across all tracked links in the network.
+        
+        * flow_cookie: The flow cookie assigned to the flow of interest
+        """
+        max_util_mbps = 0
+        for switch_dpid in self.switches:
+            for output_port in self.switches[switch_dpid].flow_average_bandwidth_Mbps:
+                if flow_cookie in self.switches[switch_dpid].flow_average_bandwidth_Mbps[output_port]:
+                    flow_util_mbps = self.switches[switch_dpid].flow_average_bandwidth_Mbps[output_port][flow_cookie]
+                    if flow_util_mbps > max_util_mbps:
+                        max_util_mbps = flow_util_mbps
+        
+        return max_util_mbps
+    
+    def get_num_tracked_links(self):
+        """Returns the total number of links tracked by this module."""
+        tracked_links = 0
+        for switch_dpid in self.switches:
+            tracked_links += len(self.switches[switch_dpid].tracked_ports)
+        return tracked_links
+        
 
 def launch(query_interval=PERIODIC_QUERY_INTERVAL, link_max_bw=LINK_MAX_BANDWIDTH_MbPS,
            link_cong_threshold=LINK_CONGESTION_THRESHOLD_MbPS, avg_smooth_factor=AVERAGE_SMOOTHING_FACTOR,

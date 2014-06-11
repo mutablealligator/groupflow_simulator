@@ -143,7 +143,8 @@ class MulticastPath(object):
      
                 for next_cost, node2 in graph.get(node1, ()):
                     if node2 not in seen:
-                        heappush(queue, (cost + next_cost, node2, path))
+                        new_path_cost = cost + next_cost
+                        heappush(queue, (new_path_cost, node2, path))
         
         self.path_tree_map = path_tree_map
         
@@ -169,22 +170,32 @@ class MulticastPath(object):
         self.node_list = list(self.groupflow_manager.node_set)
         
         weighted_topo_graph = []
+        current_util = core.openflow_flow_tracker.get_max_flow_utilization(self.flow_cookie) / core.openflow_flow_tracker.link_max_bw
+        log.debug('Current utilization of flow ' + str(self.flow_cookie) + ': ' + str(current_util * core.openflow_flow_tracker.link_max_bw) + ' Mbps')
+        
         for edge in curr_topo_graph:
             output_port = self.groupflow_manager.adjacency[edge[0]][edge[1]]
             raw_link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
             link_util_mcast_flow = core.openflow_flow_tracker.get_flow_utilization_normalized(edge[0], output_port, self.flow_cookie)
             
-            link_util = max(0, raw_link_util * (1 - link_util_mcast_flow))
+            # Current utilization here is doubled as a simple attempt to handle variability in flow rates
+            link_util = max(0, (raw_link_util * (1 - link_util_mcast_flow)) + (current_util * 2))
+            
             # link_util = raw_link_util # Uncommenting this line will cause flows to reroute around their own traffic, good for testing
             
             link_weight = 1
             if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
-                link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util)
+                if link_util > 1:
+                    link_weight = sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links()
+                else:
+                    link_weight = min(self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util),
+                            sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
             elif self.groupflow_manager.link_weight_type == LINK_WEIGHT_EXPONENTIAL:
                 if link_util > 1:
-                    link_weight = sys.float_info.max
+                    link_weight = sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links()
                 else:
-                    link_weight = self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * ((1 / (1 - link_util)) - 1))
+                    link_weight = min(self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * ((1 / (1 - link_util)) - 1)),
+                            sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
             
             log.debug('Router DPID: ' + dpid_to_str(edge[0]) + ' Port: ' + str(output_port) + 
                     ' TotalUtil: ' + str(raw_link_util) + ' FlowUtil: ' + str(link_util_mcast_flow) + ' OtherFlowUtil: ' + str(link_util) 
@@ -232,7 +243,7 @@ class MulticastPath(object):
         if not edges_to_install is None:
             # log.info('Installing edges:')
             for edge in edges_to_install:
-                log.debug('Installing: ' + dpid_to_str(edge[0]) + '->' + dpid_to_str(edge[1]))
+                log.debug('Installing: ' + str(edge[0]) + ' -> ' + str(edge[1]))
         
         if not groupflow_trace_event is None:
             groupflow_trace_event.set_route_processing_end_time()
@@ -618,7 +629,12 @@ class GroupFlowManager(EventMixin):
                     replacement_time - self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time >= self.flow_replacement_interval):
                 log.warn('Replacing multicast flow with cookie: ' + str(flow[0]) + ' Bitrate: ' + str(flow[1]) + ' Mbps')
                 self.multicast_paths_by_flow_cookie[flow[0]].update_flow_placement()
+            
                 replaced_utilization += flow[1]
+                # Note: This causes the replacement to stop after replacing a single flow (may help prevent thrashing)
+                # Uncomment this to have the module replace flows until the current link utilization minus the  replacement bandwidth 
+                # is less than the link's congestion threshold.
+                break
             
             # Note: Flows which are not actually replaced are counted toward the replacement utilization here, as it assumed that these flows
             # are already in the process of being replaced (this assumption should hold valid as long as the flow replacement interval is not

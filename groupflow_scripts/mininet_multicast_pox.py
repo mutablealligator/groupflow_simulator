@@ -32,14 +32,14 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     pox_arguments = []
     if 'periodic' in replacement_mode:
         pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=18', '--link_cong_threshold=12', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
+                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=17', '--link_cong_threshold=12', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=10',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     else:
         pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=18', '--link_cong_threshold=12', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
+                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=17', '--link_cong_threshold=12', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=4',
