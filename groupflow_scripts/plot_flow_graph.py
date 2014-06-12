@@ -2,38 +2,40 @@
 import sys
 import pydot
 
-def plot_network_util(flowtracker_log_filepath, topology_filepath):
+def plot_network_util(flowtracker_log_filepath, topology_filepath = None):
     graph = pydot.Dot(graph_type='digraph', layout='dot', dim='2', overlap='scale', colorscheme='rdylgn11', splines='spline')
     
-    # Generate nodes
-    topology_file = open(topology_filepath, 'r')
-    
-    # Skip ahead until the nodes section is reached
-    in_node_section = False
-    while not in_node_section:
-        line = topology_file.readline()
-        if 'Nodes:' in line:
-            in_node_section = True
-            break
-    
-    # In the nodes section now, generate a switch and host for each node
-    num_nodes = 0
-    while in_node_section:
-        line = topology_file.readline().strip()
-        if not line:
-            in_node_section = False
-            break
+    if topology_filepath is not None:
+        # Generate nodes
+        topology_file = open(topology_filepath, 'r')
         
-        line_split = line.split('\t')
-        node_id = int(line_split[0])
-        num_nodes += 1
-        node_x_pos = float(line_split[1]) / 72
-        node_y_pos = float(line_split[2]) / 72
-        position = '%f,%f!' % (node_x_pos, node_y_pos)
-        print 'Adding Switch %d with Position: %s' % (node_id, position)
-        node = pydot.Node(str(node_id), pos=position)
-        graph.add_node(node)
-    topology_file.close()
+        # Skip ahead until the nodes section is reached
+        in_node_section = False
+        while not in_node_section:
+            line = topology_file.readline()
+            if 'Nodes:' in line:
+                in_node_section = True
+                break
+        
+        # In the nodes section now, generate a switch and host for each node
+        num_nodes = 0
+        while in_node_section:
+            line = topology_file.readline().strip()
+            if not line:
+                in_node_section = False
+                break
+            
+            line_split = line.split('\t')
+            node_id = int(line_split[0])
+            num_nodes += 1
+            node_x_pos = float(line_split[1]) / 72
+            node_y_pos = float(line_split[2]) / 72
+            position = '%f,%f!' % (node_x_pos, node_y_pos)
+            print 'Adding Switch %d with Position: %s' % (node_id, position)
+            node = pydot.Node(str(node_id), pos=position)
+            graph.add_node(node)
+            
+        topology_file.close()
     
     # Generate edges
     flowtracker_log_file = open(flowtracker_log_filepath, 'r')
@@ -95,10 +97,16 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
             
             graph.add_edge(edge)
     flowtracker_log_file.close()
-    print 'Processed network: %d Switches, %d Links' % (num_nodes, num_edges)
+    
+    if topology_filepath is not None:
+        print 'Processed network: %d Switches, %d Links' % (num_nodes, num_edges)
+    else:
+        print 'Processed network: %d Links' % (num_edges)
     
     graph.write_png(flowtracker_log_filepath + '.png')
     
 if __name__ == '__main__':
     if len(sys.argv) >= 3:
         plot_network_util(sys.argv[1], sys.argv[2])
+    if len(sys.argv) >= 2:
+        plot_network_util(sys.argv[1])
