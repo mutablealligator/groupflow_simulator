@@ -57,7 +57,7 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
                 
             util = float(split_line[5][len('U:'):])
             num_flows = int(split_line[6][len('NF:'):])
-            label = 'NF ' + str(num_flows) + ' Util {:1.2f}'.format(util)
+            label = str(num_flows) # + ' Util {:1.2f}'.format(util)
             color = None
             
             if util >= 1:
@@ -85,11 +85,13 @@ def plot_network_util(flowtracker_log_filepath, topology_filepath):
             num_edges += 1
             
             edge = None
+            edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)', label=str(label))
+            
             # edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)', label=str(label))
-            if util > 1:
-                edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)', label='Congested')
-            else:
-                edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)')
+            #if util > 1:
+            #    edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)', label=str(label))
+            #else:
+            #    edge = pydot.Edge(switch1, switch2, dir="forward", arrowhead="normal", colorscheme='rdylgn11', color=color, fontcolor=color, style='setlinewidth(3)')
             
             graph.add_edge(edge)
     flowtracker_log_file.close()
