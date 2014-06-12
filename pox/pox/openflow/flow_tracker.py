@@ -132,7 +132,7 @@ class FlowTrackedSwitch(EventMixin):
         self._last_port_stats_query_processing_time = None
         self._last_port_stats_query_total_time = None
 
-        self.num_flows = 0
+        self.num_flows = {} # Keyed by port number
 
         # Flow maps record transmission statistics based on FlowStats queries
         # Maps are keyed by port number
@@ -404,7 +404,7 @@ class FlowTrackedSwitch(EventMixin):
         # Clear byte counts for this interval
         for port in self.flow_interval_byte_count:
             self.flow_interval_byte_count[port] = {}
-        self.num_flows = 0
+        self.num_flows = {}
 
         curr_event_byte_count = {}
 
@@ -429,7 +429,10 @@ class FlowTrackedSwitch(EventMixin):
                 if isinstance(action, of.ofp_action_output):
                     if action.port in self.tracked_ports:
                         if flow_stat.cookie != 0:
-                            self.num_flows = self.num_flows + 1
+                            if action.port not in self.num_flows:
+                                self.num_flows[action.port] = 1
+                            else:
+                                self.num_flows[action.port] += 1
                         
                         # log.info('Got flow on tracked port with cookie: ' + str(flow_stat.cookie))
                         if action.port in curr_event_byte_count:
@@ -548,7 +551,7 @@ class FlowTrackedSwitch(EventMixin):
         # Print log information to file
         if not self.flow_tracker._log_file is None:
             self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(
-                self.num_flows) + ' IntervalLen:' + str(interval_len) + ' IntervalEndTime:' + str(
+                sum(self.num_flows.values())) + ' IntervalLen:' + str(interval_len) + ' IntervalEndTime:' + str(
                 reception_time) + ' ResponseTime:' + str(
                 self._last_flow_stats_query_total_time) + ' NetworkTime:' + str(
                 self._last_flow_stats_query_network_time) + ' ProcessingTime:' + str(
@@ -648,7 +651,7 @@ class FlowTracker(EventMixin):
                 if link.dpid1 in self.switches and link.port1 in self.switches[link.dpid1].tracked_ports:
                     self._log_file.write(str(link.dpid1) + ' P:' + str(link.port1) + ' -> ' + str(link.dpid2) 
                             + ' P:' + str(link.port2) + ' U:' + str(self.get_link_utilization_normalized(link.dpid1, link.port1))
-                            + ' NF:' + str(self.switches[link.dpid1].num_flows) + '\n')
+                            + ' NF:' + str(self.switches[link.dpid1].num_flows[link.port1]) + '\n')
             self._log_file.close()
             self._log_file = None
             log.info('Termination signalled, closed log file: ' + str(self._log_file_name))
