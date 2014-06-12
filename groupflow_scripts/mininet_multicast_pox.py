@@ -31,14 +31,14 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     # Launch the external controller
     pox_arguments = []
     if 'periodic' in replacement_mode:
-        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.keepalive',
+        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
                 'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=10',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     else:
-        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.keepalive',
+        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
                 'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
@@ -267,7 +267,7 @@ if __name__ == '__main__':
         topo = None
         if 'manhattan' in sys.argv[1]:
             print 'Generating Manhattan Grid Topology'
-            topo = ManhattanGridTopo(5, 5, 20, 1)
+            topo = ManhattanGridTopo(5, 5, 20, 1, True)
         else:
             print 'Generating BRITE Specified Topology'
             topo = BriteTopo(sys.argv[1])

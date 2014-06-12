@@ -273,7 +273,7 @@ class Discovery (EventMixin):
 
   @property
   def send_cycle_time (self):
-    return self._link_timeout / 2.0
+    return self._link_timeout / 10.0
 
   def install_flow (self, con_or_dpid, priority = None):
     if priority is None:
