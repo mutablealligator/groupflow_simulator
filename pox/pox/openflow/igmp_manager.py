@@ -1102,7 +1102,7 @@ class IGMPManager(EventMixin):
         if router is None:
             log.warn('Got ConnectionDown for unrecognized router')
         else:
-            log.info('Router down: ' + dpid_to_str(event.dpid))
+            log.warn('Router down: ' + dpid_to_str(event.dpid))
             link_changes = []
             # Remove any adjacency information stored for this router
             if event.dpid in self.adjacency:
