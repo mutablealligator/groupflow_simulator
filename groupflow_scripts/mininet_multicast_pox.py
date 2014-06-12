@@ -31,15 +31,15 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     # Launch the external controller
     pox_arguments = []
     if 'periodic' in replacement_mode:
-        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=17', '--link_cong_threshold=12', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
+        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.keepalive',
+                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=10',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     else:
-        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery',
-                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=17', '--link_cong_threshold=12', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
+        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'openflow.keepalive',
+                'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=4',
@@ -119,7 +119,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             i = 1
             congested_switch_num_links = 0
             
-            while True:
+            while True:                
                 print 'Generating multicast group #' + str(i)
                 # Choose a sending host using a uniform random distribution
                 sender_index = randint(0,len(hosts))
@@ -128,7 +128,10 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 receivers = []
                 if ENABLE_FIXED_GROUP_SIZE:
                     while len(receivers) < FIXED_GROUP_SIZE:
-                        receivers.append(hosts[randint(0,len(hosts))])
+                        receiver_index = randint(0,len(hosts))
+                        if receiver_index == sender_index:
+                            continue
+                        receivers.append(hosts[receiver_index])
                         receivers = list(set(receivers))
                 else:
                     # Choose a random number of receivers by comparing a uniform random variable
@@ -146,6 +149,8 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 launch_time = time()
                 test_group_launch_times.append(launch_time)
                 print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
+                print 'Sender: ' + str(sender_host)
+                print 'Receivers: ' + str(receivers)
                 test_groups[-1].launch_mcast_applications(net)
                 mcast_group_last_octet = mcast_group_last_octet + 1
                 mcast_port = mcast_port + 2
@@ -241,6 +246,7 @@ def print_usage_text():
     print '3) Automated benchmarking:'
     print '> mininet_multicast_pox <topology_path> <iterations_to_run> <log_file_prefix> <index_of_first_log_file> <parameter_sets (number is variable and unlimited)>'
     print 'Parameter sets have the form: flow_replacement_mode,link_weight_type,util_link_weight'
+    print 'The topology path "manhattan" is currently hardcoded to generate a 20 Mbps, 5x5 Manhattan grid topology'
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
@@ -258,7 +264,13 @@ if __name__ == '__main__':
         for param_index in range(5, len(sys.argv)):
             param_split = sys.argv[param_index].split(',')
             util_params.append((param_split[0], param_split[1], float(param_split[2])))
-        topo = BriteTopo(sys.argv[1])
+        topo = None
+        if 'manhattan' in sys.argv[1]:
+            print 'Generating Manhattan Grid Topology'
+            topo = ManhattanGridTopo(5, 5, 20, 1)
+        else:
+            print 'Generating BRITE Specified Topology'
+            topo = BriteTopo(sys.argv[1])
         hosts = topo.get_host_list()
         start_time = time()
         num_success = 0
