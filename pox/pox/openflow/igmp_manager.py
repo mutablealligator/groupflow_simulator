@@ -1014,6 +1014,7 @@ class IGMPManager(EventMixin):
         router2 = self.routers[l.dpid2]
 
         if event.removed:
+            log.warn('Link down: ' + dpid_to_str(l.dpid1) + ' -> ' + dpid_to_str(l.dpid2))
             # This link no longer up
             link_changes = []
             if l.dpid2 in self.adjacency[l.dpid1]:
