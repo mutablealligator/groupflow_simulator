@@ -331,7 +331,132 @@ class BriteTopo(Topo):
     def __str__(self):
         return self.file_path
 
-            
+
+class ManhattanGridTopo(Topo):
+    def __init__(self, grid_x, grid_y, link_Mbps, link_delay_ms, edge_interconnect = False):
+        # Initialize topology
+        Topo.__init__( self )
+        
+        self.hostnames = []
+        self.switch_names = []
+        
+        self.routers = []
+        self.grid_routers = {}  # Stores the same objects as self.routers, but keyed as a 2 dimensional map (self.grid_routers[x_coord][y_coord])
+        self.edges = []
+        
+        print 'Generating Manhattan Grid Topology with Parameters:'
+        print 'Grid X: ' + str(grid_x) + ' Grid Y: ' + str(grid_y) + ' TotalNumSwitches: ' + str(grid_x * grid_y)
+        print 'Link Bandwidth: ' + str(link_Mbps) + ' Mbps  \tLink Delay: ' + str(link_delay_ms) + ' ms'
+        print 'Edge Interconnect: ' + str(edge_interconnect)
+        
+        # Generate an X * Y grid of routers
+        host_id = 1
+        for x in range(0, grid_x):
+            for y in range(0, grid_y):
+                switch = self.addSwitch('s' + str(x) + str(y), inband = False)
+                host = self.addHost('h' + str(host_id), ip = '10.0.0.' + str(host_id))
+                self.addLink(switch, host, bw=1000, use_htb=True)	# TODO: Better define link parameters for hosts
+                
+                self.routers.append(switch)
+                if x not in self.grid_routers:
+                    self.grid_routers[x] = {}
+                self.grid_routers[x][y] = switch
+                self.switch_names.append('s' + str(x) + str(y))
+                self.hostnames.append('h' + str(host_id))
+                host_id += 1
+        
+        # Add links between all adjacent nodes (not including diagonal adjacencies)
+        for x in range(0, grid_x - 1):
+            for y in range(0, grid_y):
+                # Add the X direction link
+                self.edges.append(('s' + str(x) + str(y), 's' + str(x + 1) + str(y), link_delay_ms))
+                self.edges.append(('s' + str(x + 1) + str(y), 's' + str(x) + str(y), link_delay_ms))
+                print 'Adding link between switch ' + 's' + str(x) + str(y) + ' and ' + 's' + str(x + 1) + str(y) + '\n\tRate: ' \
+                        + str(link_Mbps) + ' Mbps\tDelay: ' + str(link_delay_ms)
+                self.addLink(self.grid_routers[x][y], self.grid_routers[x + 1][y], bw=link_Mbps, delay=str(link_delay_ms) + 'ms', max_queue_size=1000, use_htb=True)
+        
+        for y in range(0, grid_y - 1):
+            for x in range(0, grid_x):
+                # Add the Y direction link
+                self.edges.append(('s' + str(x) + str(y), 's' + str(x) + str(y + 1), link_delay_ms))
+                self.edges.append(('s' + str(x) + str(y + 1), 's' + str(x) + str(y), link_delay_ms))
+                print 'Adding link between switch ' + 's' + str(x) + str(y) + ' and ' + 's' + str(x) + str(y + 1) + '\n\tRate: ' \
+                        + str(link_Mbps) + ' Mbps\tDelay: ' + str(link_delay_ms)
+                self.addLink(self.grid_routers[x][y], self.grid_routers[x][y + 1], bw=link_Mbps, delay=str(link_delay_ms) + 'ms', max_queue_size=1000, use_htb=True)
+        
+        # Interconnect the grid edges if the edge_interconnect flag is set
+        if edge_interconnect:
+            for x in range(0, grid_x):
+                self.edges.append(('s' + str(x) + str(grid_y - 1), 's' + str(x) + str(0), link_delay_ms))
+                self.edges.append(('s' + str(x) + str(0), 's' + str(x) + str(grid_y - 1), link_delay_ms))
+                print 'Adding link between switch ' + 's' + str(x) + str(0) + ' and ' + 's' + str(x) + str(grid_y - 1) + '\n\tRate: ' \
+                        + str(link_Mbps) + ' Mbps\tDelay: ' + str(link_delay_ms)
+                self.addLink(self.grid_routers[x][0], self.grid_routers[x][grid_y - 1], bw=link_Mbps, delay=str(link_delay_ms) + 'ms', max_queue_size=1000, use_htb=True)
+                
+            for y in range(0, grid_y):
+                self.edges.append(('s' + str(0) + str(y), 's' + str(grid_x - 1) + str(y), link_delay_ms))
+                self.edges.append(('s' + str(grid_x - 1) + str(y), 's' + str(0) + str(y), link_delay_ms))
+                print 'Adding link between switch ' + 's' + str(0) + str(y) + ' and ' + 's' + str(grid_x - 1) + str(y) + '\n\tRate: ' \
+                        + str(link_Mbps) + ' Mbps\tDelay: ' + str(link_delay_ms)
+                self.addLink(self.grid_routers[0][y], self.grid_routers[grid_x - 1][y], bw=link_Mbps, delay=str(link_delay_ms) + 'ms', max_queue_size=1000, use_htb=True)
+    
+    def get_controller_placement(self, latency_metric = LATENCY_METRIC_MIN_AVERAGE_DELAY):
+        delay_metric_value = sys.float_info.max
+        source_node_id = None
+
+        for src_switch in self.routers:
+            # Compute the shortest path tree for each possible controller placement
+            nodes = set(self.routers)
+            graph = defaultdict(list)
+            for src,dst,cost in self.edges:
+                graph[src].append((cost, dst))
+         
+            path_tree_map = defaultdict(lambda : None)
+            queue, seen = [(0,src_switch,())], set()
+            while queue:
+                (cost,node1,path) = heappop(queue)
+                if node1 not in seen:
+                    seen.add(node1)
+                    path = (cost, node1, path)
+                    path_tree_map[node1] = path
+         
+                    for next_cost, node2 in graph.get(node1, ()):
+                        if node2 not in seen:
+                            heappush(queue, (cost + next_cost, node2, path))
+
+            # Calculate the metric value for this position
+            if latency_metric == LATENCY_METRIC_MIN_AVERAGE_DELAY:
+                sum_delay = 0
+                for receiver in path_tree_map:
+                    sum_delay += path_tree_map[receiver][0]
+                avg_delay = sum_delay / float(len(path_tree_map))
+                if avg_delay < delay_metric_value:
+                    source_node_id = src_switch
+                    delay_metric_value = avg_delay
+                    
+            elif latency_metric == LATENCY_METRIC_MIN_MAXIMUM_DELAY:
+                max_delay = 0
+                for receiver in path_tree_map:
+                    if path_tree_map[receiver][0] > max_delay:
+                        max_delay = path_tree_map[receiver][0]
+                if max_delay < delay_metric_value:
+                    source_node_id = src_switch
+                    delay_metric_value = max_delay
+        
+        print 'Found best controller placement at ' + str(source_node_id) + ' with metric: ' + str(delay_metric_value)
+        return source_node_id, delay_metric_value
+    
+    def get_host_list(self):
+        return self.hostnames
+    
+    def get_switch_list(self):
+        return self.switch_names
+    
+    def mcastConfig(self, net):
+        for hostname in self.hostnames:
+            net.get(hostname).cmd('route add -net 224.0.0.0/4 ' + hostname + '-eth0')
+
+
 class MulticastTestTopo( Topo ):
     "Simple multicast testing example"
     
