@@ -425,10 +425,12 @@ class FlowTrackedSwitch(EventMixin):
 
         # Record the number of bytes transmitted through each port for this monitoring interval
         for flow_stat in stats:
-            self.num_flows = self.num_flows + 1
             for action in flow_stat.actions:
                 if isinstance(action, of.ofp_action_output):
                     if action.port in self.tracked_ports:
+                        if flow_stat.cookie != 0:
+                            self.num_flows = self.num_flows + 1
+                        
                         # log.info('Got flow on tracked port with cookie: ' + str(flow_stat.cookie))
                         if action.port in curr_event_byte_count:
                             if flow_stat.cookie in curr_event_byte_count[action.port]:
