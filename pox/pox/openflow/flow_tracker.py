@@ -404,7 +404,10 @@ class FlowTrackedSwitch(EventMixin):
         # Clear byte counts for this interval
         for port in self.flow_interval_byte_count:
             self.flow_interval_byte_count[port] = {}
-        self.num_flows = {}
+            
+        num_flows = {}
+        for port_num in self.tracked_ports:
+            num_flows[port_num] = 0
 
         curr_event_byte_count = {}
 
@@ -429,10 +432,7 @@ class FlowTrackedSwitch(EventMixin):
                 if isinstance(action, of.ofp_action_output):
                     if action.port in self.tracked_ports:
                         if flow_stat.cookie != 0:
-                            if action.port not in self.num_flows:
-                                self.num_flows[action.port] = 1
-                            else:
-                                self.num_flows[action.port] += 1
+                            num_flows[action.port] += 1
                         
                         # log.info('Got flow on tracked port with cookie: ' + str(flow_stat.cookie))
                         if action.port in curr_event_byte_count:
@@ -549,6 +549,7 @@ class FlowTrackedSwitch(EventMixin):
         self._last_flow_stats_query_total_time = complete_processing_time - self._last_flow_stats_query_send_time
 
         # Print log information to file
+        self.num_flows = num_flows
         if not self.flow_tracker._log_file is None:
             self.flow_tracker._log_file.write('FlowStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(
                 sum(self.num_flows.values())) + ' IntervalLen:' + str(interval_len) + ' IntervalEndTime:' + str(
@@ -646,6 +647,7 @@ class FlowTracker(EventMixin):
         """
         if not self._log_file is None:
             # Write out the final topology of the network
+            self._log_file.flush()
             self._log_file.write('Final Network Topology:\n')
             for link in core.openflow_discovery.adjacency:
                 if link.dpid1 in self.switches and link.port1 in self.switches[link.dpid1].tracked_ports:
