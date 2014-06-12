@@ -188,13 +188,13 @@ class MulticastPath(object):
             
             link_weight = 1
             if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
-                if link_util > 1:
+                if link_util >= 1:
                     link_weight = sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links()
                 else:
                     link_weight = min(self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util),
                             sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
             elif self.groupflow_manager.link_weight_type == LINK_WEIGHT_EXPONENTIAL:
-                if link_util > 1:
+                if link_util >= 1:
                     link_weight = sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links()
                 else:
                     link_weight = min(self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * ((1 / (1 - link_util)) - 1)),
@@ -368,7 +368,7 @@ class MulticastPath(object):
         """Replaces the existing flows by recalculating the cached shortest path tree, and installing new OpenFlow rules."""
         self.calc_path_tree_dijkstras(groupflow_trace_event)
         self.install_openflow_rules(groupflow_trace_event)
-        log.warn('Replaced flows for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
+        log.debug('Replaced flows for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
     
 
 
@@ -601,7 +601,7 @@ class GroupFlowManager(EventMixin):
         if self.flow_replacement_mode != CONG_THRESHOLD_FLOW_REPLACEMENT:
             return
             
-        log.warn('Got LinkUtilEvent - Switch: ' + dpid_to_str(event.router_dpid) + ' Port: ' + str(event.output_port) + '\n\tUtil: ' + str(event.link_utilization))
+        log.debug('Got LinkUtilEvent - Switch: ' + dpid_to_str(event.router_dpid) + ' Port: ' + str(event.output_port) + '\n\tUtil: ' + str(event.link_utilization))
             
         replacement_time = time.time()
         
@@ -610,7 +610,7 @@ class GroupFlowManager(EventMixin):
         if replacement_utilization < 0:
             log.warn('LinkUtilizationEvent specified negative replacement utilization.')
             return
-        log.warn('Replacing ' + str(replacement_utilization) + ' Mbps of flows')
+        log.debug('Attempting replacement of ' + str(replacement_utilization) + ' Mbps of flows')
         
         # 2) Build a list of the flows managed by this module that are contributing to congestion, sorted by decreasing utilization
         replacement_flows = []
@@ -630,12 +630,12 @@ class GroupFlowManager(EventMixin):
                 
             if (self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time is None) or (
                     replacement_time - self.multicast_paths_by_flow_cookie[flow[0]]._last_flow_replacement_time >= self.flow_replacement_interval):
-                log.warn('Replacing multicast flow with cookie: ' + str(flow[0]) + ' Bitrate: ' + str(flow[1]) + ' Mbps')
+                log.debug('Replacing multicast flow with cookie: ' + str(flow[0]) + ' Bitrate: ' + str(flow[1]) + ' Mbps')
                 self.multicast_paths_by_flow_cookie[flow[0]].update_flow_placement()
             
                 replaced_utilization += flow[1]
                 # Note: This causes the replacement to stop after replacing a single flow (may help prevent thrashing)
-                # Uncomment this to have the module replace flows until the current link utilization minus the  replacement bandwidth 
+                # Uncomment this to have the module replace flows until the current link utilization minus the replacement bandwidth 
                 # is less than the link's congestion threshold.
                 break
             
@@ -645,7 +645,7 @@ class GroupFlowManager(EventMixin):
             if replaced_utilization >= replacement_utilization:
                 break
         
-        log.warn('Replaced ' + str(replaced_utilization) + ' Mbps of flows')
+        log.debug('Replaced ' + str(replaced_utilization) + ' Mbps of flows')
 
 
 def launch(link_weight_type = 'linear', static_link_weight = STATIC_LINK_WEIGHT, util_link_weight = UTILIZATION_LINK_WEIGHT, 
