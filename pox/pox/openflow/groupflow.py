@@ -178,10 +178,13 @@ class MulticastPath(object):
             raw_link_util = core.openflow_flow_tracker.get_link_utilization_normalized(edge[0], output_port);
             link_util_mcast_flow = core.openflow_flow_tracker.get_flow_utilization_normalized(edge[0], output_port, self.flow_cookie)
             
-            # Current utilization here is doubled as a simple attempt to handle variability in flow rates
-            link_util = max(0, (raw_link_util * (1 - link_util_mcast_flow)) + (current_util * 2))
+            link_util = max(0, (raw_link_util * (1 - link_util_mcast_flow)))
             
             # link_util = raw_link_util # Uncommenting this line will cause flows to reroute around their own traffic, good for testing
+            
+            # Current utilization here is doubled as a simple attempt to handle variability in flow rates
+            if link_util + (current_util * 2) > 1:
+                link_util = 1
             
             link_weight = 1
             if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
