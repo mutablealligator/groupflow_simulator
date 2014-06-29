@@ -342,7 +342,8 @@ class FlowTrackedSwitch(EventMixin):
         if not self.flow_tracker._log_file is None:
             # Note: NumFlows is only included here so that the PortStats logs will exactly match the format of FlowStats
             # (makes for easier log processing)
-            self.flow_tracker._log_file.write('PortStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:0 IntervalLen:' + str(
+            self.flow_tracker._log_file.write('PortStats Switch:' + dpid_to_str(self.dpid) + ' NumFlows:' + str(
+                sum(self.num_flows.values())) + ' IntervalLen:' + str(
                 interval_len) + ' IntervalEndTime:' + str(reception_time) 
                 + ' ResponseTime:' + str(self._last_port_stats_query_total_time) + ' NetworkTime:' + str(
                 self._last_port_stats_query_network_time) + ' ProcessingTime:' + str(self._last_port_stats_query_processing_time) 
