@@ -21,17 +21,25 @@ packets_to_receive = 0
 echo_port = 5008
 MPEG2_SECONDS_PER_TICK = 1.0 / (90.0 * 1000.0)  # MPEG2 uses 32 bit 90K Hz timestamps
 SEQ_NUM_ROLLOVER = 65535
+SEQ_OUT_OF_ORDER_THRESHOLD = 200
 
 recv_packets = 0
 recv_bytes = 0
 lost_packets = 0
 
+log_filename = None
+
 def int_to_ip(ip):
     return socket.inet_ntoa(hex(ip)[2:].zfill(8).decode('hex'))
 
 def print_packet_stats(sig = None, frame = None):
-    print ('RecvPackets:' + str(recv_packets) + ' RecvBytes:' + str(recv_bytes) + ' LostPackets:' 
-            + str(lost_packets) + ' PacketLoss:' + str((lost_packets / (lost_packets + recv_packets)) * 100))
+    if log_filename is not None:
+        log_file = open(log_filename, 'w')
+        log_file.write('RecvPackets:' + str(recv_packets) + ' RecvBytes:' + str(recv_bytes) + ' LostPackets:' 
+                + str(lost_packets) + '\n')
+        log_file.flush()
+        log_file.close()
+        
     if signal is not None:
         # Remove this signal handler, and rethrow the signal
         signal.signal(sig, signal.SIG_DFL)
@@ -39,7 +47,7 @@ def print_packet_stats(sig = None, frame = None):
 
 
 def main():
-    global multicast_group, multicast_port, packets_to_receive, echo_port, recv_packets, recv_bytes, lost_packets
+    global multicast_group, multicast_port, packets_to_receive, echo_port, log_filename, recv_packets, recv_bytes, lost_packets
     
     if len(sys.argv) > 1:
         multicast_group = sys.argv[1]
@@ -51,7 +59,7 @@ def main():
         echo_port = int(sys.argv[3])
         
     if len(sys.argv) > 4:
-        packets_to_receive = int(sys.argv[4])
+        log_filename = sys.argv[4]
     
     signal.signal(signal.SIGINT, print_packet_stats)
     signal.signal(signal.SIGTERM, print_packet_stats)
@@ -77,8 +85,8 @@ def main():
     last_delivery_delay = 0
     jitter = 0
     
-    while True:
-        try:
+    try:
+        while True:
             data, addr = multicast_socket.recvfrom(8192)    # Arbitrary maximum size
             new_packet_arrival_time = time.time()
             if last_packet_arrival_time == 0:
@@ -113,19 +121,25 @@ def main():
             recv_bytes += len(data)
             recv_packets += 1
             if first_packet:
-                last_sequence_num = sequence_num
                 first_packet = False
             else:
                 packet_interval = (sequence_num - last_sequence_num) - 1;
-                if packet_interval < 0:
+                # KLUDGE: If the current sequence number is only slightly less than the previous sequence number, assume that
+                # this is an out of order packets arriving, and not a sequence number rollover
+                if packet_interval < 0 and packet_interval >= -SEQ_OUT_OF_ORDER_THRESHOLD:
+                    packet_interval = 0
+                    lost_packets -= 1
+                elif packet_interval < 0:
                     packet_interval = ((sequence_num - last_sequence_num) + SEQUENCE_NUM_ROLLOVER)
-                lost_packets += packet_interval    
-            
-        except socket.error, e:
-            print 'Exception'
+                lost_packets += packet_interval   
+            last_sequence_num = sequence_num
         
-        if packets_to_receive > 0 and recv_packets > packets_to_receive:
-            break
+            if packets_to_receive > 0 and recv_packets > packets_to_receive:
+                break
+    
+    except BaseException as e:
+            print 'Exception: ' + str(e)
+            print_packet_stats()
     
     multicast_socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)
     print_packet_stats()

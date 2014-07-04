@@ -3,10 +3,28 @@ from scipy.stats import truncnorm, tstd
 from numpy.random import randint, uniform
 from datetime import datetime
 import os
+import signal
 
 LATENCY_METRIC_MIN_AVERAGE_DELAY = 1
 LATENCY_METRIC_MIN_MAXIMUM_DELAY = 2
 
+class ReceiverLogStats(object):
+    def __init__(self, filename, recv_bytes, recv_packets, lost_packets):
+        self.filename = filename
+        self.recv_bytes = int(recv_bytes)
+        self.recv_packets = int(recv_packets)
+        self.lost_packets = int(lost_packets)
+        if lost_packets + recv_packets == 0:
+            self.packet_loss = 0
+        else:
+            self.packet_loss = (float(lost_packets) / (float(lost_packets) + float(recv_packets))) * 100
+
+    def debug_print(self):
+        print 'Multicast Receiver Log: ' + str(self.filename)
+        print 'RecvBytes: ' + str(self.recv_bytes) + ' RecvPackets: ' + str(self.recv_packets) + ' LostPackets: ' + str(self.lost_packets)
+        print 'PacketLoss: ' + str(self.packet_loss) + '%'
+        
+        
 class MulticastGroupDefinition(object):
     def __init__(self, src_host, dst_hosts, group_ip, mcast_port, echo_port):
         self.src_host = src_host
@@ -14,6 +32,10 @@ class MulticastGroupDefinition(object):
         self.group_ip = group_ip
         self.mcast_port = mcast_port
         self.echo_port = echo_port
+        
+        self.receiver_log_files = []    # Stores filenames
+        self.receiver_log_stats = []    # Stores ReceiverLogStats objects
+        
         
         self.src_process = None
         self.dst_processes = []
@@ -27,11 +49,13 @@ class MulticastGroupDefinition(object):
             self.src_process = net.get(self.src_host).popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True)
             
         for dst in self.dst_hosts:
+            recv_log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(dst) + '.log'
             with open(os.devnull, "w") as fnull:
                 # self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
-                vlc_rcv_command = ['python', './multicast_receiver_VLC.py', self.group_ip, str(self.mcast_port), str(self.echo_port)]
+                vlc_rcv_command = ['python', './multicast_receiver_VLC.py', self.group_ip, str(self.mcast_port), str(self.echo_port), str(recv_log_filename)]
                 # print 'Running: ' + ' '.join(vlc_rcv_command)
                 self.dst_processes.append(net.get(dst).popen(vlc_rcv_command, stdout=fnull, stderr=fnull, close_fds=True, shell=False))
+                self.receiver_log_files.append(recv_log_filename)
         
         print('Initialized multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port)
                 + ' Echo port: ' + str(self.echo_port) + ' # Receivers: ' + str(len(self.dst_processes)))
@@ -45,9 +69,9 @@ class MulticastGroupDefinition(object):
             
         for proc in self.dst_processes:
             # print 'Killing process with PID: ' + str(proc.pid)
-            # proc.send_signal(signal.SIGTERM)
-            proc.terminate()
-            proc.kill()
+            proc.send_signal(signal.SIGINT)
+            # proc.terminate()
+            # proc.kill()
         
         print 'Signaled termination of multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
 
@@ -58,8 +82,31 @@ class MulticastGroupDefinition(object):
         
         for proc in self.dst_processes:
             proc.wait()
+            
+        for filename in self.receiver_log_files:
+            log_file = open(filename, 'r')
+            for line in log_file:
+                if 'RecvPackets:' in line:
+                    line_split = line.split(' ')
+                    recv_packets = line_split[0][len('RecvPackets:'):]
+                    recv_bytes = line_split[1][len('RecvBytes:'):]
+                    lost_packets = line_split[2][len('LostPackets:'):]
+                    log_stats = ReceiverLogStats(str(filename), recv_bytes, recv_packets, lost_packets)
+                    #log_stats.debug_print()
+                    self.receiver_log_stats.append(log_stats)
+                    break
+            log_file.close()
+            # print 'Read ' + filename
+            os.remove(filename)
+            
         self.dst_processes = []
+    
+    def get_total_recv_packets(self):
+        return sum(log.recv_packets for log in self.receiver_log_stats)
 
+    def get_total_lost_packets(self):
+        return sum(log.lost_packets for log in self.receiver_log_stats)
+        
 def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size = 0):
     num_hosts = len(hosts)
     a , b = a, b = (0 - mean) / std_dev, (1 - mean) / std_dev
@@ -81,7 +128,7 @@ def generate_group_membership_probabilities(hosts, mean, std_dev, avg_group_size
     return prob_tuples
 
 
-def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography, congested_switch_num_links):
+def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, group_launch_times, topography):
     def write_current_stats(log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_group_index, group):
         link_bandwidth_list = []
         total_num_flows = 0
@@ -135,12 +182,22 @@ def write_final_stats_log(final_log_path, flow_stats_file_path, event_log_file_p
         num_receivers_list.append(len(group.dst_hosts))
     avg_num_receivers = sum(num_receivers_list) / float(len(num_receivers_list))
     
+    # Calculate packet loss
+    recv_packets = 0
+    lost_packets = 0
+    for group in test_groups:
+        recv_packets += group.get_total_recv_packets()
+        lost_packets += group.get_total_lost_packets()
+    packet_loss = 0
+    if recv_packets + lost_packets != 0:
+        packet_loss = (float(lost_packets) / (recv_packets + lost_packets)) * 100
+    
     final_log_file.write('GroupFlow Performance Simulation: ' + str(datetime.now()) + '\n')
     final_log_file.write('FlowStatsLogFile:' + str(flow_stats_file_path) + '\n')
     final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
     final_log_file.write('Membership Mean:' + str(membership_mean) + ' StdDev:' + str(membership_std_dev) + ' AvgBound:' + str(membership_avg_bound) + ' NumGroups:' + str(len(test_groups) - 1) + ' AvgNumReceivers:' + str(avg_num_receivers) + '\n')
     final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n')
-    final_log_file.write('CongestedSwitchNodeDegree:' + str(congested_switch_num_links) + '\n')
+    final_log_file.write('RecvPackets:' + str(recv_packets) + ' LostPackets:' + str(lost_packets) + ' AvgPacketLoss:' + str(packet_loss) + '\n\n')
     
     flow_log_file = open(flow_stats_file_path, 'r')
     response_times = []

@@ -43,3 +43,4 @@ for line in ps_out:
             print str(e.strerror)
 
 call(['mn', '-c'])
+call(['rm', '-rf', 'mcastlog_*'])

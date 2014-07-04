@@ -174,7 +174,6 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                         print 'Mean Usage (Mbps): ' + line_split[-1],
                     if 'FlowStats: Fully utilized link detected!' in line:
                         line_split = line.split(' ')
-                        congested_switch_num_links = int(line_split[7][len('MinNodeDegree:'):])
                         congested_link = True
                         done_reading = True
                     if 'Multicast topology changed, recalculating all paths' in line or 'Path could not be determined for receiver' in line:
@@ -196,8 +195,9 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                     break
                 else:
                     print 'No congestion detected.'
-
         
+        recv_packets = 0
+        lost_packets = 0
         print 'Terminating network applications'
         for group in test_groups:
             group.terminate_mcast_applications()
@@ -216,7 +216,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
         net.stop()
 
         if not interactive and test_success:
-            write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo, congested_switch_num_links)
+            write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
         
         if not test_success:
             call('rm -rfv ' + str(flow_log_path), shell=True)
