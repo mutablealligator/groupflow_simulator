@@ -751,7 +751,7 @@ class FlowTracker(EventMixin):
             log.warn("PortStats unavailable for Switch: " + dpid_to_str(switch_dpid) + ' Port: ' + str(output_port))
             if switch_dpid in self.switches:
                 if output_port in self.switches[switch_dpid].flow_total_average_bandwidth_Mbps:
-                    return flow_total_average_bandwidth_Mbps[output_port]
+                    return self.switches[switch_dpid].flow_total_average_bandwidth_Mbps[output_port]
             return 0    # TODO: May want to throw exception here
 
         if receive_switch_dpid in self.switches:
