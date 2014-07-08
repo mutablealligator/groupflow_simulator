@@ -23,8 +23,112 @@ class ReceiverLogStats(object):
         print 'Multicast Receiver Log: ' + str(self.filename)
         print 'RecvBytes: ' + str(self.recv_bytes) + ' RecvPackets: ' + str(self.recv_packets) + ' LostPackets: ' + str(self.lost_packets)
         print 'PacketLoss: ' + str(self.packet_loss) + '%'
+
         
+class MulticastReceiverApplication(object):
+    APP_STATE_PRELAUNCH = 1
+    APP_STATE_RUNNING = 2
+    APP_STATE_COMPLETE = 3
+    
+    def __init__(self, host, group_ip, mcast_port, echo_port, init_time, service_time):
+        self.host = host
+        self.group_ip = group_ip
+        self.mcast_port = mcast_port
+        self.echo_port = echo_port
+        self.init_time = init_time
+        self.service_time = service_time
+        self.terminate_time = init_time + service_time
+        self.log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(host) + '.log'
+        self.app_process = None
+        self.log_stats = None
+        self.app_state = APP_STATE_PRELAUNCH
+    
+    def launch_receiver_application(self):
+        if self.app_state == APP_STATE_PRElAUNCH and self.app_process is None:
+            with open(os.devnull, "w") as fnull:
+                vlc_rcv_command = ['python', './multicast_receiver_VLC.py', self.group_ip, str(self.mcast_port), str(self.echo_port), str(self.log_filename)]
+                # print 'Running: ' + ' '.join(vlc_rcv_command)
+                self.app_process = net.get(dst).popen(vlc_rcv_command, stdout=fnull, stderr=fnull, close_fds=True, shell=False)
+            
+            self.app_state = APP_STATE_RUNNING
+    
+    def terminate_receiver_application(self):
+        if self.app_state == APP_STATE_RUNNING and self.app_process is not None:
+            # Terminate the application
+            self.app_process.send_signal(signal.SIGINT)
+            self.app_process.wait()
+            
+            # Read the application's log file and record relevant stats
+            log_file = open(self.log_filename, 'r')
+            for line in log_file:
+                if 'RecvPackets:' in line:
+                    line_split = line.split(' ')
+                    recv_packets = line_split[0][len('RecvPackets:'):]
+                    recv_bytes = line_split[1][len('RecvBytes:'):]
+                    lost_packets = line_split[2][len('LostPackets:'):]
+                    self.log_stats = ReceiverLogStats(str(filename), recv_bytes, recv_packets, lost_packets)
+                    break
+            log_file.close()
+            
+            # Remove the application log file
+            os.remove(self.log_filename)
+            
+            self.app_state = APP_STATE_COMPLETE
+    
+    def get_recv_packets(self):
+        if self.log_stats is None:
+            return 0
+        else:
+            return self.log_stats.recv_packets
+    
+    def get_lost_packets(self):
+        if self.log_stats is None:
+            return 0
+        else:
+            return self.log_stats.recv_packets
+    
+    def get_app_state(self):
+        return self.app_state
+
         
+class DynamicMulticastGroupDefinition(object):
+    EVENT_RECEIVER_INIT = 1
+    EVENT_RECEIVER_TERMINATION = 2
+    
+    def __init__(self, net_hosts, group_ip, mcast_port, echo_port):
+        self.net_hosts = net_hosts
+        self.group_ip = group_ip
+        self.mcast_port = mcast_port
+        self.echo_port = echo_port
+        self.src_process = None
+        self.receiver_applications = []
+    
+    def generate_receiver_application(self, trial_start_time, trial_duration_seconds, arrival_rate, service_rate):
+        return
+    
+    def launch_sender_application(self):
+        with open(os.devnull, "w") as fnull:
+            vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop']
+            self.src_process = net.get(self.src_host).popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True)
+        
+    def launch_receiver_applications(self, current_time):
+        return
+    
+    def terminate_receiver_applications(self, current_time):
+        return
+    
+    def terminate_group(self):
+        if self.src_process is not None:
+            # print 'Killing process with PID: ' + str(self.src_process.pid)
+            self.src_process.terminate()
+            self.src_process.kill()
+        
+        # TODO: Kill any receivers still running
+    
+    def get_next_receiver_event(self):
+        return
+    
+
 class StaticMulticastGroupDefinition(object):
     """Class used to manage the launch and termination of a single group of multicast applications with static membership.
     
