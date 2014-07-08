@@ -145,7 +145,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 # Note - This method of group IP generation will need to be modified slightly to support more than
                 # 255 groups
                 mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
-                test_groups.append(MulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
+                test_groups.append(StaticMulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
                 launch_time = time()
                 test_group_launch_times.append(launch_time)
                 print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)

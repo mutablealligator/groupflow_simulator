@@ -25,7 +25,16 @@ class ReceiverLogStats(object):
         print 'PacketLoss: ' + str(self.packet_loss) + '%'
         
         
-class MulticastGroupDefinition(object):
+class StaticMulticastGroupDefinition(object):
+    """Class used to manage the launch and termination of a single group of multicast applications with static membership.
+    
+    Multicast groups managed by this class have the following properties:
+    
+    * Each group has a single sender, which is an instance of VLC streaming a file named "test_media.mp4" over UDP
+    * The group may have an arbitrary number of receivers, which are all instances of multicast_receiver_VLC.py
+    * The group sender and all receivers are all initialized at the same time, and are all terminated at the same time
+    
+    """
     def __init__(self, src_host, dst_hosts, group_ip, mcast_port, echo_port):
         self.src_host = src_host
         self.dst_hosts = dst_hosts
