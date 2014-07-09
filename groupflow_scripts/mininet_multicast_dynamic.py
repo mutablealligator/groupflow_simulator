@@ -15,12 +15,14 @@ from time import sleep, time
 from datetime import datetime
 from multiprocessing import Process, Pipe
 import numpy as np
+import traceback
 
 # Hardcoded purely for testing / debug, these will be moved once functionality is stable
 NUM_GROUPS = 10
-ARRIVAL_RATE = 1.0 / 20 # 1 arrival every 20 seconds
-SERVICE_RATE = 1.0 / 20 # Mean service time = 20 seconds
-TRIAL_DURATION_SECONDS = 60.0 * 3 # 3 minute trial runs
+ARRIVAL_RATE = 1.0 / 40 # 1 arrival every 20 seconds
+SERVICE_RATE = 1.0 / 40 # Mean service time = 20 seconds
+TRIAL_DURATION_SECONDS = 60.0 * 2
+RECEIVERS_AT_TRIAL_START = 4
 
 def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none', pipe = None):
     test_groups = []
@@ -33,14 +35,14 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
                 'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
-                '--flow_replacement_interval=15',
+                '--flow_replacement_interval=10',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     else:
         pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
                 'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
-                '--flow_replacement_interval=15',
+                '--flow_replacement_interval=10',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     print 'Launching external controller: ' + str(pox_arguments[0])
     print 'Launch arguments:'
@@ -107,7 +109,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
         mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
         test_group = DynamicMulticastGroupDefinition(net.hosts, mcast_ip, mcast_port, mcast_port + 1)
         print 'Generating events for group: ' + mcast_ip
-        test_group.generate_receiver_events(trial_start_time, TRIAL_DURATION_SECONDS, ARRIVAL_RATE, SERVICE_RATE)
+        test_group.generate_receiver_events(trial_start_time, TRIAL_DURATION_SECONDS, RECEIVERS_AT_TRIAL_START, ARRIVAL_RATE, SERVICE_RATE)
         test_group.launch_sender_application()
         test_groups.append(test_group)
         mcast_group_last_octet += 1
@@ -139,9 +141,9 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
             
             sleep_time = next_event_time - time()
             if sleep_time < 0:
-                print 'WARNING: sleep_time is negative!'
+                print 'WARNING: sleep_time is negative!\n'
             else:
-                print 'Waiting ' + str(sleep_time) + ' for next event.'
+                print 'Waiting ' + str(sleep_time) + ' for next event.\n'
                 sleep(sleep_time)
         
         print 'Terminating network applications'
@@ -157,13 +159,31 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
         print 'Controller terminated'
         pox_process = None
         net.stop()
+        sleep(3)
+        
+        # Print packet loss statistics
+        recv_packets = sum(group.get_total_recv_packets() for group in test_groups)
+        lost_packets = sum(group.get_total_lost_packets() for group in test_groups)
+        packet_loss = 0
+        if (recv_packets + lost_packets) != 0:
+            packet_loss = (lost_packets / (recv_packets + lost_packets)) * 100
+        print 'RecvPackets: ' + str(recv_packets) + '  LostPackets: ' + str(lost_packets) + '  PacketLoss: ' + str(packet_loss) + '%'
+        
+        # Calculate mean service time (sanity check to see that exponential service time generation is working as intended)
+        num_apps = 0
+        total_service_time = 0
+        for group in test_groups:
+            for recv_app in group.receiver_applications:
+                num_apps += 1
+                total_service_time += recv_app.service_time
+        print 'Average Service Time: ' + str(total_service_time / num_apps)
 
         if not test_success:
-            call('rm -rfv ' + str(flow_log_path), shell=True)
+            call('rm -rf ' + str(flow_log_path), shell=True)
         call('rm -rfv ' + str(event_log_path), shell=True)
         
     except BaseException as e:
-        print str(e)
+        traceback.print_exc()
         test_success = False
     
     if pipe is not None:
@@ -181,6 +201,13 @@ def print_usage_text():
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
+    
+    # Uncomment for easy debug testing
+    # topo = ManhattanGridTopo(5, 4, 20, 1, False)
+    # hosts = topo.get_host_list()
+    # mcastTestDynamic(topo, hosts, 'test.log', 10, 'linear', 'none')
+    # sys.exit()
+    
     if len(sys.argv) >= 2:
         if '-h' in str(sys.argv[1]) or 'help' in str(sys.argv[1]):
             print_usage_text()

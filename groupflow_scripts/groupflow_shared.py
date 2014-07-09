@@ -2,7 +2,9 @@ from mininet.topo import *
 from scipy.stats import truncnorm, tstd, poisson, expon
 from numpy.random import randint, uniform
 from datetime import datetime
+from time import time
 import os
+import sys
 import signal
 
 LATENCY_METRIC_MIN_AVERAGE_DELAY = 1
@@ -14,15 +16,10 @@ class ReceiverLogStats(object):
         self.recv_bytes = int(recv_bytes)
         self.recv_packets = int(recv_packets)
         self.lost_packets = int(lost_packets)
-        if lost_packets + recv_packets == 0:
-            self.packet_loss = 0
-        else:
-            self.packet_loss = (float(lost_packets) / (float(lost_packets) + float(recv_packets))) * 100
 
     def debug_print(self):
         print 'Multicast Receiver Log: ' + str(self.filename)
         print 'RecvBytes: ' + str(self.recv_bytes) + ' RecvPackets: ' + str(self.recv_packets) + ' LostPackets: ' + str(self.lost_packets)
-        print 'PacketLoss: ' + str(self.packet_loss) + '%'
 
         
 class MulticastReceiverApplication(object):
@@ -38,7 +35,7 @@ class MulticastReceiverApplication(object):
         self.init_time = init_time
         self.service_time = service_time
         self.terminate_time = init_time + service_time
-        self.log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(host) + '_' + str(init_time) + '.log'
+        self.log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(host) + '_' + str(randint(0,sys.maxint)) + '.log'
         self.app_process = None
         self.log_stats = None
         self.app_state = MulticastReceiverApplication.APP_STATE_PRELAUNCH
@@ -63,32 +60,46 @@ class MulticastReceiverApplication(object):
             self.app_process.wait()
             self.app_process = None
             
-        # Read the application's log file and record relevant stats
-        log_file = open(self.log_filename, 'r')
-        for line in log_file:
-            if 'RecvPackets:' in line:
-                line_split = line.split(' ')
-                recv_packets = line_split[0][len('RecvPackets:'):]
-                recv_bytes = line_split[1][len('RecvBytes:'):]
-                lost_packets = line_split[2][len('LostPackets:'):]
-                self.log_stats = ReceiverLogStats(str(self.log_filename), recv_bytes, recv_packets, lost_packets)
-                break
-        log_file.close()
-        
-        # Remove the application log file
-        os.remove(self.log_filename)
+        if self.log_stats is None:
+            # Read the application's log file and record relevant stats
+            try:
+                log_file = open(self.log_filename, 'r')
+                # print 'Reading log file: ' + str(self.log_filename)
+                for line in log_file:
+                    if 'RecvPackets:' in line:
+                        line_split = line.split(' ')
+                        recv_packets = line_split[0][len('RecvPackets:'):]
+                        recv_bytes = line_split[1][len('RecvBytes:'):]
+                        lost_packets = line_split[2][len('LostPackets:'):]
+                        self.log_stats = ReceiverLogStats(str(self.log_filename), recv_bytes, recv_packets, lost_packets)
+                        # self.log_stats.debug_print()
+                        break
+                log_file.close()
+                # print 'Read log file: ' + str(self.log_filename)
+                
+                # Remove the application log file
+                os.remove(self.log_filename)
+            except IOError as e:
+                print 'WARNING: Log file ' + str(self.log_filename) + ' was not found. (App service time: ' + str(self.service_time) + ')'
+                self.log_stats = ReceiverLogStats(str(self.log_filename), 0, 0, 0)
     
     def get_recv_packets(self):
+        if self.log_stats is None and self.app_state == MulticastReceiverApplication.APP_STATE_COMPLETE:
+            self.read_log_stats()
+            
         if self.log_stats is None:
             return 0
         else:
-            return self.log_stats.recv_packets
+            return int(self.log_stats.recv_packets)
     
     def get_lost_packets(self):
+        if self.log_stats is None and self.app_state == MulticastReceiverApplication.APP_STATE_COMPLETE:
+            self.read_log_stats()
+            
         if self.log_stats is None:
             return 0
         else:
-            return self.log_stats.recv_packets
+            return int(self.log_stats.lost_packets)
     
     def get_app_state(self):
         return self.app_state
@@ -109,8 +120,9 @@ class DynamicMulticastGroupDefinition(object):
         self.src_process = None
         self.receiver_applications = []
         self.event_list = None
+        self.trial_start_time = 0
     
-    def generate_receiver_events(self, trial_start_time, trial_duration_seconds, arrival_rate, service_rate):
+    def generate_receiver_events(self, trial_start_time, trial_duration_seconds, num_receivers_at_time_zero, arrival_rate, service_rate):
         """Generates receiver init and termination events.
         
         Receiver initialization events are generated as a poission process with arrival rate: arrival_rate (in receivers per second).
@@ -120,6 +132,18 @@ class DynamicMulticastGroupDefinition(object):
         if self.event_list is not None:
             return
         self.event_list = []
+        self.trial_start_time = trial_start_time
+        
+        # First, generate the initial receievers (active at time 0)
+        for i in range(0, num_receivers_at_time_zero):
+            # Generate a service time
+            service_time = expon(loc = 0, scale=(1.0 / service_rate)).rvs(1)[0]
+            # Select a host through a uniform random distribution
+            receiver = self.net_hosts[randint(0,len(self.net_hosts))]
+            receiver = MulticastReceiverApplication(receiver, self.group_ip, self.mcast_port, self.echo_port, trial_start_time, service_time)
+            self.receiver_applications.append(receiver)
+            self.event_list.append((trial_start_time, DynamicMulticastGroupDefinition.EVENT_RECEIVER_INIT, receiver))
+            self.event_list.append((trial_start_time + service_time, DynamicMulticastGroupDefinition.EVENT_RECEIVER_TERMINATION, receiver))
         
         # Find the number of arrivals in the interval [0, trial_duration_seconds]
         # Size = trial_duration_seconds, since we want the number of arrivals in trial_duration_seconds time units
@@ -163,11 +187,12 @@ class DynamicMulticastGroupDefinition(object):
         while len(self.event_list) > 0 and self.event_list[0][0] <= current_time:
             event = self.event_list.pop(0)
             if event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_INIT:
-                print 'Launching receiver ' + str(event[2]) + ' at time: ' + str(event[0])
+                print 'Launching receiver ' + str(event[2]) + ' at time: ' + str(event[0]) + ' (Sim time: ' + str(event[0] - self.trial_start_time) + ')'
                 event[2].launch_receiver_application()
             elif event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_TERMINATION:
                 event[2].terminate_receiver_application()
-                print 'Terminating receiver ' + str(event[2]) + ' at time: ' + str(event[0])
+                print 'Terminating receiver ' + str(event[2]) + ' at time: ' + str(event[0]) + ' (Sim time: ' + str(event[0] - self.trial_start_time) + ')'
+                print 'Service Time: ' + str(time() - event[2].init_time)
     
     def terminate_group(self):
         """Terminates the sender application, as well as any receiver applications which are currently running.
@@ -183,6 +208,12 @@ class DynamicMulticastGroupDefinition(object):
         for recv_app in self.receiver_applications:
             if recv_app.app_state == MulticastReceiverApplication.APP_STATE_RUNNING:
                 recv_app.terminate_receiver_application()
+    
+    def get_total_recv_packets(self):
+        return sum(recv_app.get_recv_packets() for recv_app in self.receiver_applications)
+        
+    def get_total_lost_packets(self):
+        return sum(recv_app.get_lost_packets() for recv_app in self.receiver_applications)
     
     def get_next_receiver_event(self):
         """Returns the receiver event at the head of the event list (or None if the list is empty)."""
@@ -264,9 +295,9 @@ class StaticMulticastGroupDefinition(object):
             for line in log_file:
                 if 'RecvPackets:' in line:
                     line_split = line.split(' ')
-                    recv_packets = line_split[0][len('RecvPackets:'):]
-                    recv_bytes = line_split[1][len('RecvBytes:'):]
-                    lost_packets = line_split[2][len('LostPackets:'):]
+                    recv_packets = int(line_split[0][len('RecvPackets:'):])
+                    recv_bytes = int(line_split[1][len('RecvBytes:'):])
+                    lost_packets = int(line_split[2][len('LostPackets:'):])
                     log_stats = ReceiverLogStats(str(filename), recv_bytes, recv_packets, lost_packets)
                     #log_stats.debug_print()
                     self.receiver_log_stats.append(log_stats)
