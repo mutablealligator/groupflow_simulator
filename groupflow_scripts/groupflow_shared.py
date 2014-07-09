@@ -1,5 +1,5 @@
 from mininet.topo import *
-from scipy.stats import truncnorm, tstd
+from scipy.stats import truncnorm, tstd, poisson, expon
 from numpy.random import randint, uniform
 from datetime import datetime
 import os
@@ -38,42 +38,45 @@ class MulticastReceiverApplication(object):
         self.init_time = init_time
         self.service_time = service_time
         self.terminate_time = init_time + service_time
-        self.log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(host) + '.log'
+        self.log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(host) + '_' + str(init_time) + '.log'
         self.app_process = None
         self.log_stats = None
-        self.app_state = APP_STATE_PRELAUNCH
+        self.app_state = MulticastReceiverApplication.APP_STATE_PRELAUNCH
     
     def launch_receiver_application(self):
-        if self.app_state == APP_STATE_PRElAUNCH and self.app_process is None:
+        if self.app_state == MulticastReceiverApplication.APP_STATE_PRELAUNCH and self.app_process is None:
             with open(os.devnull, "w") as fnull:
                 vlc_rcv_command = ['python', './multicast_receiver_VLC.py', self.group_ip, str(self.mcast_port), str(self.echo_port), str(self.log_filename)]
                 # print 'Running: ' + ' '.join(vlc_rcv_command)
-                self.app_process = net.get(dst).popen(vlc_rcv_command, stdout=fnull, stderr=fnull, close_fds=True, shell=False)
+                self.app_process = self.host.popen(vlc_rcv_command, stdout=fnull, stderr=fnull, close_fds=True, shell=False)
             
-            self.app_state = APP_STATE_RUNNING
+            self.app_state = MulticastReceiverApplication.APP_STATE_RUNNING
     
     def terminate_receiver_application(self):
-        if self.app_state == APP_STATE_RUNNING and self.app_process is not None:
+        if self.app_state == MulticastReceiverApplication.APP_STATE_RUNNING and self.app_process is not None:
             # Terminate the application
             self.app_process.send_signal(signal.SIGINT)
+            self.app_state = MulticastReceiverApplication.APP_STATE_COMPLETE
+    
+    def read_log_stats(self):
+        if self.app_process is not None:
             self.app_process.wait()
+            self.app_process = None
             
-            # Read the application's log file and record relevant stats
-            log_file = open(self.log_filename, 'r')
-            for line in log_file:
-                if 'RecvPackets:' in line:
-                    line_split = line.split(' ')
-                    recv_packets = line_split[0][len('RecvPackets:'):]
-                    recv_bytes = line_split[1][len('RecvBytes:'):]
-                    lost_packets = line_split[2][len('LostPackets:'):]
-                    self.log_stats = ReceiverLogStats(str(filename), recv_bytes, recv_packets, lost_packets)
-                    break
-            log_file.close()
-            
-            # Remove the application log file
-            os.remove(self.log_filename)
-            
-            self.app_state = APP_STATE_COMPLETE
+        # Read the application's log file and record relevant stats
+        log_file = open(self.log_filename, 'r')
+        for line in log_file:
+            if 'RecvPackets:' in line:
+                line_split = line.split(' ')
+                recv_packets = line_split[0][len('RecvPackets:'):]
+                recv_bytes = line_split[1][len('RecvBytes:'):]
+                lost_packets = line_split[2][len('LostPackets:'):]
+                self.log_stats = ReceiverLogStats(str(self.log_filename), recv_bytes, recv_packets, lost_packets)
+                break
+        log_file.close()
+        
+        # Remove the application log file
+        os.remove(self.log_filename)
     
     def get_recv_packets(self):
         if self.log_stats is None:
@@ -89,11 +92,14 @@ class MulticastReceiverApplication(object):
     
     def get_app_state(self):
         return self.app_state
+    
+    def __str__(self):
+        return 'Recv-' + str(self.host)
 
         
 class DynamicMulticastGroupDefinition(object):
-    EVENT_RECEIVER_INIT = 1
-    EVENT_RECEIVER_TERMINATION = 2
+    EVENT_RECEIVER_INIT = 'Recv_Init'
+    EVENT_RECEIVER_TERMINATION = 'Recv_Term'
     
     def __init__(self, net_hosts, group_ip, mcast_port, echo_port):
         self.net_hosts = net_hosts
@@ -102,31 +108,88 @@ class DynamicMulticastGroupDefinition(object):
         self.echo_port = echo_port
         self.src_process = None
         self.receiver_applications = []
+        self.event_list = None
     
-    def generate_receiver_application(self, trial_start_time, trial_duration_seconds, arrival_rate, service_rate):
-        return
+    def generate_receiver_events(self, trial_start_time, trial_duration_seconds, arrival_rate, service_rate):
+        """Generates receiver init and termination events.
+        
+        Receiver initialization events are generated as a poission process with arrival rate: arrival_rate (in receivers per second).
+        Each receiver has an exponential service time with rate: service_rate.
+        This should be called at the start of a simulation run, just after initialization of mininet.
+        """
+        if self.event_list is not None:
+            return
+        self.event_list = []
+        
+        # Find the number of arrivals in the interval [0, trial_duration_seconds]
+        # Size = trial_duration_seconds, since we want the number of arrivals in trial_duration_seconds time units
+        num_arrivals = sum(poisson.rvs(arrival_rate, size=trial_duration_seconds))
+        # Once the number of arrivals is known, generate arrival times uniform on [0, trial_duration_seconds]
+        arrival_times = []
+        for i in range(0, num_arrivals):
+            arrival_times.append(uniform(0, trial_duration_seconds))
+        
+        # Now, for each arrival, generate a corresponding receiver application and events
+        for arrival_time in arrival_times:
+            # Generate a service time
+            service_time = expon(loc = 0, scale=(1.0 / service_rate)).rvs(1)[0]
+            # Select a host through a uniform random distribution
+            receiver = self.net_hosts[randint(0,len(self.net_hosts))]
+            receiver = MulticastReceiverApplication(receiver, self.group_ip, self.mcast_port, self.echo_port, trial_start_time + arrival_time, service_time)
+            self.receiver_applications.append(receiver)
+            self.event_list.append((trial_start_time + arrival_time, DynamicMulticastGroupDefinition.EVENT_RECEIVER_INIT, receiver))
+            self.event_list.append((trial_start_time + arrival_time + service_time, DynamicMulticastGroupDefinition.EVENT_RECEIVER_TERMINATION, receiver))
+        
+        # Sort the event list by time
+        self.event_list = sorted(self.event_list, key=lambda tup: tup[0])
+        
+        # Debug printing
+        for event in self.event_list:
+            print 'Time:' + str(event[0]) + ' ' + str(event[1]) + ' ' + str(event[2])
     
     def launch_sender_application(self):
-        with open(os.devnull, "w") as fnull:
-            vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop']
-            self.src_process = net.get(self.src_host).popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True)
+        """Launches the group sender application.
         
-    def launch_receiver_applications(self, current_time):
-        return
-    
-    def terminate_receiver_applications(self, current_time):
-        return
+        This should be called at the start of a simulation run, after mininet is initialized.
+        """
+        if self.src_process is None:
+            with open(os.devnull, "w") as fnull:
+                vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop']
+                sender = self.net_hosts[randint(0,len(self.net_hosts))]
+                self.src_process = sender.popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True)
+        
+    def update_receiver_applications(self, current_time):
+        """Launches/terminates receiver applications as specified by the current time and the event_list attribute."""
+        while len(self.event_list) > 0 and self.event_list[0][0] <= current_time:
+            event = self.event_list.pop(0)
+            if event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_INIT:
+                print 'Launching receiver ' + str(event[2]) + ' at time: ' + str(event[0])
+                event[2].launch_receiver_application()
+            elif event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_TERMINATION:
+                event[2].terminate_receiver_application()
+                print 'Terminating receiver ' + str(event[2]) + ' at time: ' + str(event[0])
     
     def terminate_group(self):
+        """Terminates the sender application, as well as any receiver applications which are currently running.
+        
+        This should be called at the end of a simulation run, before terminating mininet.
+        """
         if self.src_process is not None:
             # print 'Killing process with PID: ' + str(self.src_process.pid)
             self.src_process.terminate()
             self.src_process.kill()
         
         # TODO: Kill any receivers still running
+        for recv_app in self.receiver_applications:
+            if recv_app.app_state == MulticastReceiverApplication.APP_STATE_RUNNING:
+                recv_app.terminate_receiver_application()
     
     def get_next_receiver_event(self):
-        return
+        """Returns the receiver event at the head of the event list (or None if the list is empty)."""
+        if len(self.event_list) > 0:
+            return self.event_list[0]
+        else:
+            return None
     
 
 class StaticMulticastGroupDefinition(object):
