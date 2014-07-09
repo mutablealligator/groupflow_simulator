@@ -48,6 +48,8 @@ def print_packet_stats(sig = None, frame = None):
 
 def main():
     global multicast_group, multicast_port, packets_to_receive, echo_port, log_filename, recv_packets, recv_bytes, lost_packets
+    signal.signal(signal.SIGINT, print_packet_stats)
+    signal.signal(signal.SIGTERM, print_packet_stats)
     
     if len(sys.argv) > 1:
         multicast_group = sys.argv[1]
@@ -60,9 +62,6 @@ def main():
         
     if len(sys.argv) > 4:
         log_filename = sys.argv[4]
-    
-    signal.signal(signal.SIGINT, print_packet_stats)
-    signal.signal(signal.SIGTERM, print_packet_stats)
     
     # Setup the socket for receive multicast traffic
     multicast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
