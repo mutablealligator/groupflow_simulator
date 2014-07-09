@@ -21,7 +21,7 @@ import traceback
 NUM_GROUPS = 10
 ARRIVAL_RATE = 1.0 / 40 # 1 arrival every 20 seconds
 SERVICE_RATE = 1.0 / 40 # Mean service time = 20 seconds
-TRIAL_DURATION_SECONDS = 60.0 * 2
+TRIAL_DURATION_SECONDS = 60.0 * 5
 RECEIVERS_AT_TRIAL_START = 4
 
 def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none', pipe = None):
@@ -94,6 +94,10 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
         #print net.get(switch_name).cmd('ifconfig')
         
     topo.mcastConfig(net)
+    # Wait for controller topology discovery
+    controller_init_sleep_time = 10
+    print 'Waiting ' + str(controller_init_sleep_time) + ' seconds to allow for controller topology discovery.'
+    sleep(controller_init_sleep_time)
     # Mininet launched
     
     # Generate the test groups, and launch the sender applications
@@ -101,7 +105,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
     print 'Using random seed: ' + str(rand_seed)
     np.random.seed(rand_seed)
     
-    trial_start_time = time() + 12    # Assume group configuration, mininet init, and controller discovery will take ~12 seconds
+    trial_start_time = time() + 5    # Assume group configuration, and initial receiver init will take under 5 seconds
     trial_end_time = trial_start_time + TRIAL_DURATION_SECONDS
     mcast_group_last_octet = 1
     mcast_port = 5010
@@ -116,12 +120,16 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
         mcast_port += 2
     # Test groups generated
     
+    # Launch initial receiver applications
+    for group in test_groups:
+        group.update_receiver_applications(trial_start_time)
+    
     # Wait for trial run start time
     sleep_time = trial_start_time - time()
     if sleep_time < 0:
         print 'WARNING: sleep_time is negative!'
     else:
-        print 'Waiting ' + str(sleep_time) + ' seconds to allow for controller topology discovery'
+        print 'Waiting ' + str(sleep_time) + ' seconds to allow for group initialization.'
         sleep(sleep_time)   # Allow time for the controller to detect the topology
     # Trial has started at this point
     
