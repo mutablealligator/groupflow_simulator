@@ -22,7 +22,7 @@ NUM_GROUPS = 10
 ARRIVAL_RATE = 1.0 / 40 # 1 arrival every 20 seconds
 SERVICE_RATE = 1.0 / 40 # Mean service time = 20 seconds
 TRIAL_DURATION_SECONDS = 60.0 * 5
-RECEIVERS_AT_TRIAL_START = 4
+RECEIVERS_AT_TRIAL_START = 16
 
 def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none', pipe = None):
     test_groups = []
@@ -105,7 +105,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
     print 'Using random seed: ' + str(rand_seed)
     np.random.seed(rand_seed)
     
-    trial_start_time = time() + 5    # Assume group configuration, and initial receiver init will take under 5 seconds
+    trial_start_time = time() + (NUM_GROUPS * 2)    # Assume group configuration, and initial receiver init will take under 2 seconds per group
     trial_end_time = trial_start_time + TRIAL_DURATION_SECONDS
     mcast_group_last_octet = 1
     mcast_port = 5010
@@ -123,6 +123,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
     # Launch initial receiver applications
     for group in test_groups:
         group.update_receiver_applications(trial_start_time)
+        sleep(uniform(0, 2))
     
     # Wait for trial run start time
     sleep_time = trial_start_time - time()
@@ -149,9 +150,9 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
             
             sleep_time = next_event_time - time()
             if sleep_time < 0:
-                print 'WARNING: sleep_time is negative!\n'
+                print 'WARNING: sleep_time is negative!'
             else:
-                print 'Waiting ' + str(sleep_time) + ' for next event.\n'
+                #print 'Waiting ' + str(sleep_time) + ' for next event.\n'
                 sleep(sleep_time)
         
         print 'Terminating network applications'
