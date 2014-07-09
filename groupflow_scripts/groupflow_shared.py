@@ -145,13 +145,24 @@ class DynamicMulticastGroupDefinition(object):
             self.event_list.append((trial_start_time, DynamicMulticastGroupDefinition.EVENT_RECEIVER_INIT, receiver))
             self.event_list.append((trial_start_time + service_time, DynamicMulticastGroupDefinition.EVENT_RECEIVER_TERMINATION, receiver))
         
+        # Alternative: Generate inter-arrival times using exponential distribution
+        arrival_times = []
+        expo_rv = expon(loc = 0, scale=(1.0 / arrival_rate))
+        last_arrival_time = 0
+        while last_arrival_time < trial_duration_seconds:
+            next_arrival_time = expo_rv.rvs(1)[0] + last_arrival_time
+            if next_arrival_time < trial_duration_seconds:
+                arrival_times.append(next_arrival_time)
+            last_arrival_time = next_arrival_time
+        
+        # Alternative Method
         # Find the number of arrivals in the interval [0, trial_duration_seconds]
         # Size = trial_duration_seconds, since we want the number of arrivals in trial_duration_seconds time units
-        num_arrivals = sum(poisson.rvs(arrival_rate, size=trial_duration_seconds))
+        # num_arrivals = sum(poisson.rvs(arrival_rate, size=trial_duration_seconds))
         # Once the number of arrivals is known, generate arrival times uniform on [0, trial_duration_seconds]
-        arrival_times = []
-        for i in range(0, num_arrivals):
-            arrival_times.append(uniform(0, trial_duration_seconds))
+        # arrival_times = []
+        # for i in range(0, num_arrivals):
+        #    arrival_times.append(uniform(0, trial_duration_seconds))
         
         # Now, for each arrival, generate a corresponding receiver application and events
         for arrival_time in arrival_times:
@@ -187,12 +198,12 @@ class DynamicMulticastGroupDefinition(object):
         while len(self.event_list) > 0 and self.event_list[0][0] <= current_time:
             event = self.event_list.pop(0)
             if event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_INIT:
-                print 'Launching receiver ' + str(event[2]) + ' at time: ' + str(event[0]) + ' (Sim time: ' + str(event[0] - self.trial_start_time) + ')'
+                print 'LAUNCH: Receiver ' + str(event[2]) + ' at time: ' + str(event[0]) + ' (Sim time: ' + str(event[0] - self.trial_start_time) + ')'
                 event[2].launch_receiver_application()
             elif event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_TERMINATION:
                 event[2].terminate_receiver_application()
-                print 'Terminating receiver ' + str(event[2]) + ' at time: ' + str(event[0]) + ' (Sim time: ' + str(event[0] - self.trial_start_time) + ')'
-                print 'Service Time: ' + str(time() - event[2].init_time)
+                print 'TERMINATE: Receiver ' + str(event[2]) + ' at time: ' + str(event[0]) + ' (Sim time: ' + str(event[0] - self.trial_start_time) + ')'
+                # print 'Service Time: ' + str(time() - event[2].init_time)
     
     def terminate_group(self):
         """Terminates the sender application, as well as any receiver applications which are currently running.
