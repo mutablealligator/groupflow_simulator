@@ -128,7 +128,8 @@ def main():
                 # this is an out of order packets arriving, and not a sequence number rollover
                 if packet_interval < 0 and packet_interval >= -SEQ_OUT_OF_ORDER_THRESHOLD:
                     packet_interval = 0
-                    lost_packets -= 1
+                    if lost_packets > 0:
+                        lost_packets -= 1
                 elif packet_interval < 0:
                     packet_interval = ((sequence_num - last_sequence_num) + SEQUENCE_NUM_ROLLOVER)
                 lost_packets += packet_interval   
