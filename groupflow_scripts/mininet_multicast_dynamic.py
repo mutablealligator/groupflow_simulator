@@ -21,8 +21,9 @@ import traceback
 NUM_GROUPS = 10
 ARRIVAL_RATE = 1.0 / 40 # 1 arrival every 20 seconds
 SERVICE_RATE = 1.0 / 40 # Mean service time = 20 seconds
-TRIAL_DURATION_SECONDS = 60.0 * 5
+TRIAL_DURATION_SECONDS = 60.0 * 2
 RECEIVERS_AT_TRIAL_START = 16
+STATS_RECORDING_INTERVAL = 5
 
 def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none', pipe = None):
     test_groups = []
@@ -186,10 +187,14 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
                 num_apps += 1
                 total_service_time += recv_app.service_time
         print 'Average Service Time: ' + str(total_service_time / num_apps)
-
+        
+        # Delete log file if test encountered an error, or write the statistic log file if the run was succesfull
         if not test_success:
             call('rm -rf ' + str(flow_log_path), shell=True)
-        call('rm -rfv ' + str(event_log_path), shell=True)
+            call('rm -rf ' + str(event_log_path), shell=True)
+        else:
+            write_dynamic_stats_log(log_file_name, flow_log_path, event_log_path, test_groups, topo, ARRIVAL_RATE, SERVICE_RATE, 
+                    RECEIVERS_AT_TRIAL_START, trial_start_time, trial_end_time, STATS_RECORDING_INTERVAL)
         
     except BaseException as e:
         traceback.print_exc()

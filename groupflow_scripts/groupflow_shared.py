@@ -232,7 +232,138 @@ class DynamicMulticastGroupDefinition(object):
             return self.event_list[0]
         else:
             return None
+
+def write_dynamic_stats_log(log_path, flow_stats_file_path, event_log_file_path, test_groups, topography, recv_arrival_rate, 
+        recv_service_rate, num_init_receivers, trial_start_time, trial_end_time, stats_interval):
+        
+    def write_current_time_interval(log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, time_index, sim_time):
+        link_bandwidth_list = []
+        total_num_flows = 0
+        
+        for switch_dpid in link_bandwidth_usage_Mbps:
+            for port_no in link_bandwidth_usage_Mbps[switch_dpid]:
+                link_bandwidth_list.append(link_bandwidth_usage_Mbps[switch_dpid][port_no])
+        
+        for switch_dpid in switch_num_flows:
+            total_num_flows += switch_num_flows[switch_dpid]
+        
+        net_wide_avg_load = 0
+        for switch_dpid in switch_average_load:
+            net_wide_avg_load += switch_average_load[switch_dpid]
+        net_wide_avg_load = float(net_wide_avg_load) / len(switch_average_load)
+        
+        avg_response_time = sum(response_times) / float(len(response_times))
+        avg_network_time = sum(network_times) / float(len(network_times))
+        avg_processing_time = sum(processing_times) / float(len(processing_times))
+        
+        average_link_bandwidth_usage = sum(link_bandwidth_list) / float(len(link_bandwidth_list))
+        traffic_concentration = 0
+        if average_link_bandwidth_usage != 0:
+            traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
+        link_util_std_dev = tstd(link_bandwidth_list)
+        
+        log_file.write(' TimeIndex:' + str(time_index) + ' SimTime:' + str(sim_time))
+        log_file.write(' TotalNumFlows:' + str(total_num_flows))
+        log_file.write(' MaxLinkUsageMbps:' + str(max(link_bandwidth_list)))
+        log_file.write(' AvgLinkUsageMbps:' + str(average_link_bandwidth_usage))
+        log_file.write(' TrafficConcentration:' + str(traffic_concentration))
+        log_file.write(' LinkUsageStdDev:' + str(link_util_std_dev))
+        log_file.write(' ResponseTime:' + str(avg_response_time))
+        log_file.write(' NetworkTime:' + str(avg_network_time))
+        log_file.write(' ProcessingTime:' + str(avg_processing_time))
+        log_file.write(' SwitchAvgLoadMbps:' + str(net_wide_avg_load))
+        log_file.write('\n')
+ 
+ 
+    switch_num_flows = {}   # Dictionary of number of currently installed flows, keyed by switch_dpid
+    switch_average_load = {}    # Dictionary of switch average load, keyed by switch_dpid
+    link_bandwidth_usage_Mbps = {} # Dictionary of dictionaries: link_bandwidth_usage_Mbps[switch_dpid][port_no]
+    cur_switch_dpid = None  # Stores the DPID of the switch for which statistics are currently being read
     
+    # Generate a list of time points for which statistics should be recorded
+    next_time_interval = trial_start_time + stats_interval
+    time_intervals = []
+    while next_time_interval < trial_end_time:
+        time_intervals.append(next_time_interval)
+        next_time_interval = next_time_interval + stats_interval
+    print 'Recording statistics for ' + str(len(time_intervals)) + ' time intervals.'
+    cur_time_interval_index = 0
+    cur_time = 0
+    
+    # Write out scenario params, and any statistics which cover the entire trial duration (ex. packet loss)
+    final_log_file = open(log_path, 'w')
+    
+    # Calculate packet loss
+    recv_packets = 0
+    lost_packets = 0
+    for group in test_groups:
+        recv_packets += group.get_total_recv_packets()
+        lost_packets += group.get_total_lost_packets()
+    packet_loss = 0
+    if recv_packets + lost_packets != 0:
+        packet_loss = (float(lost_packets) / (recv_packets + lost_packets)) * 100
+    
+    final_log_file.write('GroupFlow Performance Simulation: ' + str(datetime.now()) + '\n')
+    final_log_file.write('FlowStatsLogFile:' + str(flow_stats_file_path) + '\n')
+    final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
+    final_log_file.write('TrialStartTime:' + str(trial_start_time) + ' TrialEndTime:' + str(trial_end_time) + ' TrialDuration:' + str(trial_end_time - trial_start_time) + '\n')
+    final_log_file.write('NumberOfGroups:' + str(len(test_groups)) + ' InitReceiversPerGroup:' + str(num_init_receivers) + ' ReceiverArrivalRate:' + str(recv_arrival_rate)
+            + ' ReceiverServiceRate:' + str(recv_service_rate) + '\n')
+    final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n')
+    final_log_file.write('RecvPackets:' + str(recv_packets) + ' LostPackets:' + str(lost_packets) + ' AvgPacketLoss:' + str(packet_loss) + '\n\n')
+    
+    flow_log_file = open(flow_stats_file_path, 'r')
+    response_times = []
+    network_times = []
+    processing_times = []
+    
+    for line in flow_log_file:
+        # This line specifies that start of stats for a new switch and time instant
+        if 'PortStats' in line:
+            line_split = line.split()
+            switch_dpid = line_split[1][len('Switch:'):]
+            num_flows = int(line_split[2][len('NumFlows:'):])
+            cur_time = float(line_split[4][len('IntervalEndTime:'):])
+            response_time = float(line_split[5][len('ResponseTime:'):])
+            network_time = float(line_split[6][len('NetworkTime:'):])
+            processing_time = float(line_split[7][len('ProcessingTime:'):])
+            avg_load = float(line_split[8][len('AvgSwitchLoad:'):])
+
+            cur_switch_dpid = switch_dpid
+            
+            # First, check to see if this time falls under a new statistics interval, and record the current stats to file if so
+            if cur_time_interval_index < len(time_intervals) and cur_time > time_intervals[cur_time_interval_index]:
+                cur_time_interval_index += 1
+                if(cur_time_interval_index > 1):
+                    write_current_time_interval(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_time_interval_index - 1, time_intervals[cur_time_interval_index - 1] - trial_start_time)
+                    response_times = []
+                    network_times = []
+                    processing_times = []
+            
+            response_times.append(response_time)
+            network_times.append(network_time)
+            processing_times.append(processing_time)
+            switch_num_flows[cur_switch_dpid] = num_flows
+            switch_average_load[cur_switch_dpid] = avg_load
+            
+        # This line specifies port specific stats for the last referenced switch
+        if 'PSPort' in line:
+            line_split = line.split()
+            port_no = int(line_split[0][len('PSPort:'):])
+            bandwidth_usage = float(line_split[3][len('AvgBandwidth:'):])
+            if(port_no == 65533):
+                # Ignore connections to the controller for these calculations
+                continue
+                
+            if cur_switch_dpid not in link_bandwidth_usage_Mbps:
+                link_bandwidth_usage_Mbps[cur_switch_dpid] = {}
+            link_bandwidth_usage_Mbps[cur_switch_dpid][port_no] = bandwidth_usage
+    
+    # Print the stats for the final multicast group
+    # write_current_time_interval(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_group_index - 1, test_groups[cur_group_index - 1])
+    
+    flow_log_file.close()
+    final_log_file.close()
 
 class StaticMulticastGroupDefinition(object):
     """Class used to manage the launch and termination of a single group of multicast applications with static membership.
