@@ -28,11 +28,20 @@ recv_bytes = 0
 lost_packets = 0
 
 log_filename = None
+multicast_socket = None
+mreq = None
 
 def int_to_ip(ip):
     return socket.inet_ntoa(hex(ip)[2:].zfill(8).decode('hex'))
 
-def print_packet_stats(sig = None, frame = None):
+def handle_termination(sig = None, frame = None):
+    global multicast_socket, mreq
+    
+    if multicast_socket is not None and mreq is not None:
+        multicast_socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)
+        multicast_socket = None
+        mreq = None
+        
     if log_filename is not None:
         log_file = open(log_filename, 'w')
         log_file.write('RecvPackets:' + str(recv_packets) + ' RecvBytes:' + str(recv_bytes) + ' LostPackets:' 
@@ -47,9 +56,9 @@ def print_packet_stats(sig = None, frame = None):
 
 
 def main():
-    global multicast_group, multicast_port, packets_to_receive, echo_port, log_filename, recv_packets, recv_bytes, lost_packets
-    signal.signal(signal.SIGINT, print_packet_stats)
-    signal.signal(signal.SIGTERM, print_packet_stats)
+    global multicast_group, multicast_port, multicast_socket, mreq, packets_to_receive, echo_port, log_filename, recv_packets, recv_bytes, lost_packets
+    signal.signal(signal.SIGINT, handle_termination)
+    signal.signal(signal.SIGTERM, handle_termination)
     
     if len(sys.argv) > 1:
         multicast_group = sys.argv[1]
@@ -130,7 +139,7 @@ def main():
                     if lost_packets > 0:
                         lost_packets -= 1
                 elif packet_interval < 0:
-                    packet_interval = ((sequence_num - last_sequence_num) + SEQUENCE_NUM_ROLLOVER)
+                    packet_interval = ((sequence_num - last_sequence_num) + SEQ_NUM_ROLLOVER)
                 lost_packets += packet_interval   
             last_sequence_num = sequence_num
         
@@ -139,10 +148,8 @@ def main():
     
     except BaseException as e:
             print 'Exception: ' + str(e)
-            print_packet_stats()
     
-    multicast_socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)
-    print_packet_stats()
+    handle_termination()
     
 if __name__ == '__main__':
     main()
