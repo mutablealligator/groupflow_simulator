@@ -19,7 +19,7 @@ import traceback
 
 # Hardcoded purely for testing / debug, these will be moved once functionality is stable
 NUM_GROUPS = 10
-ARRIVAL_RATE = 1.0 / 40 # 1 arrival every 20 seconds
+ARRIVAL_RATE = 1.0 / 40
 SERVICE_RATE = 1.0 / 40 # Mean service time = 20 seconds
 TRIAL_DURATION_SECONDS = 60.0 * 2
 RECEIVERS_AT_TRIAL_START = 16
@@ -151,7 +151,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
             
             sleep_time = next_event_time - time()
             if sleep_time < 0:
-                print 'WARNING: sleep_time is negative!'
+                print 'WARNING: sleep_time (' + str(sleep_time) + ') is negative!'
             else:
                 #print 'Waiting ' + str(sleep_time) + ' for next event.\n'
                 sleep(sleep_time)
