@@ -214,6 +214,7 @@ class MulticastPath(object):
     def install_openflow_rules(self, groupflow_trace_event = None):
         """Selects routes for active receivers from the cached shortest path tree, and installs/removes OpenFlow rules accordingly."""
         reception_state = self.groupflow_manager.get_reception_state(self.dst_mcast_address, self.src_ip)
+        log.debug('Reception state for ' + str(self.dst_mcast_address) + ': ' + str(reception_state))
         outgoing_rules = defaultdict(lambda : None)
         
         if not groupflow_trace_event is None:
@@ -329,7 +330,7 @@ class MulticastPath(object):
             else:
                 log.warn('Could not get connection for router: ' + dpid_to_str(router_dpid))
         
-        log.info('New flows installed for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
+        log.debug('New flows installed for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
         
         if self.groupflow_manager.flow_replacement_mode == PERIODIC_FLOW_REPLACEMENT and self._flow_replacement_timer is None:
             log.debug('Starting flow replacement timer for Group: ' + str(self.dst_mcast_address) + ' Source: ' + str(self.src_ip) + ' FlowCookie: ' + str(self.flow_cookie))
@@ -562,10 +563,14 @@ class GroupFlowManager(EventMixin):
                 
         for multicast_addr in removed_mcast_addr_list:
             if multicast_addr in self.multicast_paths:
+                sources_to_remove = []
                 for source in self.multicast_paths[multicast_addr]:
                     log.info('Removing flows for group ' + str(multicast_addr) + ' Source: ' + str(source))
                     self.multicast_paths[multicast_addr][source].remove_openflow_rules()
                     del self.multicast_paths_by_flow_cookie[self.multicast_paths[multicast_addr][source].flow_cookie]
+                    sources_to_remove.append(source)
+                    
+                for source in sources_to_remove:
                     del self.multicast_paths[multicast_addr][source]
             else:
                 log.info('Removed multicast group ' + str(multicast_addr) + ' has no known paths')
