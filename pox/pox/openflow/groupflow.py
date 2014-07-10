@@ -484,6 +484,10 @@ class GroupFlowManager(EventMixin):
             # Check the destination address to see if this is a multicast packet
             if ipv4_pkt.dstip.inNetwork('224.0.0.0/4'):
                 # Ignore multicast packets from adjacent routers
+                for router_dpid2 in self.adjacency[router_dpid]:
+                    if self.adjacency[router_dpid][router_dpid2] == event.port:
+                        return
+                        
                 group_reception = self.get_reception_state(ipv4_pkt.dstip, ipv4_pkt.srcip)
                 if group_reception:
                     if not self.multicast_paths[ipv4_pkt.dstip][ipv4_pkt.srcip] is None:
