@@ -18,11 +18,11 @@ import numpy as np
 import traceback
 
 # Hardcoded purely for testing / debug, these will be moved once functionality is stable
-NUM_GROUPS = 10
-ARRIVAL_RATE = 1.0 / 40
-SERVICE_RATE = 1.0 / 40 # Mean service time = 20 seconds
-TRIAL_DURATION_SECONDS = 60.0 * 2
-RECEIVERS_AT_TRIAL_START = 16
+NUM_GROUPS = 20
+ARRIVAL_RATE = 5 * (1.0 / 40)
+SERVICE_RATE = 1.0 / 40
+TRIAL_DURATION_SECONDS = 60.0 * 3
+RECEIVERS_AT_TRIAL_START = 5
 STATS_RECORDING_INTERVAL = 5
 
 def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none', pipe = None):
@@ -176,7 +176,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
         lost_packets = sum(group.get_total_lost_packets() for group in test_groups)
         packet_loss = 0
         if (recv_packets + lost_packets) != 0:
-            packet_loss = (lost_packets / (recv_packets + lost_packets)) * 100
+            packet_loss = (float(lost_packets) / (float(recv_packets) + float(lost_packets))) * 100
         print 'RecvPackets: ' + str(recv_packets) + '  LostPackets: ' + str(lost_packets) + '  PacketLoss: ' + str(packet_loss) + '%'
         
         # Calculate mean service time (sanity check to see that exponential service time generation is working as intended)
