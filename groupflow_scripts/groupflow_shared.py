@@ -105,7 +105,7 @@ class MulticastReceiverApplication(object):
         return self.app_state
     
     def __str__(self):
-        return 'Recv-' + str(self.host)
+        return 'Recv-' + str(self.group_ip) + '-' + str(self.host)
 
         
 class DynamicMulticastGroupDefinition(object):
