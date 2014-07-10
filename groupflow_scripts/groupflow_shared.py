@@ -71,6 +71,7 @@ class MulticastReceiverApplication(object):
                         recv_packets = line_split[0][len('RecvPackets:'):]
                         recv_bytes = line_split[1][len('RecvBytes:'):]
                         lost_packets = line_split[2][len('LostPackets:'):]
+                        print str(self) + ' Recv:' + str(recv_packets) + ' Lost:' + str(lost_packets),
                         self.log_stats = ReceiverLogStats(str(self.log_filename), recv_bytes, recv_packets, lost_packets)
                         # self.log_stats.debug_print()
                         break
@@ -191,6 +192,7 @@ class DynamicMulticastGroupDefinition(object):
             with open(os.devnull, "w") as fnull:
                 vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop']
                 sender = self.net_hosts[randint(0,len(self.net_hosts))]
+                print 'Sending host for group ' + str(self.group_ip) + ': ' + str(sender)
                 self.src_process = sender.popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True)
         
     def update_receiver_applications(self, current_time):
