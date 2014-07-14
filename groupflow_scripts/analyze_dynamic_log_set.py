@@ -28,11 +28,17 @@ def mean_confidence_interval(data, confidence=0.95):
 
 def read_dynamic_log_set(filepath_prefix, num_logs):
     stat_records = []  # list of lists -> stat_records[time_index] = list of DynamicMulticastStatRecords
+    packet_loss_list = []
     
     for log_index in range(0, num_logs):
         filepath = filepath_prefix + str(log_index) + '.log'
         log_file = open(filepath, 'r')
         for line in log_file:
+            if 'AvgPacketLoss:' in line:
+                split_line = line.strip().split(' ')
+                packet_loss = float(split_line[2][len('AvgPacketLoss:'):])
+                packet_loss_list.append(packet_loss)
+                
             if 'TimeIndex:' in line:
                 split_line = line.strip().split(' ')
                 time_index = int(split_line[0][len('TimeIndex:'):])
@@ -55,11 +61,13 @@ def read_dynamic_log_set(filepath_prefix, num_logs):
         
         log_file.close()
         print 'Processed log: ' + str(filepath)
-        
-    return stat_records
+    
+    print 'Packet Loss Results:'
+    print packet_loss_list
+    return stat_records, packet_loss_list
 
 
-def print_dynamic_trial_statistics(stat_records, output_prefix):    
+def print_dynamic_trial_statistics(stat_records, output_prefix, packet_loss_list):    
     traffic_conc_avgs = []
     traffic_conc_cis = []
     link_std_dev_avgs = []
@@ -159,6 +167,12 @@ def print_dynamic_trial_statistics(stat_records, output_prefix):
         print ' '
     
     # Print output in MATLAB matrix format
+    avg_packet_loss = float(sum(packet_loss_list)) / len(packet_loss_list)
+    ci_upper, ci_lower = mean_confidence_interval(packet_loss_list)
+    packet_loss_ci = abs(ci_upper - ci_lower) / 2
+    
+    print str(output_prefix) + 'packet_loss = ' + str(avg_packet_loss) + ';'
+    print str(output_prefix) + 'packet_loss_ci = ' + str(packet_loss_ci) + ';'
     print str(output_prefix) + 'traffic_conc = [' + ', '.join([str(r) for r in traffic_conc_avgs]) + '];'
     print str(output_prefix) + 'traffic_conc_ci = [' + ', '.join([str(r) for r in traffic_conc_cis]) + '];'
     print str(output_prefix) + 'link_std_dev = [' + ', '.join([str(r) for r in link_std_dev_avgs]) + '];'
@@ -183,6 +197,6 @@ if __name__ == '__main__':
         filepath_prefix = sys.argv[1]
         num_logs = int(sys.argv[2])
         output_prefix = sys.argv[3]
-        stat_records = read_dynamic_log_set(filepath_prefix, num_logs)
-        print_dynamic_trial_statistics(stat_records, output_prefix)
+        stat_records, packet_loss_list = read_dynamic_log_set(filepath_prefix, num_logs)
+        print_dynamic_trial_statistics(stat_records, output_prefix, packet_loss_list)
     
