@@ -187,22 +187,26 @@ class MulticastPath(object):
                 link_util = 1
             
             link_weight = 1
-            if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
-                if link_util >= 1:
-                    link_weight = sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links()
-                else:
-                    link_weight = min(self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util),
-                            sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
-            elif self.groupflow_manager.link_weight_type == LINK_WEIGHT_EXPONENTIAL:
-                if link_util >= 1:
-                    link_weight = sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links()
-                else:
-                    link_weight = min(self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * ((1 / (1 - link_util)) - 1)),
-                            sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
             
-            log.debug('Router DPID: ' + dpid_to_str(edge[0]) + ' Port: ' + str(output_port) + 
-                    ' TotalUtil: ' + str(raw_link_util) + ' FlowUtil: ' + str(link_util_mcast_flow) + ' OtherFlowUtil: ' + str(link_util) 
-                    + ' Weight: ' + str(link_weight))
+            if self.groupflow_manager.util_link_weight == 0:
+                link_weight = self.groupflow_manager.static_link_weight
+            else:
+                if self.groupflow_manager.link_weight_type == LINK_WEIGHT_LINEAR:
+                    if link_util >= 1:
+                        link_weight = sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links()
+                    else:
+                        link_weight = min(self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * link_util),
+                                sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+                elif self.groupflow_manager.link_weight_type == LINK_WEIGHT_EXPONENTIAL:
+                    if link_util >= 1:
+                        link_weight = sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links()
+                    else:
+                        link_weight = min(self.groupflow_manager.static_link_weight + (self.groupflow_manager.util_link_weight * ((1 / (1 - link_util)) - 1)),
+                                sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+                
+                log.debug('Router DPID: ' + dpid_to_str(edge[0]) + ' Port: ' + str(output_port) + 
+                        ' TotalUtil: ' + str(raw_link_util) + ' FlowUtil: ' + str(link_util_mcast_flow) + ' OtherFlowUtil: ' + str(link_util) 
+                        + ' Weight: ' + str(link_weight))
 
             weighted_topo_graph.append([edge[0], edge[1], link_weight])
         self.weighted_topo_graph = weighted_topo_graph
