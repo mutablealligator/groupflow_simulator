@@ -10,6 +10,8 @@ import signal
 LATENCY_METRIC_MIN_AVERAGE_DELAY = 1
 LATENCY_METRIC_MIN_MAXIMUM_DELAY = 2
 
+MEDIA_DURATION_SECONDS = 70
+
 class ReceiverLogStats(object):
     def __init__(self, filename, recv_bytes, recv_packets, lost_packets):
         self.filename = filename
@@ -190,7 +192,9 @@ class DynamicMulticastGroupDefinition(object):
         """
         if self.src_process is None:
             with open(os.devnull, "w") as fnull:
-                vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop']
+                seek_time = str(uniform(0, MEDIA_DURATION_SECONDS))
+                print 'Starting sender for group ' + str(self.group_ip) + ' with seek offset: ' + seek_time + ' seconds.'
+                vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop', '--start-time=' + seek_time]
                 sender = self.net_hosts[randint(0,len(self.net_hosts))]
                 print 'Sending host for group ' + str(self.group_ip) + ': ' + str(sender)
                 self.src_process = sender.popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True)
