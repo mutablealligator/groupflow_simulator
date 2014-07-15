@@ -391,7 +391,7 @@ class GroupFlowManager(EventMixin):
         self.link_weight_type = link_weight_type
         log.info('Set link weight type: ' + str(self.link_weight_type))
         self.static_link_weight = float(static_link_weight)
-        if self.static_link_weight = 0:
+        if self.static_link_weight == 0:
             self.static_link_weight = sys.float_info.min
         self.util_link_weight = float(util_link_weight)
         log.info('Set StaticLinkWeight:' + str(self.static_link_weight) + ' UtilLinkWeight:' + str(self.util_link_weight))
