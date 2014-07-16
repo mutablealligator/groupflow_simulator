@@ -18,10 +18,10 @@ import numpy as np
 import traceback
 
 # Hardcoded purely for testing / debug, these will be moved once functionality is stable
-NUM_GROUPS = 20
-ARRIVAL_RATE = 5 * (1.0 / 40)
-SERVICE_RATE = 1.0 / 40
-TRIAL_DURATION_SECONDS = 60.0 * 3
+NUM_GROUPS = 25
+ARRIVAL_RATE = 5 * (1.0 / 60)
+SERVICE_RATE = 1.0 / 60
+TRIAL_DURATION_SECONDS = 60.0 * 5
 RECEIVERS_AT_TRIAL_START = 5
 STATS_RECORDING_INTERVAL = 5
 
@@ -31,18 +31,22 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
 
     # Launch the external controller
     pox_arguments = []
+    static_link_weight = 0
+    if util_link_weight == 0:
+        static_link_weight = 1
+        
     if 'periodic' in replacement_mode:
         pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
                 'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
-                'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
+                'openflow.groupflow', '--static_link_weight=' + str(static_link_weight), '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=10',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     else:
         pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
                 'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
-                'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
+                'openflow.groupflow', '--static_link_weight=' + str(static_link_weight), '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=10',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     print 'Launching external controller: ' + str(pox_arguments[0])
