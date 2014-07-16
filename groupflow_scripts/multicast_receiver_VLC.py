@@ -21,7 +21,7 @@ packets_to_receive = 0
 echo_port = 5008
 MPEG2_SECONDS_PER_TICK = 1.0 / (90.0 * 1000.0)  # MPEG2 uses 32 bit 90K Hz timestamps
 SEQ_NUM_ROLLOVER = 65535
-SEQ_OUT_OF_ORDER_THRESHOLD = 200
+SEQ_OUT_OF_ORDER_THRESHOLD = 500
 
 recv_packets = 0
 recv_bytes = 0
