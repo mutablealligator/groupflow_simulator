@@ -123,6 +123,7 @@ class DynamicMulticastGroupDefinition(object):
         self.src_process = None
         self.receiver_applications = []
         self.event_list = None
+        self.past_event_list = None
         self.trial_start_time = 0
     
     def generate_receiver_events(self, trial_start_time, trial_duration_seconds, num_receivers_at_time_zero, arrival_rate, service_rate):
@@ -135,6 +136,7 @@ class DynamicMulticastGroupDefinition(object):
         if self.event_list is not None:
             return
         self.event_list = []
+        self.past_event_list = []
         self.trial_start_time = trial_start_time
         
         # First, generate the initial receievers (active at time 0)
@@ -192,11 +194,12 @@ class DynamicMulticastGroupDefinition(object):
         """
         if self.src_process is None:
             with open(os.devnull, "w") as fnull:
-                seek_time = str(uniform(0, MEDIA_DURATION_SECONDS))
+                seek_time = str(int(uniform(0, MEDIA_DURATION_SECONDS)))
                 print 'Starting sender for group ' + str(self.group_ip) + ' with seek offset: ' + seek_time + ' seconds.'
-                vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop', '--start-time=' + seek_time]
+                vlc_command = ['vlc-wrapper', 'test_media.mp4', '-I', 'dummy', '--sout', '"#rtp{access=udp, mux=ts, proto=udp, dst=' + self.group_ip + ', port=' + str(self.mcast_port) + '}"', '--sout-keep', '--loop', '--start-time', seek_time]
                 sender = self.net_hosts[randint(0,len(self.net_hosts))]
                 print 'Sending host for group ' + str(self.group_ip) + ': ' + str(sender)
+                print 'Running VLC launch command: ' + ' '.join(vlc_command)
                 self.src_process = sender.popen(' '.join(vlc_command), stdout=fnull, stderr=fnull, close_fds=True, shell=True)
         
     def update_receiver_applications(self, current_time):
@@ -210,6 +213,8 @@ class DynamicMulticastGroupDefinition(object):
                 event[2].terminate_receiver_application()
                 print 'TERMINATE: Receiver ' + str(event[2]) + ' at time: ' + str(event[0]) + ' (Sim time: ' + str(event[0] - self.trial_start_time) + ')'
                 # print 'Service Time: ' + str(time() - event[2].init_time)
+                
+            self.past_event_list.append(event)
     
     def terminate_group(self):
         """Terminates the sender application, as well as any receiver applications which are currently running.
@@ -238,11 +243,28 @@ class DynamicMulticastGroupDefinition(object):
             return self.event_list[0]
         else:
             return None
+    
+    def get_num_active_receivers(self, time):
+        """Returns the number of receivers active at the provided time."""
+        num_receivers = 0
+        for event in self.event_list:
+            if event[0] <= time and event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_INIT:
+                num_receivers += 1
+            if event[0] <= time and event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_TERMINATION:
+                num_receivers -= 1
+        
+        for event in self.past_event_list:
+            if event[0] <= time and event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_INIT:
+                num_receivers += 1
+            if event[0] <= time and event[1] == DynamicMulticastGroupDefinition.EVENT_RECEIVER_TERMINATION:
+                num_receivers -= 1
+        
+        return num_receivers
 
 def write_dynamic_stats_log(log_path, flow_stats_file_path, event_log_file_path, test_groups, topography, recv_arrival_rate, 
         recv_service_rate, num_init_receivers, trial_start_time, trial_end_time, stats_interval):
         
-    def write_current_time_interval(log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, time_index, sim_time):
+    def write_current_time_interval(log_file, test_groups, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, time_index, current_time, trial_start_time):
         link_bandwidth_list = []
         total_num_flows = 0
         
@@ -268,7 +290,11 @@ def write_dynamic_stats_log(log_path, flow_stats_file_path, event_log_file_path,
             traffic_concentration = max(link_bandwidth_list) / average_link_bandwidth_usage
         link_util_std_dev = tstd(link_bandwidth_list)
         
-        log_file.write(' TimeIndex:' + str(time_index) + ' SimTime:' + str(sim_time))
+        num_receivers = 0
+        for group in test_groups:
+            num_receivers += group.get_num_active_receivers(current_time)
+        
+        log_file.write('TimeIndex:' + str(time_index) + ' SimTime:' + str(current_time - trial_start_time))
         log_file.write(' TotalNumFlows:' + str(total_num_flows))
         log_file.write(' MaxLinkUsageMbps:' + str(max(link_bandwidth_list)))
         log_file.write(' AvgLinkUsageMbps:' + str(average_link_bandwidth_usage))
@@ -278,6 +304,7 @@ def write_dynamic_stats_log(log_path, flow_stats_file_path, event_log_file_path,
         log_file.write(' NetworkTime:' + str(avg_network_time))
         log_file.write(' ProcessingTime:' + str(avg_processing_time))
         log_file.write(' SwitchAvgLoadMbps:' + str(net_wide_avg_load))
+        log_file.write(' NumActiveReceivers:' + str(num_receivers))
         log_file.write('\n')
  
  
@@ -296,25 +323,26 @@ def write_dynamic_stats_log(log_path, flow_stats_file_path, event_log_file_path,
     cur_time_interval_index = 0
     cur_time = 0
     
-    # Write out scenario params, and any statistics which cover the entire trial duration (ex. packet loss)
-    final_log_file = open(log_path, 'w')
-    
-    # Calculate packet loss
+    # Calculate packet loss and receivers at trial start
     recv_packets = 0
     lost_packets = 0
+    num_receievers_at_start = 0
     for group in test_groups:
         recv_packets += group.get_total_recv_packets()
         lost_packets += group.get_total_lost_packets()
+        num_receievers_at_start += group.get_num_active_receivers(trial_start_time)
     packet_loss = 0
     if recv_packets + lost_packets != 0:
         packet_loss = (float(lost_packets) / (recv_packets + lost_packets)) * 100
     
+    # Write out scenario params, and any statistics which cover the entire trial duration (ex. packet loss)
+    final_log_file = open(log_path, 'w')
     final_log_file.write('GroupFlow Performance Simulation: ' + str(datetime.now()) + '\n')
     final_log_file.write('FlowStatsLogFile:' + str(flow_stats_file_path) + '\n')
     final_log_file.write('EventTraceLogFile:' + str(event_log_file_path) + '\n')
     final_log_file.write('TrialStartTime:' + str(trial_start_time) + ' TrialEndTime:' + str(trial_end_time) + ' TrialDuration:' + str(trial_end_time - trial_start_time) + '\n')
     final_log_file.write('NumberOfGroups:' + str(len(test_groups)) + ' InitReceiversPerGroup:' + str(num_init_receivers) + ' ReceiverArrivalRate:' + str(recv_arrival_rate)
-            + ' ReceiverServiceRate:' + str(recv_service_rate) + '\n')
+            + ' ReceiverServiceRate:' + str(recv_service_rate) + ' TotalInitReceivers:' + str(num_receievers_at_start) + '\n')
     final_log_file.write('Topology:' + str(topography) + ' NumSwitches:' + str(len(topography.switches())) + ' NumLinks:' + str(len(topography.links())) + ' NumHosts:' + str(len(topography.hosts())) + '\n')
     final_log_file.write('RecvPackets:' + str(recv_packets) + ' LostPackets:' + str(lost_packets) + ' AvgPacketLoss:' + str(packet_loss) + '\n\n')
     
@@ -340,11 +368,11 @@ def write_dynamic_stats_log(log_path, flow_stats_file_path, event_log_file_path,
             # First, check to see if this time falls under a new statistics interval, and record the current stats to file if so
             if cur_time_interval_index < len(time_intervals) and cur_time > time_intervals[cur_time_interval_index]:
                 cur_time_interval_index += 1
-                if(cur_time_interval_index > 1):
-                    write_current_time_interval(final_log_file, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_time_interval_index - 1, time_intervals[cur_time_interval_index - 1] - trial_start_time)
-                    response_times = []
-                    network_times = []
-                    processing_times = []
+                write_current_time_interval(final_log_file, test_groups, link_bandwidth_usage_Mbps, switch_num_flows, switch_average_load, response_times, cur_time_interval_index - 1, 
+                        time_intervals[cur_time_interval_index - 1], trial_start_time)
+                response_times = []
+                network_times = []
+                processing_times = []
             
             response_times.append(response_time)
             network_times.append(network_time)
