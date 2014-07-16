@@ -37,6 +37,9 @@ def read_dynamic_log_set(filepath_prefix, num_logs):
             if 'AvgPacketLoss:' in line:
                 split_line = line.strip().split(' ')
                 packet_loss = float(split_line[2][len('AvgPacketLoss:'):])
+                if packet_loss > 20:
+                    print 'WARNING: DISCARDING OUTLIER WITH EXCESSIVE PACKET LOSS'
+                    continue
                 packet_loss_list.append(packet_loss)
                 
             if 'TimeIndex:' in line:
@@ -179,8 +182,8 @@ def print_dynamic_trial_statistics(stat_records, output_prefix, packet_loss_list
     print str(output_prefix) + 'link_std_dev_ci = [' + ', '.join([str(r) for r in link_std_dev_cis]) + '];'
     print str(output_prefix) + 'link_avg_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
     print str(output_prefix) + 'link_avg_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
-    print str(output_prefix) + 'link_max_mbps = [' + ', '.join([str(r) for r in link_avg_mbps_avgs]) + '];'
-    print str(output_prefix) + 'link_max_mbps_ci = [' + ', '.join([str(r) for r in link_avg_mbps_cis]) + '];'
+    print str(output_prefix) + 'link_max_mbps = [' + ', '.join([str(r) for r in link_max_mbps_avgs]) + '];'
+    print str(output_prefix) + 'link_max_mbps_ci = [' + ', '.join([str(r) for r in link_max_mbps_avgs]) + '];'
     print str(output_prefix) + 'switch_load_mbps = [' + ', '.join([str(r) for r in switch_load_mbps_avgs]) + '];'
     print str(output_prefix) + 'switch_load_mbps_ci = [' + ', '.join([str(r) for r in switch_load_mbps_cis]) + '];'
     print str(output_prefix) + 'num_flows = [' + ', '.join([str(r) for r in num_flows_avgs]) + '];'
@@ -191,7 +194,17 @@ def print_dynamic_trial_statistics(stat_records, output_prefix, packet_loss_list
     print str(output_prefix) + 'network_time_ci = [' + ', '.join([str(r) for r in network_time_cis]) + '];'
     print str(output_prefix) + 'processing_time = [' + ', '.join([str(r) for r in processing_time_avgs]) + '];'
     print str(output_prefix) + 'processing_time_ci = [' + ', '.join([str(r) for r in processing_time_cis]) + '];'
-
+    
+    print ' '
+    
+    # Print average statistics
+    print str(output_prefix) + 'fulltrial_traffic_conc = '  + str(sum(traffic_conc_avgs) / len(traffic_conc_avgs))
+    print str(output_prefix) + 'fulltrial_link_std_dev = ' + str(sum(link_std_dev_avgs) / len(link_std_dev_avgs))
+    print str(output_prefix) + 'fulltrial_link_avg_mbps = ' + str(sum(link_avg_mbps_avgs) / len(link_avg_mbps_avgs))
+    print str(output_prefix) + 'fulltrial_link_max_mbps = ' + str(sum(link_max_mbps_avgs) / len(link_max_mbps_avgs))
+    print str(output_prefix) + 'fulltrial_switch_load_mbps = ' + str(sum(switch_load_mbps_avgs) / len(switch_load_mbps_avgs))
+    print str(output_prefix) + 'fulltrial_num_flows = ' + str(sum(num_flows_avgs) / len(num_flows_avgs))
+    
 if __name__ == '__main__':
     if len(sys.argv) >= 4:
         filepath_prefix = sys.argv[1]
