@@ -39,9 +39,9 @@ def read_dynamic_log_set(filepath_prefix, num_logs):
                 packet_loss = float(split_line[2][len('AvgPacketLoss:'):])
                 if packet_loss > 20:
                     print 'WARNING: DISCARDING OUTLIER WITH EXCESSIVE PACKET LOSS'
-                    continue
+                    break
                 packet_loss_list.append(packet_loss)
-                
+            
             if 'TimeIndex:' in line:
                 split_line = line.strip().split(' ')
                 time_index = int(split_line[0][len('TimeIndex:'):])
