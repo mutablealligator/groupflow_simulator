@@ -2,7 +2,8 @@
 import sys
 
 class DynamicMulticastStatRecord(object):
-    def __init__(self, time_index, sim_time, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time, switch_load_mbps):
+    def __init__(self, time_index, sim_time, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, 
+            flow_tracker_network_time, flow_tracker_processing_time, switch_load_mbps, num_active_receivers):
         self.time_index = time_index
         self.sim_time = sim_time
         self.num_flows = num_flows
@@ -14,6 +15,7 @@ class DynamicMulticastStatRecord(object):
         self.flow_tracker_network_time = flow_tracker_network_time
         self.flow_tracker_processing_time = flow_tracker_processing_time
         self.switch_load_mbps = switch_load_mbps
+        self.num_active_receivers = num_active_receivers
 
 def mean_confidence_interval(data, confidence=0.95):
 	import scipy.stats
@@ -55,7 +57,10 @@ def read_dynamic_log_set(filepath_prefix, num_logs):
                 flow_tracker_network_time = float(split_line[8][len('NetworkTime:'):])
                 flow_tracker_processing_time = float(split_line[9][len('ProcessingTime:'):])
                 switch_load_mbps = float(split_line[10][len('SwitchAvgLoadMbps:'):])
-                group_record = DynamicMulticastStatRecord(time_index, sim_time, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time, switch_load_mbps)
+                num_active_receivers = int(split_line[11][len('NumActiveReceivers:'):])
+                group_record = DynamicMulticastStatRecord(time_index, sim_time, num_flows, max_link_mbps, avg_link_mbps, traffic_conc, 
+                        link_mbps_std_dev, flow_tracker_response_time, flow_tracker_network_time, flow_tracker_processing_time, switch_load_mbps,
+                        num_active_receivers)
                 
                 if time_index < len(stat_records):
                     stat_records[time_index].append(group_record)
@@ -89,6 +94,8 @@ def print_dynamic_trial_statistics(stat_records, output_prefix, packet_loss_list
     network_time_cis = []
     processing_time_avgs = []
     processing_time_cis = []
+    active_receivers_avgs = []
+    active_receivers_cis = []
     
     print ' '
     
@@ -167,6 +174,13 @@ def print_dynamic_trial_statistics(stat_records, output_prefix, packet_loss_list
         ci_upper, ci_lower = mean_confidence_interval(processing_time_list)
         processing_time_cis.append(abs(ci_upper - ci_lower) / 2)
         print 'ProcessingTime:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
+        
+        num_active_receivers_list = [float(r.num_active_receivers) for r in stat_records[time_index]]
+        avg = sum(num_active_receivers_list) / len(num_active_receivers_list)
+        active_receivers_avgs.append(avg)
+        ci_upper, ci_lower = mean_confidence_interval(num_active_receivers_list)
+        active_receivers_cis.append(abs(ci_upper - ci_lower) / 2)
+        print 'ActiveReceivers:\t\t' + str(avg) + '\t[' + str(ci_lower) + ', ' + str(ci_upper) + ']'
         print ' '
     
     # Print output in MATLAB matrix format
@@ -194,6 +208,8 @@ def print_dynamic_trial_statistics(stat_records, output_prefix, packet_loss_list
     print str(output_prefix) + 'network_time_ci = [' + ', '.join([str(r) for r in network_time_cis]) + '];'
     print str(output_prefix) + 'processing_time = [' + ', '.join([str(r) for r in processing_time_avgs]) + '];'
     print str(output_prefix) + 'processing_time_ci = [' + ', '.join([str(r) for r in processing_time_cis]) + '];'
+    print str(output_prefix) + 'active_receivers = [' + ', '.join([str(r) for r in active_receivers_avgs]) + '];'
+    print str(output_prefix) + 'active_receivers_ci = [' + ', '.join([str(r) for r in active_receivers_cis]) + '];'
     
     print ' '
     
@@ -204,6 +220,7 @@ def print_dynamic_trial_statistics(stat_records, output_prefix, packet_loss_list
     print str(output_prefix) + 'fulltrial_link_max_mbps = ' + str(sum(link_max_mbps_avgs) / len(link_max_mbps_avgs))
     print str(output_prefix) + 'fulltrial_switch_load_mbps = ' + str(sum(switch_load_mbps_avgs) / len(switch_load_mbps_avgs))
     print str(output_prefix) + 'fulltrial_num_flows = ' + str(sum(num_flows_avgs) / len(num_flows_avgs))
+    print str(output_prefix) + 'fulltrial_active_receivers = '  + str(sum(active_receivers_avgs) / len(active_receivers_avgs))
     
 if __name__ == '__main__':
     if len(sys.argv) >= 4:
