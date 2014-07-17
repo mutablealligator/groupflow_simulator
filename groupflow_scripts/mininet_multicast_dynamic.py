@@ -21,9 +21,10 @@ import traceback
 NUM_GROUPS = 25
 ARRIVAL_RATE = 5 * (1.0 / 60)
 SERVICE_RATE = 1.0 / 60
-TRIAL_DURATION_SECONDS = 60.0 * 5
+TRIAL_DURATION_SECONDS = 60.0 * 3
 RECEIVERS_AT_TRIAL_START = 5
 STATS_RECORDING_INTERVAL = 5
+MEDIA_DURATION_SECONDS = 72
 
 def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none', pipe = None):
     test_groups = []
@@ -110,7 +111,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
     print 'Using random seed: ' + str(rand_seed)
     np.random.seed(rand_seed)
     
-    trial_start_time = time() + (NUM_GROUPS * 2)    # Assume group configuration, and initial receiver init will take under 2 seconds per group
+    trial_start_time = time() + MEDIA_DURATION_SECONDS + 10   # Assume generation of test group events will take no more than 10 seconds
     trial_end_time = trial_start_time + TRIAL_DURATION_SECONDS
     mcast_group_last_octet = 1
     mcast_port = 5010
@@ -119,16 +120,31 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
         test_group = DynamicMulticastGroupDefinition(net.hosts, mcast_ip, mcast_port, mcast_port + 1)
         print 'Generating events for group: ' + mcast_ip
         test_group.generate_receiver_events(trial_start_time, TRIAL_DURATION_SECONDS, RECEIVERS_AT_TRIAL_START, ARRIVAL_RATE, SERVICE_RATE)
-        test_group.launch_sender_application()
         test_groups.append(test_group)
         mcast_group_last_octet += 1
         mcast_port += 2
+        
+    test_group_start_times = []
+    for i in range(0, NUM_GROUPS):
+        test_group_start_times.append(uniform(0, MEDIA_DURATION_SECONDS))
+    test_group_start_times.sort()
     # Test groups generated
     
     # Launch initial receiver applications
-    for group in test_groups:
-        group.update_receiver_applications(trial_start_time)
-        sleep(uniform(0, 2))
+    group_launch_index = 0
+    launch_start_time = time()
+    while len(test_group_start_times) > 0:
+        cur_time = time() - launch_start_time
+        if cur_time >= test_group_start_times[0]:
+            test_group_start_times.pop(0)
+            print 'Launching test group ' + str(group_launch_index) + ' at launch time: ' + str(cur_time)
+            test_groups[group_launch_index].launch_sender_application()
+            test_groups[group_launch_index].update_receiver_applications(trial_start_time)
+            group_launch_index += 1
+        else:
+            sleep_time = test_group_start_times[0] - cur_time
+            sleep(sleep_time)
+            
     
     # Wait for trial run start time
     sleep_time = trial_start_time - time()
