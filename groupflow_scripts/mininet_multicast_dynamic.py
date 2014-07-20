@@ -18,7 +18,6 @@ import numpy as np
 import traceback
 
 # Hardcoded purely for testing / debug, these will be moved once functionality is stable
-NUM_GROUPS = 25
 ARRIVAL_RATE = 5 * (1.0 / 60)
 SERVICE_RATE = 1.0 / 60
 TRIAL_DURATION_SECONDS = 60.0 * 3
@@ -26,11 +25,29 @@ RECEIVERS_AT_TRIAL_START = 5
 STATS_RECORDING_INTERVAL = 5
 MEDIA_DURATION_SECONDS = 72
 
-def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link_weight = 10, link_weight_type = 'linear', replacement_mode='none', pipe = None):
+def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', replacement_mode='none', link_weight_type = 'linear', number_of_groups = 30, pipe = None):
     test_groups = []
     test_success = True
 
     # Launch the external controller
+    pox_link_weight_type = link_weight_type
+    static_link_weight = 0
+    util_link_weight = 1
+    
+    if link_weight_type == 'linear':    # Linear link weights
+        pox_link_weight_type = 'linear'
+        static_link_weight = 0
+        util_link_weight = 1
+    elif link_weight_type == 'sh':  # Shortest-hop routing
+        pox_link_weight_type = 'linear'
+        static_link_weight = 1
+        util_link_weight = 0
+    elif link_weight_type == 'exponential': # Exponential link weights
+        pox_link_weight_type = 'exponential'
+        static_link_weight = 0
+        util_link_weight = 1
+        
+    
     pox_arguments = []
     static_link_weight = 0
     if util_link_weight == 0:
@@ -115,7 +132,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
     trial_end_time = trial_start_time + TRIAL_DURATION_SECONDS
     mcast_group_last_octet = 1
     mcast_port = 5010
-    for i in range(0, NUM_GROUPS):
+    for i in range(0, number_of_groups):
         mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
         test_group = DynamicMulticastGroupDefinition(net.hosts, mcast_ip, mcast_port, mcast_port + 1)
         print 'Generating events for group: ' + mcast_ip
@@ -125,7 +142,7 @@ def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', util_link
         mcast_port += 2
         
     test_group_start_times = []
-    for i in range(0, NUM_GROUPS):
+    for i in range(0, number_of_groups):
         test_group_start_times.append(uniform(0, MEDIA_DURATION_SECONDS))
     test_group_start_times.sort()
     # Test groups generated
@@ -230,7 +247,7 @@ def print_usage_text():
     print 'GroupFlow Multicast Testing with Mininet'
     print 'Usage - Automated Benchmarking:'
     print '> mininet_multicast_pox <topology_path> <iterations_to_run> <log_file_prefix> <index_of_first_log_file> <parameter_sets (number is variable and unlimited)>'
-    print 'Parameter sets have the form: flow_replacement_mode,link_weight_type,util_link_weight'
+    print 'Parameter sets have the form: flow_replacement_mode,link_weight_type,number_of_groups'
     print 'The topology path "manhattan" is currently hardcoded to generate a 20 Mbps, 5x5 Manhattan grid topology'
 
 if __name__ == '__main__':
@@ -255,7 +272,7 @@ if __name__ == '__main__':
         util_params = []
         for param_index in range(5, len(sys.argv)):
             param_split = sys.argv[param_index].split(',')
-            util_params.append((param_split[0], param_split[1], float(param_split[2])))
+            util_params.append((param_split[0], param_split[1], int(param_split[2])))
         topo = None
         if 'manhattan' in sys.argv[1]:
             print 'Generating Manhattan Grid Topology'
@@ -273,7 +290,7 @@ if __name__ == '__main__':
                 test_success = False
                 while not test_success:
                     parent_pipe, child_pipe = Pipe()
-                    p = Process(target=mcastTestDynamic, args=(topo, hosts, log_prefix + '_' + ','.join([util_param[0], util_param[1], str(util_param[2])]) + '_' + str(i + first_index) + '.log', util_param[2], util_param[1], util_param[0], child_pipe))
+                    p = Process(target=mcastTestDynamic, args=(topo, hosts, log_prefix + '_' + ','.join([util_param[0], util_param[1], str(util_param[2])]) + '_' + str(i + first_index) + '.log', util_param[0], util_param[1], util_param[2], child_pipe))
                     sim_start_time = time()
                     p.start()
                     p.join()
