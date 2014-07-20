@@ -16,6 +16,7 @@ from datetime import datetime
 from multiprocessing import Process, Pipe
 import numpy as np
 import traceback
+import os.path
 
 # Hardcoded purely for testing / debug, these will be moved once functionality is stable
 ARRIVAL_RATE = 5 * (1.0 / 60)
@@ -28,6 +29,15 @@ MEDIA_DURATION_SECONDS = 72
 def mcastTestDynamic(topo, hosts = [], log_file_name = 'test_log.log', replacement_mode='none', link_weight_type = 'linear', number_of_groups = 30, pipe = None):
     test_groups = []
     test_success = True
+    
+    # First, check if the log file already exists, and stop the test if it does
+    # (This is primarily in place to allow continuing an interrupted trial set by running the same console command)
+    if os.path.isfile(log_file_name):
+        print 'Skipping trial, log file already exists: ' + str(log_file_name)
+        if pipe is not None:
+            pipe.send(test_success)
+            pipe.close()
+        return
 
     # Launch the external controller
     pox_link_weight_type = link_weight_type
