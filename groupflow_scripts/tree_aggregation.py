@@ -4,6 +4,8 @@ from datetime import datetime
 from sets import Set
 from time import time
 from scipy.cluster.hierarchy import *
+from scipy.spatial.distance import pdist
+import scipy.spatial.distance as ssd
 import os
 import sys
 import signal
@@ -20,8 +22,8 @@ class McastGroup(object):
         while len(self.receiver_ids) < num_receivers:
             self.receiver_ids.add(randint(0, max_receiver_id + 1))
 
-    def jaccard_index(self, mcast_group):
-        return float(len(self.receiver_ids.intersection(mcast_group.receiver_ids))) / float(len(self.receiver_ids.union(mcast_group.receiver_ids)))
+    def jaccard_distance(self, mcast_group):
+        return 1.0 - (float(len(self.receiver_ids.intersection(mcast_group.receiver_ids))) / float(len(self.receiver_ids.union(mcast_group.receiver_ids))))
 
     def debug_print(self):
         print 'Multicast Group #' + str(self.group_index) + ' Receivers: '
@@ -33,7 +35,7 @@ if __name__ == '__main__':
     
     for i in range(0, 20):
         groups.append(McastGroup(i))
-        groups[i].generate_random_receiver_ids(5, 40)
+        groups[i].generate_random_receiver_ids(randint(1,10), 20)
         groups[i].debug_print()
         print ' ' 
     
@@ -42,11 +44,23 @@ if __name__ == '__main__':
         receivers_list.append(list(group.receiver_ids))
     
     receivers_array = np.array(receivers_list)
-    print 'Receivers Array:\n' + str(receivers_array)
+    #print 'Receivers Array:\n' + str(receivers_array)
+    distance_matrix = []
+    group_index = 0
+    for group1 in groups:
+        distance_matrix.append([])
+        for group2 in groups:
+            distance_matrix[group_index].append(group1.jaccard_distance(group2))
+        group_index += 1
+    #print 'Distance Array Len:' + str(len(distance_matrix))
+    #print 'Distance Matrix:\n' + str(distance_matrix)
+    
+    comp_dist_array = ssd.squareform(distance_matrix)
+    #print 'Compressed Distance Array Len: ' + str(len(comp_dist_array))
+    
     plt.figure(1, figsize=(6, 5))
-    # a = np.array([[1, 4, 7, 9], [1, 3, 8, 10], [2, 3, 8, 11]]);
-    z = linkage(receivers_array, method='single', metric='jaccard')
-    print 'Linkage Array:\n' + str(z)
+    z = linkage(comp_dist_array, method='single', metric='jaccard')
+    #print 'Linkage Array:\n' + str(z)
     d = dendrogram(z, show_leaf_counts=True)
     plt.title('Multicast Group Clustering')
     plt.xlabel('Multicast Group Index')
