@@ -82,12 +82,12 @@ def get_group_aggregation(group_indexes, linkage_array, difference_threshold):
         group_map[next_cluster_index] = new_cluster_list
         next_cluster_index += 1
     
-    print 'Group Aggregations for Difference Threshold: ' + str(difference_threshold)
-    for cluster_index in group_map:
-        print 'Cluster Index: ' + str(cluster_index)
-        for group_index in group_map[cluster_index]:
-            print str(group_index) + ' ',
-        print ' '
+    #print 'Group Aggregations for Difference Threshold: ' + str(difference_threshold)
+    #for cluster_index in group_map:
+    #    print 'Cluster Index: ' + str(cluster_index)
+    #    for group_index in group_map[cluster_index]:
+    #        print str(group_index) + ' ',
+    #    print ' '
             
     return group_map
 
@@ -267,17 +267,7 @@ class McastGroup(object):
         print 'Aggregated Mcast Tree:\n' + str(self.aggregated_mcast_tree)
         print 'Rendevouz Point: Node #' + str(self.rendevouz_point_node_id) + '\nRendevouz Path: ' + str(self.rendevouz_point_shortest_path)
         
-
-
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print 'Topology filepath was not specified.'
-        sys.exit(1)
-    
-    # Import the topology from BRITE format
-    topo = BriteSimTopo(sys.argv[1])
-    print topo
-    
+def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = False):
     # Generate random multicast groups
     groups = []
     for i in range(0, 10):
@@ -298,19 +288,22 @@ if __name__ == '__main__':
             distance_matrix[group_index].append(group1.jaccard_distance(group2))
         group_indexes.append(group_index)
         group_index += 1
-    print 'Total Num Groups: ' + str(len(group_indexes))
+    #print 'Total Num Groups: ' + str(len(group_indexes))
     comp_dist_array = ssd.squareform(distance_matrix)
     
     # Perform clustering, and plot a dendrogram of the results
-    plt.figure(1, figsize=(6, 5))
     z = linkage(comp_dist_array, method='single', metric='jaccard')
-    print 'Linkage Array:\n' + str(z)
-    print ' '
-    group_map = get_group_aggregation(group_indexes, z, 0.4)
-    d = dendrogram(z, show_leaf_counts=True)
-    plt.title('Multicast Group Clustering (Single Linkage)')
-    plt.xlabel('Multicast Group Index')
-    plt.ylabel('Cluster Distance')
+    group_map = get_group_aggregation(group_indexes, z, similarity_threshold)
+    
+    if debug_print:
+        plt.figure(1, figsize=(6, 5))
+        print 'Linkage Array:\n' + str(z)
+        print ' '
+        d = dendrogram(z, show_leaf_counts=True)
+        plt.title('Multicast Group Clustering (Single Linkage)')
+        plt.xlabel('Multicast Group Index')
+        plt.ylabel('Cluster Distance')
+        plt.show()
     
     # Generate aggregated multicast trees based on the generated clusters
     generate_aggregated_mcast_trees(topo, groups, group_map)
@@ -343,19 +336,21 @@ if __name__ == '__main__':
             seen_aggregated_tree_indexes.append(group.aggregated_mcast_tree_index)
             aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree)))
         
-        print ' '
-        group.debug_print()
+        if debug_print:
+            print ' '
+            group.debug_print()
     
     bandwidth_overhead_ratio = float(aggregated_bandwidth_Mbps) / float(native_bandwidth_Mbps)
     flow_table_reduction_ratio = float(aggregated_network_flow_table_size) / float(native_network_flow_table_size)
-    print ' '
-    print 'Aggregated Network Bandwidth Utilization: ' + str(aggregated_bandwidth_Mbps) + ' Mbps'
-    print 'Native Network Bandwidth Utilization: ' + str(native_bandwidth_Mbps) + ' Mbps'
-    print 'Bandwidth Overhead Ratio: ' + str(bandwidth_overhead_ratio)
-    print ' '
-    print 'Native Network Flow Table Size: ' + str(native_network_flow_table_size)
-    print 'Aggregated Network Flow Table Size: ' + str(aggregated_network_flow_table_size)
-    print 'Flow Table Reduction Ratio: ' + str(flow_table_reduction_ratio)
+    if debug_print:
+        print ' '
+        print 'Aggregated Network Bandwidth Utilization: ' + str(aggregated_bandwidth_Mbps) + ' Mbps'
+        print 'Native Network Bandwidth Utilization: ' + str(native_bandwidth_Mbps) + ' Mbps'
+        print 'Bandwidth Overhead Ratio: ' + str(bandwidth_overhead_ratio)
+        print ' '
+        print 'Native Network Flow Table Size: ' + str(native_network_flow_table_size)
+        print 'Aggregated Network Flow Table Size: ' + str(aggregated_network_flow_table_size)
+        print 'Flow Table Reduction Ratio: ' + str(flow_table_reduction_ratio)
     
     #plt.figure(2, figsize=(6, 5))
     #z = linkage(comp_dist_array, method='complete', metric='jaccard')
@@ -365,5 +360,33 @@ if __name__ == '__main__':
     #plt.xlabel('Multicast Group Index')
     #plt.ylabel('Cluster Distance')
     
-    # plt.show()
+    return bandwidth_overhead_ratio, flow_table_reduction_ratio
+    
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print 'Topology filepath was not specified.'
+        sys.exit(1)
+    
+    # Import the topology from BRITE format
+    topo = BriteSimTopo(sys.argv[1])
+    print topo
+    
+    bandwidth_overhead_list = []
+    flow_table_reduction_list = []
+    
+    num_trials = 1000
+    similarity_threshold = 0.5
+    start_time = time()
+    for i in range(0, num_trials):
+        bandwidth_overhead_ratio, flow_table_reduction_ratio = run_multicast_aggregation_test(topo, similarity_threshold)
+        bandwidth_overhead_list.append(bandwidth_overhead_ratio)
+        flow_table_reduction_list.append(flow_table_reduction_ratio)
+    end_time = time()
+    
+    print ' '
+    print 'Completed ' + str(num_trials) + ' trials in ' + str(end_time - start_time) + ' seconds'
+    print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
+    print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
+    
     sys.exit()
