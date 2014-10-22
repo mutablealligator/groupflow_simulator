@@ -96,6 +96,7 @@ def get_non_terminal_vertices(edge_list):
     
     return tail_set.intersection(head_set).union(tail_set - head_set)
 
+    
 class ForwardingElement(object):
     def __init__(self, node_id):
         self.node_id = node_id
@@ -103,6 +104,7 @@ class ForwardingElement(object):
     def __str__(self):
         return 'Forwarding Element #' + str(self.node_id)
 
+        
 class Link(object):
     def __init__(self, tail_node_id, head_node_id, cost):
         self.tail_node_id = tail_node_id    # Node ID from which the link originates
@@ -112,6 +114,7 @@ class Link(object):
     def __str__(self):
         return 'Link: ' + str(self.tail_node_id) + ' --> ' + str(self.head_node_id) + ' C:' + str(self.cost)
 
+        
 class SimTopo(object):
     def __init__(self):
         self.forwarding_elements = []
@@ -171,7 +174,24 @@ class SimTopo(object):
         shortest_path_tree_edges = list(Set(shortest_path_tree_edges))
         # print shortest_path_tree_edges
         return shortest_path_tree_edges
+    
+    def load_from_edge_list(self, edge_list):
+        self.forwarding_elements = []
+        self.links = []
         
+        seen_node_ids = []
+        for edge in edge_list:
+            self.links.append(Link(edge[0], edge[1], 1))
+            if edge[0] not in seen_node_ids:
+                self.forwarding_elements.append(ForwardingElement(edge[0]))
+                seen_node_ids.append(edge[0])
+            
+            if edge[1] not in seen_node_ids:
+                self.forwarding_elements.append(ForwardingElement(edge[1]))
+                seen_node_ids.append(edge[1])
+        
+        self.recalc_path_tree_map = True
+                
     def load_from_brite_topo(self, brite_filepath, debug_print = False):
         self.forwarding_elements = []
         self.links = []
@@ -259,6 +279,11 @@ class McastGroup(object):
         self.rendevouz_point_node_id = None
         self.rendevouz_point_shortest_path = None
         self.aggregated_bandwidth_Mbps = None
+    
+    def set_receiver_ids(self, receiver_ids):
+        self.receiver_ids = Set(receiver_ids)
+        self.native_mcast_tree = self.topology.get_shortest_path_tree(self.src_node_id, list(self.receiver_ids))
+        self.native_bandwidth_Mbps = len(self.native_mcast_tree) * self.bandwidth_Mbps
         
     def generate_random_receiver_ids(self, num_receivers):
         while len(self.receiver_ids) < num_receivers:
@@ -279,9 +304,10 @@ class McastGroup(object):
         print 'Aggregated Mcast Tree:\n' + str(self.aggregated_mcast_tree)
         print 'Rendevouz Point: Node #' + str(self.rendevouz_point_node_id) + '\nRendevouz Path: ' + str(self.rendevouz_point_shortest_path)
         
-def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = False):
+def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = False, plot_dendrogram = False):
     # Generate random multicast groups
     groups = []
+    
     for i in range(0, 10):
         groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), 10, i))
         groups[i].generate_random_receiver_ids(randint(1,10))
@@ -307,7 +333,7 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
     z = linkage(comp_dist_array, method='single', metric='jaccard')
     group_map = get_group_aggregation(group_indexes, z, similarity_threshold)
     
-    if debug_print:
+    if plot_dendrogram:
         plt.figure(1, figsize=(6, 5))
         print 'Linkage Array:\n' + str(z)
         print ' '
@@ -384,6 +410,11 @@ if __name__ == '__main__':
     topo = SimTopo()
     topo.load_from_brite_topo(sys.argv[1])
     print topo
+    
+    #topo.load_from_edge_list([[0,1],[1,2],[2,3],[3,4],[3,5]])
+    #similarity_threshold = 0.5
+    #bandwidth_overhead_ratio, flow_table_reduction_ratio = run_multicast_aggregation_test(topo, similarity_threshold, True)
+    #sys.exit(0)
     
     bandwidth_overhead_list = []
     flow_table_reduction_list = []
