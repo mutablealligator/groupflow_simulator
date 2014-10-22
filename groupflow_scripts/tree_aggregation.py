@@ -14,54 +14,6 @@ import signal
 import numpy as np
 import matplotlib.pyplot as plt
 
-def calc_shortest_path_tree(topology, source_node_id, receiver_node_id_list):
-    nodes = set(topology.forwarding_elements)
-    edges = topology.links
-    graph = defaultdict(list)
-    for link in edges:
-        graph[link.tail_node_id].append((link.cost, link.head_node_id))
-    
-    #print graph
-    
-    path_tree_map = defaultdict(lambda : None)
-    queue, seen = [(0,source_node_id,())], set()
-    while queue:
-        (cost,node1,path) = heappop(queue)
-        if node1 not in seen:
-            seen.add(node1)
-            path = (node1, path)
-            path_tree_map[node1] = path
- 
-            for next_cost, node2 in graph.get(node1, ()):
-                if node2 not in seen:
-                    new_path_cost = cost + next_cost
-                    heappush(queue, (new_path_cost, node2, path))
-    
-    #print path_tree_map
-    
-    shortest_path_tree_edges = []
-    calculated_path_node_ids = []
-    for receiver_node_id in receiver_node_id_list:
-        if receiver_node_id == source_node_id:
-            continue
-        if receiver_node_id in calculated_path_node_ids:
-            continue
-        
-        receiver_path = path_tree_map[receiver_node_id]
-        if receiver_path is None:
-            print 'Path could not be determined for receiver ' + str(receiver_node_id) + ' (network is not fully connected)'
-            continue
-            
-        while receiver_path[1]:
-            shortest_path_tree_edges.append((receiver_path[1][0], receiver_path[0]))
-            receiver_path = receiver_path[1]
-        calculated_path_node_ids.append(receiver_node_id)
-                
-    # Get rid of duplicates in the edge list (must be a more efficient way to do this, find it eventually)
-    shortest_path_tree_edges = list(Set(shortest_path_tree_edges))
-    # print shortest_path_tree_edges
-    return shortest_path_tree_edges
-
 def get_group_aggregation(group_indexes, linkage_array, difference_threshold):
     group_map = {}
     for group_index in group_indexes:
@@ -110,7 +62,7 @@ def generate_aggregated_mcast_trees(topology, mcast_groups, group_map):
             potential_rv_node_id = forwarding_element.node_id
             for mcast_group_id in group_map[group_aggregation]:
                 src_node_id = mcast_groups[mcast_group_id].src_node_id
-                shortest_path = calc_shortest_path_tree(topology, src_node_id, [potential_rv_node_id])
+                shortest_path = topology.get_shortest_path_tree(src_node_id, [potential_rv_node_id])
                 sum_path_length = sum_path_length + len(shortest_path)
             
             if sum_path_length < min_sum_path_length:
@@ -118,10 +70,10 @@ def generate_aggregated_mcast_trees(topology, mcast_groups, group_map):
                 rv_node_id = potential_rv_node_id
                 for mcast_group_id in group_map[group_aggregation]:
                     src_node_id = mcast_groups[mcast_group_id].src_node_id
-                    shortest_path = calc_shortest_path_tree(topology, src_node_id, [potential_rv_node_id])
+                    shortest_path = topology.get_shortest_path_tree(src_node_id, [potential_rv_node_id])
                     mcast_groups[mcast_group_id].rendevouz_point_node_id = rv_node_id
                     mcast_groups[mcast_group_id].rendevouz_point_shortest_path = shortest_path
-                    mcast_groups[mcast_group_id].aggregated_mcast_tree = calc_shortest_path_tree(topology, rv_node_id, cluster_receivers)
+                    mcast_groups[mcast_group_id].aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, cluster_receivers)
                     mcast_groups[mcast_group_id].aggregated_bandwidth_Mbps = (len(mcast_groups[mcast_group_id].aggregated_mcast_tree) + len(mcast_groups[mcast_group_id].rendevouz_point_shortest_path)) * mcast_groups[mcast_group_id].bandwidth_Mbps
         
         # print 'Cluster rendevouz point at forwarding element #' + str(rv_node_id)
@@ -160,11 +112,69 @@ class Link(object):
     def __str__(self):
         return 'Link: ' + str(self.tail_node_id) + ' --> ' + str(self.head_node_id) + ' C:' + str(self.cost)
 
-class BriteSimTopo(object):
-    def __init__(self, brite_filepath, debug_print = False):
+class SimTopo(object):
+    def __init__(self):
         self.forwarding_elements = []
         self.links = []
-        self.file_path = brite_filepath
+        self.path_tree_map = defaultdict(lambda : None)
+        self.recalc_path_tree_map = True
+    
+    def calc_shortest_path_tree(self):
+        for source_forwarding_element in self.forwarding_elements:
+            nodes = set(self.forwarding_elements)
+            edges = self.links
+            graph = defaultdict(list)
+            for link in edges:
+                graph[link.tail_node_id].append((link.cost, link.head_node_id))
+            
+            path_tree_map = defaultdict(lambda : None)
+            queue, seen = [(0,source_forwarding_element.node_id,())], set()
+            while queue:
+                (cost,node1,path) = heappop(queue)
+                if node1 not in seen:
+                    seen.add(node1)
+                    path = (node1, path)
+                    path_tree_map[node1] = path
+         
+                    for next_cost, node2 in graph.get(node1, ()):
+                        if node2 not in seen:
+                            new_path_cost = cost + next_cost
+                            heappush(queue, (new_path_cost, node2, path))
+            
+            self.path_tree_map[source_forwarding_element.node_id] = path_tree_map
+        
+        self.recalc_path_tree_map = False
+        
+    def get_shortest_path_tree(self, source_node_id, receiver_node_id_list):
+        if self.recalc_path_tree_map:
+            self.calc_shortest_path_tree()
+            
+        shortest_path_tree_edges = []
+        calculated_path_node_ids = []
+        for receiver_node_id in receiver_node_id_list:
+            if receiver_node_id == source_node_id:
+                continue
+            if receiver_node_id in calculated_path_node_ids:
+                continue
+            
+            receiver_path = self.path_tree_map[source_node_id][receiver_node_id]
+            if receiver_path is None:
+                print 'Path could not be determined for receiver ' + str(receiver_node_id) + ' (network is not fully connected)'
+                continue
+                
+            while receiver_path[1]:
+                shortest_path_tree_edges.append((receiver_path[1][0], receiver_path[0]))
+                receiver_path = receiver_path[1]
+            calculated_path_node_ids.append(receiver_node_id)
+                    
+        # Get rid of duplicates in the edge list (must be a more efficient way to do this, find it eventually)
+        shortest_path_tree_edges = list(Set(shortest_path_tree_edges))
+        # print shortest_path_tree_edges
+        return shortest_path_tree_edges
+        
+    def load_from_brite_topo(self, brite_filepath, debug_print = False):
+        self.forwarding_elements = []
+        self.links = []
         
         print 'Parsing BRITE topology at filepath: ' + str(brite_filepath)
         file = open(brite_filepath, 'r')
@@ -221,6 +231,8 @@ class BriteSimTopo(object):
             self.links.append(Link(node_id_2, node_id_1, 1))
         
         file.close()
+        self.recalc_path_tree_map = True
+        
     
     def __str__(self):
         return_str = '====================\nForwarding Elements:\n====================\n'
@@ -251,7 +263,7 @@ class McastGroup(object):
     def generate_random_receiver_ids(self, num_receivers):
         while len(self.receiver_ids) < num_receivers:
             self.receiver_ids.add(randint(0, len(topo.forwarding_elements)))
-        self.native_mcast_tree = calc_shortest_path_tree(self.topology, self.src_node_id, list(self.receiver_ids))
+        self.native_mcast_tree = self.topology.get_shortest_path_tree(self.src_node_id, list(self.receiver_ids))
         self.native_bandwidth_Mbps = len(self.native_mcast_tree) * self.bandwidth_Mbps
 
     def jaccard_distance(self, mcast_group):
@@ -369,23 +381,27 @@ if __name__ == '__main__':
         sys.exit(1)
     
     # Import the topology from BRITE format
-    topo = BriteSimTopo(sys.argv[1])
+    topo = SimTopo()
+    topo.load_from_brite_topo(sys.argv[1])
     print topo
     
     bandwidth_overhead_list = []
     flow_table_reduction_list = []
     
-    num_trials = 1000
+    num_trials = 5000
     similarity_threshold = 0.5
     start_time = time()
+    print 'Simulations started at: ' + str(datetime.now())
     for i in range(0, num_trials):
+        if i % 100 == 0:
+            print 'Running trial #' + str(i)
         bandwidth_overhead_ratio, flow_table_reduction_ratio = run_multicast_aggregation_test(topo, similarity_threshold)
         bandwidth_overhead_list.append(bandwidth_overhead_ratio)
         flow_table_reduction_list.append(flow_table_reduction_ratio)
     end_time = time()
     
     print ' '
-    print 'Completed ' + str(num_trials) + ' trials in ' + str(end_time - start_time) + ' seconds'
+    print 'Completed ' + str(num_trials) + ' trials in ' + str(end_time - start_time) + ' seconds (' + str(datetime.now()) + ')'
     print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
     print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
     
