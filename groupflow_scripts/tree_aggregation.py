@@ -142,33 +142,55 @@ class SimTopo(object):
     def __init__(self):
         self.forwarding_elements = []
         self.links = []
-        self.path_tree_map = defaultdict(lambda : None)
+        self.shortest_path_map = defaultdict(lambda : None)
         self.network_diameter = 0
         self.recalc_path_tree_map = True
     
     def calc_shortest_path_tree(self):
+        self.shortest_path_map = defaultdict(lambda : None)
+        
         for source_forwarding_element in self.forwarding_elements:
+            src_node_id = source_forwarding_element.node_id
             nodes = set(self.forwarding_elements)
             edges = self.links
             graph = defaultdict(list)
             for link in edges:
                 graph[link.tail_node_id].append((link.cost, link.head_node_id))
             
-            path_tree_map = defaultdict(lambda : None)
-            queue, seen = [(0,source_forwarding_element.node_id,())], set()
+            src_path_tree_map = defaultdict(lambda : None)
+            queue, seen = [(0,src_node_id,())], set()
             while queue:
                 (cost,node1,path) = heappop(queue)
                 if node1 not in seen:
                     seen.add(node1)
                     path = (node1, path)
-                    path_tree_map[node1] = path
+                    src_path_tree_map[node1] = path
          
                     for next_cost, node2 in graph.get(node1, ()):
                         if node2 not in seen:
                             new_path_cost = cost + next_cost
                             heappush(queue, (new_path_cost, node2, path))
             
-            self.path_tree_map[source_forwarding_element.node_id] = path_tree_map
+            for dst_forwarding_element in self.forwarding_elements:
+                if self.shortest_path_map[src_node_id] is None:
+                    self.shortest_path_map[src_node_id] = defaultdict(lambda : None)
+                    
+                dst_node_id = dst_forwarding_element.node_id
+                shortest_path_edges = []
+                
+                if dst_node_id == src_node_id:
+                    self.shortest_path_map[src_node_id][dst_node_id] = []
+                    continue
+                
+                receiver_path = src_path_tree_map[dst_node_id]
+                if receiver_path is None:
+                    continue
+                    
+                while receiver_path[1]:
+                    shortest_path_edges.append((receiver_path[1][0], receiver_path[0]))
+                    receiver_path = receiver_path[1]
+                
+                self.shortest_path_map[src_node_id][dst_node_id] = shortest_path_edges
         
         self.recalc_path_tree_map = False
         
@@ -184,28 +206,18 @@ class SimTopo(object):
     def get_shortest_path_tree(self, source_node_id, receiver_node_id_list):
         if self.recalc_path_tree_map:
             self.calc_shortest_path_tree()
+        
+        if len(receiver_node_id_list) == 1:
+            return self.shortest_path_map[source_node_id][receiver_node_id_list[0]]
             
-        shortest_path_tree_edges = []
-        calculated_path_node_ids = []
+        shortest_path_tree_edges = Set()
         for receiver_node_id in receiver_node_id_list:
-            if receiver_node_id == source_node_id:
-                continue
-            if receiver_node_id in calculated_path_node_ids:
-                continue
-            
-            receiver_path = self.path_tree_map[source_node_id][receiver_node_id]
-            if receiver_path is None:
-                print 'Path could not be determined for receiver ' + str(receiver_node_id) + ' (network is not fully connected)'
-                return None
-                
-            while receiver_path[1]:
-                shortest_path_tree_edges.append((receiver_path[1][0], receiver_path[0]))
-                receiver_path = receiver_path[1]
-            calculated_path_node_ids.append(receiver_node_id)
-                    
-        # Get rid of duplicates in the edge list (must be a more efficient way to do this, find it eventually)
-        shortest_path_tree_edges = list(Set(shortest_path_tree_edges))
-        # print shortest_path_tree_edges
+            shortest_path = self.shortest_path_map[source_node_id][receiver_node_id]
+            for edge in shortest_path:
+                shortest_path_tree_edges.add(edge)
+        
+        # Return the set as a list of edges
+        shortest_path_tree_edges = list(shortest_path_tree_edges)
         return shortest_path_tree_edges
     
     def load_from_edge_list(self, edge_list):
@@ -296,6 +308,7 @@ class SimTopo(object):
             return_str = return_str + str(link) + '\n'
         return return_str
 
+        
 class McastGroup(object):
     def __init__(self, topology, src_node_id, bandwidth_Mbps, mcast_group_index):
         self.group_index = mcast_group_index
@@ -337,6 +350,7 @@ class McastGroup(object):
         print 'Aggregated Mcast Tree:\n' + str(self.aggregated_mcast_tree)
         print 'Rendevouz Point: Node #' + str(self.rendevouz_point_node_id) + '\nRendevouz Path: ' + str(self.rendevouz_point_shortest_path)
         
+        
 def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, debug_print = False, plot_dendrogram = False):
     # Generate random multicast groups
     groups = []
@@ -349,7 +363,6 @@ def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, d
     #groups[0].set_receiver_ids([6,7])
     #groups.append(McastGroup(topo, 1, 10, 1))
     #groups[1].set_receiver_ids([6,7])
-    
     
     # Generate the distance matrix used for clustering
     receivers_list = []
@@ -369,15 +382,12 @@ def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, d
             
         group_indexes.append(group_index)
         group_index += 1
-    #print 'Total Num Groups: ' + str(len(group_indexes))
-    # print distance_matrix
+        
     comp_dist_array = ssd.squareform(distance_matrix)
     
-    # Perform clustering, and plot a dendrogram of the results
+    # Perform clustering, and plot a dendrogram of the results if requested
     z = linkage(comp_dist_array, method=linkage_method)
-    
     group_map = get_group_aggregation(group_indexes, z, similarity_threshold)
-    # print 'Num clusters: ' + str(len(group_map))
     
     if plot_dendrogram:
         plt.figure(1, figsize=(6, 5))
@@ -392,7 +402,7 @@ def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, d
     # Generate aggregated multicast trees based on the generated clusters
     generate_aggregated_mcast_trees(topo, groups, group_map)
     
-    # Calculate group aggregation metrics
+    # Calculate network performance metrics
     native_network_flow_table_size = 0
     aggregated_network_flow_table_size = 0
     
@@ -451,14 +461,6 @@ def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, d
         print 'Aggregated Network Flow Table Size: ' + str(aggregated_network_flow_table_size)
         print 'Flow Table Reduction Ratio: ' + str(flow_table_reduction_ratio)
     
-    #plt.figure(2, figsize=(6, 5))
-    #z = linkage(comp_dist_array, method='complete', metric='jaccard')
-    #print 'Linkage Array:\n' + str(z)
-    #d = dendrogram(z, show_leaf_counts=True)
-    #plt.title('Multicast Group Clustering (Complete Linkage)')
-    #plt.xlabel('Multicast Group Index')
-    #plt.ylabel('Cluster Distance')
-    
     return bandwidth_overhead_ratio, flow_table_reduction_ratio, len(group_map)
     
 
@@ -474,15 +476,14 @@ if __name__ == '__main__':
     
     #topo.load_from_edge_list([[0,2],[1,2],[2,0],[2,1],[2,3],[3,4],[4,5],[5,6],[5,7]])
     #similarity_threshold = 0.5
-    #bandwidth_overhead_ratio, flow_table_reduction_ratio = run_multicast_aggregation_test(topo, similarity_threshold, True)
+    #bandwidth_overhead_ratio, flow_table_reduction_ratio, num_clusters = run_multicast_aggregation_test(topo, similarity_threshold, 'single', True)
     #sys.exit(0)
     
     bandwidth_overhead_list = []
     flow_table_reduction_list = []
     num_clusters_list = []
     
-    num_trials = 10
-    #similarity_threshold = 0.8
+    num_trials = 1000
     start_time = time()
     print 'Simulations started at: ' + str(datetime.now())
     for similarity_threshold in [0.75]: # [-1, 0.2, 0.4, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]:
