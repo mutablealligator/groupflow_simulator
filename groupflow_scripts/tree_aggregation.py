@@ -143,6 +143,7 @@ class SimTopo(object):
         self.forwarding_elements = []
         self.links = []
         self.path_tree_map = defaultdict(lambda : None)
+        self.network_diameter = 0
         self.recalc_path_tree_map = True
     
     def calc_shortest_path_tree(self):
@@ -170,6 +171,15 @@ class SimTopo(object):
             self.path_tree_map[source_forwarding_element.node_id] = path_tree_map
         
         self.recalc_path_tree_map = False
+        
+        # Recalculate the network diameter
+        self.network_diameter = 0
+        for source_forwarding_element in self.forwarding_elements:
+            for dest_forwarding_element in self.forwarding_elements:
+                path = self.get_shortest_path_tree(source_forwarding_element.node_id, [dest_forwarding_element.node_id])
+                if path is not None and len(path) > self.network_diameter:
+                    self.network_diameter = len(path)
+        print 'Got network diameter: ' + str(self.network_diameter)
         
     def get_shortest_path_tree(self, source_node_id, receiver_node_id_list):
         if self.recalc_path_tree_map:
