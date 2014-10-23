@@ -21,7 +21,7 @@ def get_group_aggregation(group_indexes, linkage_array, difference_threshold):
     
     next_cluster_index = len(group_indexes)
     for cluster in linkage_array:
-        if cluster[2] > difference_threshold:
+        if cluster[2] >= difference_threshold:
             break
         
         new_cluster_list = []
@@ -341,7 +341,7 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
     # Generate random multicast groups
     groups = []
     
-    for i in range(0, 10):
+    for i in range(0, 100):
         groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), 10, i))
         groups[i].generate_random_receiver_ids(randint(1,10))
     
@@ -362,15 +362,21 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
     for group1 in groups:
         distance_matrix.append([])
         for group2 in groups:
-            distance_matrix[group_index].append(group1.jaccard_distance(group2))
+            jaccard_distance = group1.jaccard_distance(group2)
+            src_distance = len(topo.get_shortest_path_tree(group1.src_node_id, [group2.src_node_id]))
+            src_distance_ratio = (float(src_distance)/topo.network_diameter) # Distance between source nodes as a percentage of the network diameter
+            distance_matrix[group_index].append(jaccard_distance)
+            
         group_indexes.append(group_index)
         group_index += 1
     #print 'Total Num Groups: ' + str(len(group_indexes))
+    # print distance_matrix
     comp_dist_array = ssd.squareform(distance_matrix)
     
     # Perform clustering, and plot a dendrogram of the results
     z = linkage(comp_dist_array, method='single', metric='jaccard')
     group_map = get_group_aggregation(group_indexes, z, similarity_threshold)
+    # print 'Num clusters: ' + str(len(group_map))
     
     if plot_dendrogram:
         plt.figure(1, figsize=(6, 5))
@@ -393,9 +399,18 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
     aggregated_bandwidth_Mbps = 0
     
     seen_aggregated_tree_indexes = []
+    penultimate_hop_rendevouz_optimization = dict()
     for cluster_index in group_map:
         if len(group_map[cluster_index]) == 1:
             seen_aggregated_tree_indexes.append(cluster_index)
+            penultimate_hop_rendevouz_optimization[cluster_index] = False
+            continue
+        
+        penultimate_hop_rendevouz_optimization[cluster_index] = True
+        for group_index in group_map[cluster_index]:
+            if len(groups[group_index].rendevouz_point_shortest_path) == 0:
+                penultimate_hop_rendevouz_optimization[cluster_index] = False
+                break
     
     for group in groups:
         native_bandwidth_Mbps = native_bandwidth_Mbps + group.native_bandwidth_Mbps
@@ -407,11 +422,17 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
             aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(group.native_mcast_tree) + 1
         else:
             # Group does use aggregated tree
-            aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids) + 1) + len(group.rendevouz_point_shortest_path)
+            if penultimate_hop_rendevouz_optimization[group.aggregated_mcast_tree_index]:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids)) + len(group.rendevouz_point_shortest_path)
+            else:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids) + 1) + len(group.rendevouz_point_shortest_path)
         
         if group.aggregated_mcast_tree_index not in seen_aggregated_tree_indexes:
             seen_aggregated_tree_indexes.append(group.aggregated_mcast_tree_index)
-            aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree)))
+            if penultimate_hop_rendevouz_optimization[group.aggregated_mcast_tree_index]:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree))) + 1
+            else:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree)))
         
         if debug_print:
             print ' '
@@ -458,21 +479,23 @@ if __name__ == '__main__':
     bandwidth_overhead_list = []
     flow_table_reduction_list = []
     
-    num_trials = 5000
-    similarity_threshold = 0.5
+    num_trials = 1000
+    #similarity_threshold = 0.8
     start_time = time()
     print 'Simulations started at: ' + str(datetime.now())
-    for i in range(0, num_trials):
-        if i % 100 == 0:
-            print 'Running trial #' + str(i)
-        bandwidth_overhead_ratio, flow_table_reduction_ratio = run_multicast_aggregation_test(topo, similarity_threshold)
-        bandwidth_overhead_list.append(bandwidth_overhead_ratio)
-        flow_table_reduction_list.append(flow_table_reduction_ratio)
-    end_time = time()
+    for similarity_threshold in [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]:
+        for i in range(0, num_trials):
+            #if i % 20 == 0:
+            #    print 'Running trial #' + str(i)
+            bandwidth_overhead_ratio, flow_table_reduction_ratio = run_multicast_aggregation_test(topo, similarity_threshold, False, False)
+            bandwidth_overhead_list.append(bandwidth_overhead_ratio)
+            flow_table_reduction_list.append(flow_table_reduction_ratio)
+        end_time = time()
+        
+        print ' '
+        print 'Similarity Threshold: ' + str(similarity_threshold)
+        print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
+        print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
     
-    print ' '
-    print 'Completed ' + str(num_trials) + ' trials in ' + str(end_time - start_time) + ' seconds (' + str(datetime.now()) + ')'
-    print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
-    print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
-    
+    print 'Completed trials in ' + str(end_time - start_time) + ' seconds (' + str(datetime.now()) + ')'
     sys.exit()
