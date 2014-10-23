@@ -374,7 +374,8 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
     comp_dist_array = ssd.squareform(distance_matrix)
     
     # Perform clustering, and plot a dendrogram of the results
-    z = linkage(comp_dist_array, method='single', metric='jaccard')
+    z = linkage(comp_dist_array, method='single')
+    
     group_map = get_group_aggregation(group_indexes, z, similarity_threshold)
     # print 'Num clusters: ' + str(len(group_map))
     
