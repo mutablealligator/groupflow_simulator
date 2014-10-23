@@ -58,14 +58,36 @@ def generate_aggregated_mcast_trees(topology, mcast_groups, group_map):
         min_sum_path_length = sys.maxint
         rv_node_id = None
         for forwarding_element in topology.forwarding_elements:
+            no_rendevouz_path = False
             sum_path_length = 0
             potential_rv_node_id = forwarding_element.node_id
             for mcast_group_id in group_map[group_aggregation]:
                 src_node_id = mcast_groups[mcast_group_id].src_node_id
+                # print 'SrcNode: ' + str(src_node_id) + ' RVNode: ' + str(potential_rv_node_id)
                 shortest_path = topology.get_shortest_path_tree(src_node_id, [potential_rv_node_id])
+                # print shortest_path
+                if shortest_path is None:
+                    no_rendevouz_path = True
+                    break
                 sum_path_length = sum_path_length + len(shortest_path)
             
-            if sum_path_length < min_sum_path_length:
+            # print 'RVNode: ' + str(potential_rv_node_id) + ' PathLength: ' + str(sum_path_length)
+            if no_rendevouz_path:
+                continue
+                
+            if sum_path_length <= min_sum_path_length:
+                # Optimization - If multiple forwarding elements have the same sum rendevouz path length, choose
+                # the rendevouz point that results in the shortest distribution tree (in number of hops)
+                if sum_path_length == min_sum_path_length:
+                    # print 'Found rendevouz points (' + str(potential_rv_node_id) + ',' + str(rv_node_id) + ') with equal path length (' + str(sum_path_length) + ')'
+                    aggregated_mcast_tree_new = topology.get_shortest_path_tree(potential_rv_node_id, cluster_receivers)
+                    aggregated_mcast_tree_old = topology.get_shortest_path_tree(rv_node_id, cluster_receivers)
+                    # print 'len(new_tree): ' + str(len(aggregated_mcast_tree_new)) + ' len(old_tree): ' + str(len(aggregated_mcast_tree_old))
+                    if len(aggregated_mcast_tree_new) > len(aggregated_mcast_tree_old):
+                        # print 'Chose old rendevouz point'
+                        continue
+                    # print 'Chose new rendevouz point'
+                    
                 min_sum_path_length = sum_path_length
                 rv_node_id = potential_rv_node_id
                 for mcast_group_id in group_map[group_aggregation]:
@@ -74,6 +96,7 @@ def generate_aggregated_mcast_trees(topology, mcast_groups, group_map):
                     mcast_groups[mcast_group_id].rendevouz_point_node_id = rv_node_id
                     mcast_groups[mcast_group_id].rendevouz_point_shortest_path = shortest_path
                     mcast_groups[mcast_group_id].aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, cluster_receivers)
+                    # print 'Set new aggregated mcast tree with len: ' + str(len(mcast_groups[mcast_group_id].aggregated_mcast_tree))
                     mcast_groups[mcast_group_id].aggregated_bandwidth_Mbps = (len(mcast_groups[mcast_group_id].aggregated_mcast_tree) + len(mcast_groups[mcast_group_id].rendevouz_point_shortest_path)) * mcast_groups[mcast_group_id].bandwidth_Mbps
         
         # print 'Cluster rendevouz point at forwarding element #' + str(rv_node_id)
@@ -163,7 +186,7 @@ class SimTopo(object):
             receiver_path = self.path_tree_map[source_node_id][receiver_node_id]
             if receiver_path is None:
                 print 'Path could not be determined for receiver ' + str(receiver_node_id) + ' (network is not fully connected)'
-                continue
+                return None
                 
             while receiver_path[1]:
                 shortest_path_tree_edges.append((receiver_path[1][0], receiver_path[0]))
@@ -312,6 +335,12 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
         groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), 10, i))
         groups[i].generate_random_receiver_ids(randint(1,10))
     
+    #groups.append(McastGroup(topo, 0, 10, 0))
+    #groups[0].set_receiver_ids([6,7])
+    #groups.append(McastGroup(topo, 1, 10, 1))
+    #groups[1].set_receiver_ids([6,7])
+    
+    
     # Generate the distance matrix used for clustering
     receivers_list = []
     for group in groups:
@@ -411,7 +440,7 @@ if __name__ == '__main__':
     topo.load_from_brite_topo(sys.argv[1])
     print topo
     
-    #topo.load_from_edge_list([[0,1],[1,2],[2,3],[3,4],[3,5]])
+    #topo.load_from_edge_list([[0,2],[1,2],[2,0],[2,1],[2,3],[3,4],[4,5],[5,6],[5,7]])
     #similarity_threshold = 0.5
     #bandwidth_overhead_ratio, flow_table_reduction_ratio = run_multicast_aggregation_test(topo, similarity_threshold, True)
     #sys.exit(0)
