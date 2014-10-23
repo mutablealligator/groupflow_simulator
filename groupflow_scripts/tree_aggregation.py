@@ -21,7 +21,7 @@ def get_group_aggregation(group_indexes, linkage_array, difference_threshold):
     
     next_cluster_index = len(group_indexes)
     for cluster in linkage_array:
-        if cluster[2] >= difference_threshold:
+        if cluster[2] > difference_threshold:
             break
         
         new_cluster_list = []
@@ -337,7 +337,7 @@ class McastGroup(object):
         print 'Aggregated Mcast Tree:\n' + str(self.aggregated_mcast_tree)
         print 'Rendevouz Point: Node #' + str(self.rendevouz_point_node_id) + '\nRendevouz Path: ' + str(self.rendevouz_point_shortest_path)
         
-def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = False, plot_dendrogram = False):
+def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, debug_print = False, plot_dendrogram = False):
     # Generate random multicast groups
     groups = []
     
@@ -374,7 +374,7 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
     comp_dist_array = ssd.squareform(distance_matrix)
     
     # Perform clustering, and plot a dendrogram of the results
-    z = linkage(comp_dist_array, method='single')
+    z = linkage(comp_dist_array, method=linkage_method)
     
     group_map = get_group_aggregation(group_indexes, z, similarity_threshold)
     # print 'Num clusters: ' + str(len(group_map))
@@ -459,18 +459,18 @@ def run_multicast_aggregation_test(topo, similarity_threshold, debug_print = Fal
     #plt.xlabel('Multicast Group Index')
     #plt.ylabel('Cluster Distance')
     
-    return bandwidth_overhead_ratio, flow_table_reduction_ratio
+    return bandwidth_overhead_ratio, flow_table_reduction_ratio, len(group_map)
     
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print 'Topology filepath was not specified.'
-        sys.exit(1)
+    if len(sys.argv) < 3:
+        print 'Topology filepath was not specified or linkage method was not specified.'
+        sys.exit(0)
     
     # Import the topology from BRITE format
     topo = SimTopo()
     topo.load_from_brite_topo(sys.argv[1])
-    print topo
+    #print topo
     
     #topo.load_from_edge_list([[0,2],[1,2],[2,0],[2,1],[2,3],[3,4],[4,5],[5,6],[5,7]])
     #similarity_threshold = 0.5
@@ -479,24 +479,27 @@ if __name__ == '__main__':
     
     bandwidth_overhead_list = []
     flow_table_reduction_list = []
+    num_clusters_list = []
     
-    num_trials = 1000
+    num_trials = 10
     #similarity_threshold = 0.8
     start_time = time()
     print 'Simulations started at: ' + str(datetime.now())
-    for similarity_threshold in [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]:
+    for similarity_threshold in [0.75]: # [-1, 0.2, 0.4, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]:
         for i in range(0, num_trials):
             #if i % 20 == 0:
             #    print 'Running trial #' + str(i)
-            bandwidth_overhead_ratio, flow_table_reduction_ratio = run_multicast_aggregation_test(topo, similarity_threshold, False, False)
+            bandwidth_overhead_ratio, flow_table_reduction_ratio, num_clusters = run_multicast_aggregation_test(topo, similarity_threshold, sys.argv[2], False, False)
             bandwidth_overhead_list.append(bandwidth_overhead_ratio)
             flow_table_reduction_list.append(flow_table_reduction_ratio)
+            num_clusters_list.append(num_clusters)
         end_time = time()
         
         print ' '
         print 'Similarity Threshold: ' + str(similarity_threshold)
         print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
         print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
-    
+        print 'Average Num Clusters: ' + str(float(sum(num_clusters_list)) / len(num_clusters_list))
+        
     print 'Completed trials in ' + str(end_time - start_time) + ' seconds (' + str(datetime.now()) + ')'
     sys.exit()
