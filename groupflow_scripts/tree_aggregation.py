@@ -14,7 +14,7 @@ import signal
 import numpy as np
 import matplotlib.pyplot as plt
 
-def get_group_aggregation(group_indexes, linkage_array, difference_threshold):
+def get_cluster_group_aggregation(group_indexes, linkage_array, difference_threshold):
     group_map = {}
     for group_index in group_indexes:
         group_map[group_index] = [group_index]
@@ -43,7 +43,7 @@ def get_group_aggregation(group_indexes, linkage_array, difference_threshold):
             
     return group_map
 
-def generate_aggregated_mcast_trees(topology, mcast_groups, group_map):
+def generate_cluster_aggregated_mcast_trees(topology, mcast_groups, group_map):
     for group_aggregation in group_map:
         # print 'Cluster #' + str(group_aggregation) + ' - Groups: ' + (str(group_map[group_aggregation]))
         cluster_receivers = []
@@ -119,6 +119,109 @@ def get_non_terminal_vertices(edge_list):
     
     return tail_set.intersection(head_set).union(tail_set - head_set)
 
+def aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold, plot_dendrogram = False):
+    # Generate the distance matrix used for clustering
+    receivers_list = []
+    for group in groups:
+        receivers_list.append(list(group.receiver_ids))
+    receivers_array = np.array(receivers_list)
+    distance_matrix = []
+    group_index = 0
+    group_indexes = []
+    for group1 in groups:
+        distance_matrix.append([])
+        for group2 in groups:
+            jaccard_distance = group1.jaccard_distance(group2)
+            # src_distance = len(topo.get_shortest_path_tree(group1.src_node_id, [group2.src_node_id]))
+            # src_distance_ratio = (float(src_distance)/topo.network_diameter) # Distance between source nodes as a percentage of the network diameter
+            distance_matrix[group_index].append(jaccard_distance)
+            
+        group_indexes.append(group_index)
+        group_index += 1
+        
+    comp_dist_array = ssd.squareform(distance_matrix)
+    
+    # Perform clustering, and plot a dendrogram of the results if requested
+    z = linkage(comp_dist_array, method=linkage_method)
+    group_map = get_cluster_group_aggregation(group_indexes, z, similarity_threshold)
+    
+    if plot_dendrogram:
+        plt.figure(1, figsize=(6, 5))
+        print 'Linkage Array:\n' + str(z)
+        print ' '
+        d = dendrogram(z, show_leaf_counts=True)
+        plt.title('Multicast Group Clustering (Single Linkage)')
+        plt.xlabel('Multicast Group Index')
+        plt.ylabel('Cluster Distance')
+        plt.show()
+    
+    # Generate aggregated multicast trees based on the generated clusters
+    generate_cluster_aggregated_mcast_trees(topo, groups, group_map)
+    
+    return groups, group_map
+    
+def calc_network_performance_metrics(groups, group_map, debug_print = False):
+    native_network_flow_table_size = 0
+    aggregated_network_flow_table_size = 0
+    
+    native_bandwidth_Mbps = 0
+    aggregated_bandwidth_Mbps = 0
+    
+    seen_aggregated_tree_indexes = []
+    penultimate_hop_rendevouz_optimization = dict()
+    for cluster_index in group_map:
+        if len(group_map[cluster_index]) == 1:
+            seen_aggregated_tree_indexes.append(cluster_index)
+            penultimate_hop_rendevouz_optimization[cluster_index] = False
+            continue
+        
+        penultimate_hop_rendevouz_optimization[cluster_index] = True
+        for group_index in group_map[cluster_index]:
+            if len(groups[group_index].rendevouz_point_shortest_path) == 0:
+                penultimate_hop_rendevouz_optimization[cluster_index] = False
+                break
+    
+    for group in groups:
+        native_bandwidth_Mbps = native_bandwidth_Mbps + group.native_bandwidth_Mbps
+        aggregated_bandwidth_Mbps = aggregated_bandwidth_Mbps + group.aggregated_bandwidth_Mbps
+        
+        native_network_flow_table_size = native_network_flow_table_size + len(group.native_mcast_tree) + 1
+        if len(group_map[group.aggregated_mcast_tree_index]) == 1:
+            # Group does not use an aggregated tree
+            aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(group.native_mcast_tree) + 1
+        else:
+            # Group does use aggregated tree
+            if penultimate_hop_rendevouz_optimization[group.aggregated_mcast_tree_index]:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids)) + len(group.rendevouz_point_shortest_path)
+            else:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids) + 1) + len(group.rendevouz_point_shortest_path)
+        
+        if group.aggregated_mcast_tree_index not in seen_aggregated_tree_indexes:
+            seen_aggregated_tree_indexes.append(group.aggregated_mcast_tree_index)
+            if penultimate_hop_rendevouz_optimization[group.aggregated_mcast_tree_index]:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree))) + 1
+            else:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree)))
+        
+        if debug_print:
+            print ' '
+            group.debug_print()
+    
+    bandwidth_overhead_ratio = float(aggregated_bandwidth_Mbps) / float(native_bandwidth_Mbps)
+    flow_table_reduction_ratio = float(aggregated_network_flow_table_size) / float(native_network_flow_table_size)
+    
+    if debug_print:
+        print ' '
+        print 'Aggregated Network Bandwidth Utilization: ' + str(aggregated_bandwidth_Mbps) + ' Mbps'
+        print 'Native Network Bandwidth Utilization: ' + str(native_bandwidth_Mbps) + ' Mbps'
+        print 'Bandwidth Overhead Ratio: ' + str(bandwidth_overhead_ratio)
+        print ' '
+        print 'Native Network Flow Table Size: ' + str(native_network_flow_table_size)
+        print 'Aggregated Network Flow Table Size: ' + str(aggregated_network_flow_table_size)
+        print 'Flow Table Reduction Ratio: ' + str(flow_table_reduction_ratio)
+    
+    return bandwidth_overhead_ratio, flow_table_reduction_ratio, len(group_map)
+    
     
 class ForwardingElement(object):
     def __init__(self, node_id):
@@ -364,104 +467,12 @@ def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, d
     #groups.append(McastGroup(topo, 1, 10, 1))
     #groups[1].set_receiver_ids([6,7])
     
-    # Generate the distance matrix used for clustering
-    receivers_list = []
-    for group in groups:
-        receivers_list.append(list(group.receiver_ids))
-    receivers_array = np.array(receivers_list)
-    distance_matrix = []
-    group_index = 0
-    group_indexes = []
-    for group1 in groups:
-        distance_matrix.append([])
-        for group2 in groups:
-            jaccard_distance = group1.jaccard_distance(group2)
-            src_distance = len(topo.get_shortest_path_tree(group1.src_node_id, [group2.src_node_id]))
-            src_distance_ratio = (float(src_distance)/topo.network_diameter) # Distance between source nodes as a percentage of the network diameter
-            distance_matrix[group_index].append(jaccard_distance)
-            
-        group_indexes.append(group_index)
-        group_index += 1
-        
-    comp_dist_array = ssd.squareform(distance_matrix)
-    
-    # Perform clustering, and plot a dendrogram of the results if requested
-    z = linkage(comp_dist_array, method=linkage_method)
-    group_map = get_group_aggregation(group_indexes, z, similarity_threshold)
-    
-    if plot_dendrogram:
-        plt.figure(1, figsize=(6, 5))
-        print 'Linkage Array:\n' + str(z)
-        print ' '
-        d = dendrogram(z, show_leaf_counts=True)
-        plt.title('Multicast Group Clustering (Single Linkage)')
-        plt.xlabel('Multicast Group Index')
-        plt.ylabel('Cluster Distance')
-        plt.show()
-    
-    # Generate aggregated multicast trees based on the generated clusters
-    generate_aggregated_mcast_trees(topo, groups, group_map)
+    groups, group_map = aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold)
     
     # Calculate network performance metrics
-    native_network_flow_table_size = 0
-    aggregated_network_flow_table_size = 0
+    bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees = calc_network_performance_metrics(groups, group_map)
     
-    native_bandwidth_Mbps = 0
-    aggregated_bandwidth_Mbps = 0
-    
-    seen_aggregated_tree_indexes = []
-    penultimate_hop_rendevouz_optimization = dict()
-    for cluster_index in group_map:
-        if len(group_map[cluster_index]) == 1:
-            seen_aggregated_tree_indexes.append(cluster_index)
-            penultimate_hop_rendevouz_optimization[cluster_index] = False
-            continue
-        
-        penultimate_hop_rendevouz_optimization[cluster_index] = True
-        for group_index in group_map[cluster_index]:
-            if len(groups[group_index].rendevouz_point_shortest_path) == 0:
-                penultimate_hop_rendevouz_optimization[cluster_index] = False
-                break
-    
-    for group in groups:
-        native_bandwidth_Mbps = native_bandwidth_Mbps + group.native_bandwidth_Mbps
-        aggregated_bandwidth_Mbps = aggregated_bandwidth_Mbps + group.aggregated_bandwidth_Mbps
-        
-        native_network_flow_table_size = native_network_flow_table_size + len(group.native_mcast_tree) + 1
-        if len(group_map[group.aggregated_mcast_tree_index]) == 1:
-            # Group does not use an aggregated tree
-            aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(group.native_mcast_tree) + 1
-        else:
-            # Group does use aggregated tree
-            if penultimate_hop_rendevouz_optimization[group.aggregated_mcast_tree_index]:
-                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids)) + len(group.rendevouz_point_shortest_path)
-            else:
-                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids) + 1) + len(group.rendevouz_point_shortest_path)
-        
-        if group.aggregated_mcast_tree_index not in seen_aggregated_tree_indexes:
-            seen_aggregated_tree_indexes.append(group.aggregated_mcast_tree_index)
-            if penultimate_hop_rendevouz_optimization[group.aggregated_mcast_tree_index]:
-                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree))) + 1
-            else:
-                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree)))
-        
-        if debug_print:
-            print ' '
-            group.debug_print()
-    
-    bandwidth_overhead_ratio = float(aggregated_bandwidth_Mbps) / float(native_bandwidth_Mbps)
-    flow_table_reduction_ratio = float(aggregated_network_flow_table_size) / float(native_network_flow_table_size)
-    if debug_print:
-        print ' '
-        print 'Aggregated Network Bandwidth Utilization: ' + str(aggregated_bandwidth_Mbps) + ' Mbps'
-        print 'Native Network Bandwidth Utilization: ' + str(native_bandwidth_Mbps) + ' Mbps'
-        print 'Bandwidth Overhead Ratio: ' + str(bandwidth_overhead_ratio)
-        print ' '
-        print 'Native Network Flow Table Size: ' + str(native_network_flow_table_size)
-        print 'Aggregated Network Flow Table Size: ' + str(aggregated_network_flow_table_size)
-        print 'Flow Table Reduction Ratio: ' + str(flow_table_reduction_ratio)
-    
-    return bandwidth_overhead_ratio, flow_table_reduction_ratio, len(group_map)
+    return bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees
     
 
 if __name__ == '__main__':
@@ -483,7 +494,7 @@ if __name__ == '__main__':
     flow_table_reduction_list = []
     num_clusters_list = []
     
-    num_trials = 1000
+    num_trials = 10
     start_time = time()
     print 'Simulations started at: ' + str(datetime.now())
     for similarity_threshold in [0.75]: # [-1, 0.2, 0.4, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]:
