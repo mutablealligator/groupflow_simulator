@@ -533,7 +533,10 @@ class McastGroup(object):
         self.native_bandwidth_Mbps = len(self.native_mcast_tree) * self.bandwidth_Mbps
         
     def generate_random_receiver_ids(self, num_receivers):
-        while len(self.receiver_ids) < num_receivers:
+        # KLUDGE: Receiver IDs will always be generated until there is at least one receiver which is not colocated with the source
+        # This prevents divide by 0 errors when calculating performance metrics
+        # TODO - AC: Find a better way to handle this situation
+        while len(self.receiver_ids) < num_receivers or (len(self.receiver_ids) == 1 and self.src_node_id in self.receiver_ids):
             self.receiver_ids.add(randint(0, len(topo.forwarding_elements)))
         self.native_mcast_tree = self.topology.get_shortest_path_tree(self.src_node_id, list(self.receiver_ids))
         self.native_bandwidth_Mbps = len(self.native_mcast_tree) * self.bandwidth_Mbps
