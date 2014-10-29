@@ -43,63 +43,161 @@ def get_cluster_group_aggregation(group_indexes, linkage_array, difference_thres
             
     return group_map
 
+def calc_best_rendevouz_point(topology, mcast_groups):
+    aggregated_group_receivers = []
+    for group in mcast_groups:
+        for receiver_id in group.receiver_ids:
+            aggregated_group_receivers.append(receiver_id)
+    
+    aggregated_group_receivers = list(Set(aggregated_group_receivers))
+        
+    min_sum_path_length = sys.maxint
+    rv_node_id = None
+    for forwarding_element in topology.forwarding_elements:
+        no_rendevouz_path = False
+        sum_path_length = 0
+        potential_rv_node_id = forwarding_element.node_id
+        for mcast_group in mcast_groups:
+            src_node_id = mcast_group.src_node_id
+            shortest_path = topology.get_shortest_path_tree(src_node_id, [potential_rv_node_id])
+            if shortest_path is None:
+                no_rendevouz_path = True
+                break
+            sum_path_length = sum_path_length + len(shortest_path)
+        
+        if no_rendevouz_path:
+            continue
+            
+        if sum_path_length <= min_sum_path_length:
+            # Optimization - If multiple forwarding elements have the same sum rendevouz path length, choose
+            # the rendevouz point that results in the shortest distribution tree (in number of hops)
+            if sum_path_length == min_sum_path_length:
+                aggregated_mcast_tree_new = topology.get_shortest_path_tree(potential_rv_node_id, aggregated_group_receivers)
+                aggregated_mcast_tree_old = topology.get_shortest_path_tree(rv_node_id, aggregated_group_receivers)
+                if len(aggregated_mcast_tree_new) > len(aggregated_mcast_tree_old):
+                    # print 'Chose old rendevouz point'
+                    continue
+                # print 'Chose new rendevouz point'
+                
+            min_sum_path_length = sum_path_length
+            rv_node_id = potential_rv_node_id
+    
+    return rv_node_id, aggregated_group_receivers
+
+def aggregate_groups_via_tree_sim(topology, mcast_groups, bandwidth_overhead_threshold):
+    group_map = defaultdict(lambda : None)
+    next_agg_tree_index = 0
+    
+    for group in mcast_groups:
+        if len(group_map) == 0:
+            # This is the first group to initialize, always uses a native multicast tree
+            group.rendevouz_point_node_id = group.src_node_id
+            group.rendevouz_point_shortest_path = []
+            group.aggregated_mcast_tree = topology.get_shortest_path_tree(group.src_node_id, list(group.receiver_ids))
+            group.aggregated_mcast_tree_index = next_agg_tree_index
+            group.aggregated_bandwidth_Mbps = len(group.aggregated_mcast_tree) * group.bandwidth_Mbps
+            group_map[next_agg_tree_index] = [group.group_index]
+            next_agg_tree_index += 1
+            continue
+        
+        # If this is not the first group, iterate through all existing aggregated trees, and check if any can be extended
+        # to cover the group without exceeding the bandwidth overhead threshold
+        final_aggregated_groups = None
+        final_aggregated_tree_index = None
+        final_aggregated_mcast_tree = None
+        final_rv_node_id = None
+        final_aggregated_bandwidth_overhead = None
+        
+        for agg_tree_index in group_map:
+            test_aggregated_groups = [group]
+            for group_index in group_map[agg_tree_index]:
+                test_aggregated_groups.append(mcast_groups[group_index])
+                
+            rv_node_id, aggregated_group_receivers = calc_best_rendevouz_point(topology, test_aggregated_groups)
+            aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, aggregated_group_receivers)
+            
+            # Got a rendevouz node for this potential aggregation, now calculate the bandwidth overhead of this potential aggregation
+            native_bandwidth_Mbps = 0
+            aggregated_bandwidth_Mbps = 0
+            for test_group in test_aggregated_groups:
+                rv_path = topology.get_shortest_path_tree(test_group.src_node_id, [rv_node_id])
+                native_bandwidth_Mbps += test_group.native_bandwidth_Mbps
+                aggregated_bandwidth_Mbps += ((len(aggregated_mcast_tree) + len(rv_path)) * test_group.bandwidth_Mbps)
+            bandwidth_overhead_ratio = float(aggregated_bandwidth_Mbps) / native_bandwidth_Mbps;
+            
+            # Note: When using shortest path trees, this is not neccesarily an error condition. If steiner trees were used, this would not be possible
+            #if bandwidth_overhead_ratio < 1:
+            #    print '\n====== ERROR: bandwidth overhead ratio less than 1! (Native: ' + str(native_bandwidth_Mbps) + ' Mbps Aggregated: ' + str(aggregated_bandwidth_Mbps) + ' Mbps)'
+            #    for test_group in test_aggregated_groups:
+            #        print '\nGroup Src: ' + str(test_group.src_node_id) + ' Receivers: ' + str(test_group.receiver_ids)
+            #        print 'Native:\n' + str(test_group.native_bandwidth_Mbps) + ' - ' + str(test_group.native_mcast_tree)
+            #        print 'Terminal vertices: ' + str(get_terminal_vertices(test_group.native_mcast_tree))
+            #        rv_path = topology.get_shortest_path_tree(test_group.src_node_id, [rv_node_id])
+            #        print '\nAggregated:\n' + str(((len(aggregated_mcast_tree)) * test_group.bandwidth_Mbps)) + ' - ' + str(aggregated_mcast_tree) + '\n' + str((len(rv_path)) * test_group.bandwidth_Mbps) + ' - ' + str(rv_path)
+            #        print 'Terminal vertices: ' + str(get_terminal_vertices(aggregated_mcast_tree))
+            #    print '=====\n'
+            #    sys.exit(1)
+                
+            if bandwidth_overhead_ratio > bandwidth_overhead_threshold:
+                continue    # This aggregation causes the bandwidth overhead ratio to exceed the threshold
+            
+            if final_aggregated_bandwidth_overhead is None or bandwidth_overhead_ratio < final_aggregated_bandwidth_overhead:
+                final_aggregated_bandwidth_overhead = bandwidth_overhead_ratio
+                final_aggregated_tree_index = agg_tree_index
+                final_aggregated_groups = test_aggregated_groups
+                final_aggregated_mcast_tree = aggregated_mcast_tree
+                final_rv_node_id = rv_node_id
+        
+        # At this point, either a valid aggregation has been found (and stored in the "final" variables), or the group will
+        # be assigned to a new, native tree
+        if final_aggregated_tree_index is not None:
+            # A valid aggregation has been found
+            # print 'Assigning group #' + str(group.group_index) + ' to aggregated tree #' + str(final_aggregated_tree_index) + ' (BW Overhead: ' + str(final_aggregated_bandwidth_overhead) + ')'
+            group_map[final_aggregated_tree_index].append(group.group_index)
+            for agg_group in final_aggregated_groups:
+                src_node_id = agg_group.src_node_id
+                rv_path = topology.get_shortest_path_tree(src_node_id, [final_rv_node_id])
+                agg_group.rendevouz_point_node_id = final_rv_node_id
+                agg_group.rendevouz_point_shortest_path = rv_path
+                agg_group.aggregated_mcast_tree = final_aggregated_mcast_tree
+                agg_group.aggregated_mcast_tree_index = final_aggregated_tree_index
+                agg_group.aggregated_bandwidth_Mbps = ((len(agg_group.aggregated_mcast_tree) 
+                        + len(agg_group.rendevouz_point_shortest_path)) * agg_group.bandwidth_Mbps)
+        else:
+            # Create a new aggregated tree index for the group
+            group.rendevouz_point_node_id = group.src_node_id
+            group.rendevouz_point_shortest_path = []
+            group.aggregated_mcast_tree = topology.get_shortest_path_tree(group.src_node_id, list(group.receiver_ids))
+            group.aggregated_mcast_tree_index = next_agg_tree_index
+            group.aggregated_bandwidth_Mbps = len(group.aggregated_mcast_tree) * group.bandwidth_Mbps
+            group_map[next_agg_tree_index] = [group.group_index]
+            next_agg_tree_index += 1
+        
+    # print 'Tree similarity aggregation results:\n' + str(group_map)
+    return mcast_groups, group_map
+        
+
 def generate_cluster_aggregated_mcast_trees(topology, mcast_groups, group_map):
     for group_aggregation in group_map:
         # print 'Cluster #' + str(group_aggregation) + ' - Groups: ' + (str(group_map[group_aggregation]))
-        cluster_receivers = []
+        cluster_groups = []
         for mcast_group_id in group_map[group_aggregation]:
             mcast_groups[mcast_group_id].aggregated_mcast_tree_index = group_aggregation
-            for receiver_id in mcast_groups[mcast_group_id].receiver_ids:
-                cluster_receivers.append(receiver_id)
+            cluster_groups.append(mcast_groups[mcast_group_id])
         
-        cluster_receivers = list(Set(cluster_receivers))
-        
-        # First - determine rendevouz point for the group aggregation
         min_sum_path_length = sys.maxint
-        rv_node_id = None
-        for forwarding_element in topology.forwarding_elements:
-            no_rendevouz_path = False
-            sum_path_length = 0
-            potential_rv_node_id = forwarding_element.node_id
-            for mcast_group_id in group_map[group_aggregation]:
-                src_node_id = mcast_groups[mcast_group_id].src_node_id
-                # print 'SrcNode: ' + str(src_node_id) + ' RVNode: ' + str(potential_rv_node_id)
-                shortest_path = topology.get_shortest_path_tree(src_node_id, [potential_rv_node_id])
-                # print shortest_path
-                if shortest_path is None:
-                    no_rendevouz_path = True
-                    break
-                sum_path_length = sum_path_length + len(shortest_path)
-            
-            # print 'RVNode: ' + str(potential_rv_node_id) + ' PathLength: ' + str(sum_path_length)
-            if no_rendevouz_path:
-                continue
-                
-            if sum_path_length <= min_sum_path_length:
-                # Optimization - If multiple forwarding elements have the same sum rendevouz path length, choose
-                # the rendevouz point that results in the shortest distribution tree (in number of hops)
-                if sum_path_length == min_sum_path_length:
-                    # print 'Found rendevouz points (' + str(potential_rv_node_id) + ',' + str(rv_node_id) + ') with equal path length (' + str(sum_path_length) + ')'
-                    aggregated_mcast_tree_new = topology.get_shortest_path_tree(potential_rv_node_id, cluster_receivers)
-                    aggregated_mcast_tree_old = topology.get_shortest_path_tree(rv_node_id, cluster_receivers)
-                    # print 'len(new_tree): ' + str(len(aggregated_mcast_tree_new)) + ' len(old_tree): ' + str(len(aggregated_mcast_tree_old))
-                    if len(aggregated_mcast_tree_new) > len(aggregated_mcast_tree_old):
-                        # print 'Chose old rendevouz point'
-                        continue
-                    # print 'Chose new rendevouz point'
-                    
-                min_sum_path_length = sum_path_length
-                rv_node_id = potential_rv_node_id
-                for mcast_group_id in group_map[group_aggregation]:
-                    src_node_id = mcast_groups[mcast_group_id].src_node_id
-                    shortest_path = topology.get_shortest_path_tree(src_node_id, [potential_rv_node_id])
-                    mcast_groups[mcast_group_id].rendevouz_point_node_id = rv_node_id
-                    mcast_groups[mcast_group_id].rendevouz_point_shortest_path = shortest_path
-                    mcast_groups[mcast_group_id].aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, cluster_receivers)
-                    # print 'Set new aggregated mcast tree with len: ' + str(len(mcast_groups[mcast_group_id].aggregated_mcast_tree))
-                    mcast_groups[mcast_group_id].aggregated_bandwidth_Mbps = (len(mcast_groups[mcast_group_id].aggregated_mcast_tree) + len(mcast_groups[mcast_group_id].rendevouz_point_shortest_path)) * mcast_groups[mcast_group_id].bandwidth_Mbps
+        rv_node_id, aggregated_group_receivers = calc_best_rendevouz_point(topology, cluster_groups)
         
-        # print 'Cluster rendevouz point at forwarding element #' + str(rv_node_id)
+        for mcast_group_id in group_map[group_aggregation]:
+            src_node_id = mcast_groups[mcast_group_id].src_node_id
+            shortest_path = topology.get_shortest_path_tree(src_node_id, [rv_node_id])
+            mcast_groups[mcast_group_id].rendevouz_point_node_id = rv_node_id
+            mcast_groups[mcast_group_id].rendevouz_point_shortest_path = shortest_path
+            mcast_groups[mcast_group_id].aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, aggregated_group_receivers)
+            mcast_groups[mcast_group_id].aggregated_bandwidth_Mbps = ((len(mcast_groups[mcast_group_id].aggregated_mcast_tree) 
+                    + len(mcast_groups[mcast_group_id].rendevouz_point_shortest_path)) * mcast_groups[mcast_group_id].bandwidth_Mbps)
+    
+    return mcast_groups, group_map
 
 def get_terminal_vertices(edge_list):
     tail_set = Set()
@@ -304,7 +402,7 @@ class SimTopo(object):
                 path = self.get_shortest_path_tree(source_forwarding_element.node_id, [dest_forwarding_element.node_id])
                 if path is not None and len(path) > self.network_diameter:
                     self.network_diameter = len(path)
-        print 'Got network diameter: ' + str(self.network_diameter)
+        # print 'Got network diameter: ' + str(self.network_diameter)
         
     def get_shortest_path_tree(self, source_node_id, receiver_node_id_list):
         if self.recalc_path_tree_map:
@@ -454,12 +552,12 @@ class McastGroup(object):
         print 'Rendevouz Point: Node #' + str(self.rendevouz_point_node_id) + '\nRendevouz Path: ' + str(self.rendevouz_point_shortest_path)
         
         
-def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, debug_print = False, plot_dendrogram = False):
+def run_multicast_aggregation_test(topo, num_groups, max_group_size, similarity_type, similarity_parameter, debug_print = False, plot_dendrogram = False):
     # Generate random multicast groups
     groups = []
     
-    for i in range(0, 100):
-        groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), 10, i))
+    for i in range(0, num_groups):
+        groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), max_group_size, i))
         groups[i].generate_random_receiver_ids(randint(1,10))
     
     #groups.append(McastGroup(topo, 0, 10, 0))
@@ -467,17 +565,34 @@ def run_multicast_aggregation_test(topo, similarity_threshold, linkage_method, d
     #groups.append(McastGroup(topo, 1, 10, 1))
     #groups[1].set_receiver_ids([6,7])
     
-    groups, group_map = aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold)
+    run_time_start = time()
+    if 'single' in similarity_type or 'complete' in similarity_type:
+        groups, group_map = aggregate_groups_via_clustering(groups, similarity_type, similarity_parameter)
+    elif 'tree_sim' in similarity_type:
+        groups, group_map = aggregate_groups_via_tree_sim(topo, groups, similarity_parameter)
+    else:
+        print 'ERROR: Invalid similarity type - Supported options are "single", "complete", or "tree_sim"'
+        sys.exit(1)
+    run_time = time() - run_time_start
     
     # Calculate network performance metrics
     bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees = calc_network_performance_metrics(groups, group_map)
     
-    return bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees
+    return bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees, run_time
     
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print 'Topology filepath was not specified or linkage method was not specified.'
+    if len(sys.argv) < 5:
+        print 'Tree aggregation script requires the following 5 command line arguments:'
+        print '[1] Topology filepath (string)'
+        print '[2] Number of trials to run (integer)'
+        print '[3] Number of multicast groups (integer)'
+        print '[4] Maximum number of members per multicast group (integer)'
+        print '[5] Similarity type (string): one of "single", "complete", or "tree_sim"'
+        print '[6] Similarity parameter (float):'
+        print '\tFor the "single" and "complete" similarity types this sets the similarity threshold to use for clustering'
+        print '\tFor the "tree_sim" similarity type this sets the bandwidth overhead threshold'
+        print 
         sys.exit(0)
     
     # Import the topology from BRITE format
@@ -492,26 +607,33 @@ if __name__ == '__main__':
     
     bandwidth_overhead_list = []
     flow_table_reduction_list = []
-    num_clusters_list = []
+    num_trees_list = []
+    run_time_list = []
     
-    num_trials = 10
+    num_trials = int(sys.argv[2])
     start_time = time()
     print 'Simulations started at: ' + str(datetime.now())
-    for similarity_threshold in [0.75]: # [-1, 0.2, 0.4, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]:
-        for i in range(0, num_trials):
-            #if i % 20 == 0:
-            #    print 'Running trial #' + str(i)
-            bandwidth_overhead_ratio, flow_table_reduction_ratio, num_clusters = run_multicast_aggregation_test(topo, similarity_threshold, sys.argv[2], False, False)
-            bandwidth_overhead_list.append(bandwidth_overhead_ratio)
-            flow_table_reduction_list.append(flow_table_reduction_ratio)
-            num_clusters_list.append(num_clusters)
-        end_time = time()
+    
+    for i in range(0, num_trials):
+        #if i % 20 == 0:
+        #    print 'Running trial #' + str(i)
+        bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees, run_time = run_multicast_aggregation_test(topo, int(sys.argv[3]), int(sys.argv[4]), sys.argv[5], float(sys.argv[6]), False, False)
+        bandwidth_overhead_list.append(bandwidth_overhead_ratio)
+        flow_table_reduction_list.append(flow_table_reduction_ratio)
+        num_trees_list.append(num_trees)
+        run_time_list.append(run_time)
         
-        print ' '
-        print 'Similarity Threshold: ' + str(similarity_threshold)
-        print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
-        print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
-        print 'Average Num Clusters: ' + str(float(sum(num_clusters_list)) / len(num_clusters_list))
+    end_time = time()
+    
+    print ' '
+    print 'Similarity Type: ' + sys.argv[5]
+    print 'Similarity Threshold: ' + sys.argv[6]
+    print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
+    print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
+    print 'Average Trees Clusters: ' + str(float(sum(num_trees_list)) / len(num_trees_list))
+    print 'Average Tree Agg. Run-Time: ' + str(float(sum(run_time_list)) / len(run_time_list))
+    print 'Expected Sim Run-Time: ' + str((float(sum(run_time_list)) / len(run_time_list)) * num_trials)
+    print ' '
         
-    print 'Completed trials in ' + str(end_time - start_time) + ' seconds (' + str(datetime.now()) + ')'
+    print 'Completed ' + str(num_trials) + ' trials in ' + str(end_time - start_time) + ' seconds (' + str(datetime.now()) + ')'
     sys.exit()
