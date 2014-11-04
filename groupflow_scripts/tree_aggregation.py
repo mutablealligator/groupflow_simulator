@@ -208,6 +208,27 @@ def get_terminal_vertices(edge_list):
     
     return head_set - tail_set
 
+def get_origin_vertices(edge_list, origin_candidates):
+    node_edge_count = defaultdict(lambda : None)
+    for edge in edge_list:
+        if node_edge_count[edge[0]] is None:
+            node_edge_count[edge[0]] = 1
+        else:
+            node_edge_count[edge[0]] = node_edge_count[edge[0]] + 1
+        
+        if node_edge_count[edge[1]] is None:
+            node_edge_count[edge[1]] = -1
+        else:
+            node_edge_count[edge[1]] = node_edge_count[edge[1]] - 1
+    
+    origin_set = Set()
+    for node_id in origin_candidates:
+        if node_edge_count[node_id] is not None and node_edge_count[node_id] > 0:
+            origin_set.add(node_id)
+            
+    return origin_set
+        
+    
 def get_intermediate_vertices(edge_list):
     tail_set = Set()
     head_set = Set()
@@ -277,11 +298,19 @@ def calc_network_performance_metrics(groups, group_map, debug_print = False):
             seen_aggregated_tree_indexes.append(group.aggregated_mcast_tree_index)
             # Calculate the set of all edges participating in this aggregate distribution tree
             agg_tree_edges = Set(group.aggregated_mcast_tree)
+            origin_candidates = []
             for group_index in group_map[group.aggregated_mcast_tree_index]:
+                origin_candidates.append(groups[group_index].src_node_id)
                 for edge in groups[group_index].rendevouz_point_shortest_path:
                     agg_tree_edges.add(edge)
-            agg_tree_intermediate_vertices = get_intermediate_vertices(list(agg_tree_edges))
-            aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(agg_tree_intermediate_vertices)
+            
+            # print '|DE| = ' + str(len(agg_tree_edges)) + ' - ' + str(agg_tree_edges)
+            origin_nodes = get_origin_vertices(agg_tree_edges, origin_candidates)
+            # print '|DEo| = ' + str(len(origin_nodes)) + ' - ' + str(origin_nodes)
+            terminal_nodes = get_terminal_vertices(agg_tree_edges)
+            # print '|DEt| = ' + str(len(terminal_nodes)) + ' - ' + str(terminal_nodes)
+
+            aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(agg_tree_edges) + 1 - len(origin_nodes) - len(terminal_nodes)
             
         
         if debug_print:
@@ -553,7 +582,7 @@ def run_multicast_aggregation_test(topo, num_groups, max_group_size, similarity_
     #groups[0].set_receiver_ids([6,7])
     #groups.append(McastGroup(topo, 1, 10, 1))
     #groups[1].set_receiver_ids([6,7])
-    #groups.append(McastGroup(topo, 3, 10, 2))
+    #groups.append(McastGroup(topo, 8, 10, 2))
     #groups[2].set_receiver_ids([6,7])
     
     run_time_start = time()
@@ -591,7 +620,7 @@ if __name__ == '__main__':
     topo.load_from_brite_topo(sys.argv[1])
     #print topo
     
-    #topo.load_from_edge_list([[0,2],[1,2],[2,0],[2,1],[2,3],[3,4],[4,5],[5,6],[5,7]])
+    #topo.load_from_edge_list([[0,2],[1,2],[2,0],[2,1],[2,3],[3,2],[3,4],[4,3],[4,5],[5,6],[5,7], [8,0]])
     #similarity_threshold = 0.5
     #bandwidth_overhead_ratio, flow_table_reduction_ratio, num_clusters = run_multicast_aggregation_test(topo, similarity_threshold, 'single', True)
     #sys.exit(0)
