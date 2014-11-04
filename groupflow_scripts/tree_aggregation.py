@@ -397,6 +397,9 @@ class SimTopo(object):
         shortest_path_tree_edges = Set()
         for receiver_node_id in receiver_node_id_list:
             shortest_path = self.shortest_path_map[source_node_id][receiver_node_id]
+            if shortest_path is None:
+                print 'ERROR: No shortest path from node ' + str(source_node_id) + ' to ' + str(receiver_node_id)
+                return None
             for edge in shortest_path:
                 shortest_path_tree_edges.add(edge)
         
