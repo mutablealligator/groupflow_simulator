@@ -208,14 +208,14 @@ def get_terminal_vertices(edge_list):
     
     return head_set - tail_set
 
-def get_non_terminal_vertices(edge_list):
+def get_intermediate_vertices(edge_list):
     tail_set = Set()
     head_set = Set()
     for edge in edge_list:
         tail_set.add(edge[0])
         head_set.add(edge[1])
     
-    return tail_set.intersection(head_set).union(tail_set - head_set)
+    return tail_set.intersection(head_set)
 
 def aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold, plot_dendrogram = False):
     # Generate the distance matrix used for clustering
@@ -266,40 +266,23 @@ def calc_network_performance_metrics(groups, group_map, debug_print = False):
     aggregated_bandwidth_Mbps = 0
     
     seen_aggregated_tree_indexes = []
-    penultimate_hop_rendevouz_optimization = dict()
-    for cluster_index in group_map:
-        if len(group_map[cluster_index]) == 1:
-            seen_aggregated_tree_indexes.append(cluster_index)
-            penultimate_hop_rendevouz_optimization[cluster_index] = False
-            continue
-        
-        penultimate_hop_rendevouz_optimization[cluster_index] = True
-        for group_index in group_map[cluster_index]:
-            if len(groups[group_index].rendevouz_point_shortest_path) == 0:
-                penultimate_hop_rendevouz_optimization[cluster_index] = False
-                break
     
     for group in groups:
         native_bandwidth_Mbps = native_bandwidth_Mbps + group.native_bandwidth_Mbps
         aggregated_bandwidth_Mbps = aggregated_bandwidth_Mbps + group.aggregated_bandwidth_Mbps
         
         native_network_flow_table_size = native_network_flow_table_size + len(group.native_mcast_tree) + 1
-        if len(group_map[group.aggregated_mcast_tree_index]) == 1:
-            # Group does not use an aggregated tree
-            aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(group.native_mcast_tree) + 1
-        else:
-            # Group does use aggregated tree
-            if penultimate_hop_rendevouz_optimization[group.aggregated_mcast_tree_index]:
-                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids)) + len(group.rendevouz_point_shortest_path)
-            else:
-                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.receiver_ids) + 1) + len(group.rendevouz_point_shortest_path)
-        
+        aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(group.receiver_ids) + 1
         if group.aggregated_mcast_tree_index not in seen_aggregated_tree_indexes:
             seen_aggregated_tree_indexes.append(group.aggregated_mcast_tree_index)
-            if penultimate_hop_rendevouz_optimization[group.aggregated_mcast_tree_index]:
-                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree))) + 1
-            else:
-                aggregated_network_flow_table_size = aggregated_network_flow_table_size + (len(group.aggregated_mcast_tree) - len(get_terminal_vertices(group.aggregated_mcast_tree)))
+            # Calculate the set of all edges participating in this aggregate distribution tree
+            agg_tree_edges = Set(group.aggregated_mcast_tree)
+            for group_index in group_map[group.aggregated_mcast_tree_index]:
+                for edge in groups[group_index].rendevouz_point_shortest_path:
+                    agg_tree_edges.add(edge)
+            agg_tree_intermediate_vertices = get_intermediate_vertices(list(agg_tree_edges))
+            aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(agg_tree_intermediate_vertices)
+            
         
         if debug_print:
             print ' '
@@ -567,6 +550,8 @@ def run_multicast_aggregation_test(topo, num_groups, max_group_size, similarity_
     #groups[0].set_receiver_ids([6,7])
     #groups.append(McastGroup(topo, 1, 10, 1))
     #groups[1].set_receiver_ids([6,7])
+    #groups.append(McastGroup(topo, 3, 10, 2))
+    #groups[2].set_receiver_ids([6,7])
     
     run_time_start = time()
     if 'single' in similarity_type or 'complete' in similarity_type:
