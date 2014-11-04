@@ -621,7 +621,7 @@ if __name__ == '__main__':
     print 'Similarity Threshold: ' + sys.argv[6]
     print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
     print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
-    print 'Average Trees Clusters: ' + str(float(sum(num_trees_list)) / len(num_trees_list))
+    print 'Average # Aggregated Trees: ' + str(float(sum(num_trees_list)) / len(num_trees_list))
     print 'Average Tree Agg. Run-Time: ' + str(float(sum(run_time_list)) / len(run_time_list))
     print 'Expected Sim Run-Time: ' + str((float(sum(run_time_list)) / len(run_time_list)) * num_trials)
     print ' '
