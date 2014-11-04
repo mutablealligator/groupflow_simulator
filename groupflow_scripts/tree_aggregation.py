@@ -14,6 +14,8 @@ import signal
 import numpy as np
 import matplotlib.pyplot as plt
 
+MIN_SUM_TREE_LEN = False
+
 def get_cluster_group_aggregation(group_indexes, linkage_array, difference_threshold):
     group_map = {}
     for group_index in group_indexes:
@@ -55,8 +57,11 @@ def calc_best_rendevouz_point(topology, mcast_groups):
     rv_node_id = None
     for forwarding_element in topology.forwarding_elements:
         no_rendevouz_path = False
-        sum_path_length = 0
         potential_rv_node_id = forwarding_element.node_id
+        sum_path_length = 0
+        if MIN_SUM_TREE_LEN:
+            sum_path_length = len(topology.get_shortest_path_tree(potential_rv_node_id, aggregated_group_receivers))
+        
         for mcast_group in mcast_groups:
             src_node_id = mcast_group.src_node_id
             shortest_path = topology.get_shortest_path_tree(src_node_id, [potential_rv_node_id])
