@@ -274,9 +274,9 @@ def aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold
         print 'Linkage Array:\n' + str(z)
         print ' '
         d = dendrogram(z, show_leaf_counts=True)
-        plt.title('Multicast Group Clustering (Single Linkage)')
+        plt.title('Multicast Group Clustering')
         plt.xlabel('Multicast Group Index')
-        plt.ylabel('Cluster Distance')
+        plt.ylabel('Cluster Similarity')
         plt.show()
     
     # Generate aggregated multicast trees based on the generated clusters
@@ -580,8 +580,8 @@ def run_multicast_aggregation_test(topo, num_groups, max_group_size, similarity_
     groups = []
     
     for i in range(0, num_groups):
-        groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), max_group_size, i))
-        groups[i].generate_random_receiver_ids(randint(1,10))
+        groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), 10, i))
+        groups[i].generate_random_receiver_ids(randint(1,max_group_size))
     
     #groups.append(McastGroup(topo, 0, 10, 0))
     #groups[0].set_receiver_ids([6,7])
@@ -591,12 +591,12 @@ def run_multicast_aggregation_test(topo, num_groups, max_group_size, similarity_
     #groups[2].set_receiver_ids([6,7])
     
     run_time_start = time()
-    if 'single' in similarity_type or 'complete' in similarity_type:
+    if 'single' in similarity_type or 'complete' in similarity_type or 'average' in similarity_type:
         groups, group_map = aggregate_groups_via_clustering(groups, similarity_type, similarity_parameter)
     elif 'tree_sim' in similarity_type:
         groups, group_map = aggregate_groups_via_tree_sim(topo, groups, similarity_parameter)
     else:
-        print 'ERROR: Invalid similarity type - Supported options are "single", "complete", or "tree_sim"'
+        print 'ERROR: Invalid similarity type - Supported options are "single", "average", "complete", or "tree_sim"'
         sys.exit(1)
     run_time = time() - run_time_start
     
@@ -613,9 +613,9 @@ if __name__ == '__main__':
         print '[2] Number of trials to run (integer)'
         print '[3] Number of multicast groups (integer)'
         print '[4] Maximum number of members per multicast group (integer)'
-        print '[5] Similarity type (string): one of "single", "complete", or "tree_sim"'
+        print '[5] Similarity type (string): one of "single", "complete", "average", or "tree_sim"'
         print '[6] Similarity parameter (float):'
-        print '\tFor the "single" and "complete" similarity types this sets the similarity threshold to use for clustering'
+        print '\tFor the "single", "complete", and "average" similarity types this sets the similarity threshold to use for clustering'
         print '\tFor the "tree_sim" similarity type this sets the bandwidth overhead threshold'
         print 
         sys.exit(0)
