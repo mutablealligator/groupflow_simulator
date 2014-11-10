@@ -600,7 +600,7 @@ def run_multicast_aggregation_test(topo, num_groups, max_group_size, similarity_
     
     for i in range(0, num_groups):
         groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), 10, i))
-        groups[i].generate_random_receiver_ids(randint(1,max_group_size))
+        groups[i].generate_random_receiver_ids(randint(1,max_group_size + 1))
     
     #groups.append(McastGroup(topo, 0, 10, 0))
     #groups[0].set_receiver_ids([6,7])
