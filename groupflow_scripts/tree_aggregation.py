@@ -256,9 +256,9 @@ def aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold
         distance_matrix.append([])
         for group2 in groups:
             jaccard_distance = group1.jaccard_distance(group2)
-            # src_distance = len(topo.get_shortest_path_tree(group1.src_node_id, [group2.src_node_id]))
-            # src_distance_ratio = (float(src_distance)/topo.network_diameter) # Distance between source nodes as a percentage of the network diameter
-            distance_matrix[group_index].append(jaccard_distance)
+            src_distance = len(topo.get_shortest_path_tree(group1.src_node_id, [group2.src_node_id]))
+            src_distance_ratio = (float(src_distance)/topo.network_diameter) # Distance between source nodes as a percentage of the network diameter
+            distance_matrix[group_index].append(1 - ((1 - jaccard_distance) * (1 - src_distance_ratio)))
             
         group_indexes.append(group_index)
         group_index += 1
@@ -298,25 +298,36 @@ def calc_network_performance_metrics(groups, group_map, debug_print = False):
         aggregated_bandwidth_Mbps = aggregated_bandwidth_Mbps + group.aggregated_bandwidth_Mbps
         
         native_network_flow_table_size = native_network_flow_table_size + len(group.native_mcast_tree) + 1
-        aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(group.receiver_ids) + 1
+        label_switched_tree = False
+        if len(group_map[group.aggregated_mcast_tree_index]) > 1:
+            label_switched_tree = True
+        # print 'Tree #' + str(group.aggregated_mcast_tree_index) + ' Label Switched: ' + str(label_switched_tree)
+        
+        if label_switched_tree:
+            aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(group.receiver_ids) + 1
+        
         if group.aggregated_mcast_tree_index not in seen_aggregated_tree_indexes:
             seen_aggregated_tree_indexes.append(group.aggregated_mcast_tree_index)
-            # Calculate the set of all edges participating in this aggregate distribution tree
-            agg_tree_edges = Set(group.aggregated_mcast_tree)
-            origin_candidates = []
-            for group_index in group_map[group.aggregated_mcast_tree_index]:
-                origin_candidates.append(groups[group_index].src_node_id)
-                for edge in groups[group_index].rendevouz_point_shortest_path:
-                    agg_tree_edges.add(edge)
             
-            # print '|DE| = ' + str(len(agg_tree_edges)) + ' - ' + str(agg_tree_edges)
-            origin_nodes = get_origin_vertices(agg_tree_edges, origin_candidates)
-            # print '|DEo| = ' + str(len(origin_nodes)) + ' - ' + str(origin_nodes)
-            terminal_nodes = get_terminal_vertices(agg_tree_edges)
-            # print '|DEt| = ' + str(len(terminal_nodes)) + ' - ' + str(terminal_nodes)
+            if not label_switched_tree:
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(group.aggregated_mcast_tree) + 1
+            else:
+                # Calculate the set of all edges participating in this aggregate distribution tree
+                agg_tree_edges = Set(group.aggregated_mcast_tree)
+                origin_candidates = []
+                for group_index in group_map[group.aggregated_mcast_tree_index]:
+                    origin_candidates.append(groups[group_index].src_node_id)
+                    for edge in groups[group_index].rendevouz_point_shortest_path:
+                        agg_tree_edges.add(edge)
+                
+                # print '|DE| = ' + str(len(agg_tree_edges)) + ' - ' + str(agg_tree_edges)
+                origin_nodes = get_origin_vertices(agg_tree_edges, origin_candidates)
+                # print '|DEo| = ' + str(len(origin_nodes)) + ' - ' + str(origin_nodes)
+                terminal_nodes = get_terminal_vertices(agg_tree_edges)
+                # print '|DEt| = ' + str(len(terminal_nodes)) + ' - ' + str(terminal_nodes)
 
-            aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(agg_tree_edges) + 1 - len(origin_nodes) - len(terminal_nodes)
-            
+                aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(agg_tree_edges) + 1 - len(origin_nodes) - len(terminal_nodes)
+                
         
         if debug_print:
             print ' '
