@@ -244,6 +244,11 @@ def get_intermediate_vertices(edge_list):
     return tail_set.intersection(head_set)
 
 def aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold, plot_dendrogram = False):
+    src_dist_clustering = False
+    if '_srcdist' in linkage_method:
+        src_dist_clustering = True
+        linkage_method = linkage_method[:-len('_srcdist')]
+        
     # Generate the distance matrix used for clustering
     receivers_list = []
     for group in groups:
@@ -256,9 +261,12 @@ def aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold
         distance_matrix.append([])
         for group2 in groups:
             jaccard_distance = group1.jaccard_distance(group2)
-            src_distance = len(topo.get_shortest_path_tree(group1.src_node_id, [group2.src_node_id]))
-            src_distance_ratio = (float(src_distance)/topo.network_diameter) # Distance between source nodes as a percentage of the network diameter
-            distance_matrix[group_index].append(1 - ((1 - jaccard_distance) * (1 - src_distance_ratio)))
+            if src_dist_clustering:
+                src_distance = len(topo.get_shortest_path_tree(group1.src_node_id, [group2.src_node_id]))
+                src_distance_ratio = (float(src_distance)/topo.network_diameter) # Distance between source nodes as a percentage of the network diameter
+                distance_matrix[group_index].append(1 - ((1 - jaccard_distance) * (1 - src_distance_ratio)))
+            else:
+                distance_matrix[group_index].append(jaccard_distance)
             
         group_indexes.append(group_index)
         group_index += 1
