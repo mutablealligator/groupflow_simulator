@@ -594,13 +594,13 @@ class McastGroup(object):
         print 'Rendevouz Point: Node #' + str(self.rendevouz_point_node_id) + '\nRendevouz Path: ' + str(self.rendevouz_point_shortest_path)
         
         
-def run_multicast_aggregation_test(topo, num_groups, max_group_size, similarity_type, similarity_parameter, debug_print = False, plot_dendrogram = False):
+def run_multicast_aggregation_test(topo, num_groups, min_group_size, max_group_size, similarity_type, similarity_parameter, debug_print = False, plot_dendrogram = False):
     # Generate random multicast groups
     groups = []
     
     for i in range(0, num_groups):
         groups.append(McastGroup(topo, randint(0, len(topo.forwarding_elements)), 10, i))
-        groups[i].generate_random_receiver_ids(randint(1,max_group_size + 1))
+        groups[i].generate_random_receiver_ids(randint(min_group_size, max_group_size + 1))
     
     #groups.append(McastGroup(topo, 0, 10, 0))
     #groups[0].set_receiver_ids([6,7])
@@ -631,7 +631,7 @@ if __name__ == '__main__':
         print '[1] Topology filepath (string)'
         print '[2] Number of trials to run (integer)'
         print '[3] Number of multicast groups (integer)'
-        print '[4] Maximum number of members per multicast group (integer)'
+        print '[4] Group size range (string, in format "1-10"). If only a single number is specified, the minimum group size is set to 1'
         print '[5] Similarity type (string): one of "single", "complete", "average", or "tree_sim"'
         print '[6] Similarity parameter (float):'
         print '\tFor the "single", "complete", and "average" similarity types this sets the similarity threshold to use for clustering'
@@ -654,6 +654,15 @@ if __name__ == '__main__':
     num_trees_list = []
     run_time_list = []
     
+    min_group_size = 1
+    max_group_size = 10
+    group_range_split = sys.argv[4].split('-')
+    if len(group_range_split) == 1:
+        max_group_size = int(group_range_split[0])
+    else:
+        min_group_size = int(group_range_split[0])
+        max_group_size = int(group_range_split[1])
+    
     num_trials = int(sys.argv[2])
     start_time = time()
     print 'Simulations started at: ' + str(datetime.now())
@@ -661,7 +670,7 @@ if __name__ == '__main__':
     for i in range(0, num_trials):
         #if i % 20 == 0:
         #    print 'Running trial #' + str(i)
-        bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees, run_time = run_multicast_aggregation_test(topo, int(sys.argv[3]), int(sys.argv[4]), sys.argv[5], float(sys.argv[6]), False, False)
+        bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees, run_time = run_multicast_aggregation_test(topo, int(sys.argv[3]), min_group_size, max_group_size, sys.argv[5], float(sys.argv[6]), False, False)
         bandwidth_overhead_list.append(bandwidth_overhead_ratio)
         flow_table_reduction_list.append(flow_table_reduction_ratio)
         num_trees_list.append(num_trees)
