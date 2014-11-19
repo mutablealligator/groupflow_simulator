@@ -300,8 +300,10 @@ def calc_network_performance_metrics(groups, group_map, debug_print = False):
     aggregated_bandwidth_Mbps = 0
     
     seen_aggregated_tree_indexes = []
+    non_reducible_flow_table_entries = 0
     
     for group in groups:
+        non_reducible_flow_table_entries = non_reducible_flow_table_entries + len(group.receiver_ids) + 1
         native_bandwidth_Mbps = native_bandwidth_Mbps + group.native_bandwidth_Mbps
         aggregated_bandwidth_Mbps = aggregated_bandwidth_Mbps + group.aggregated_bandwidth_Mbps
         
@@ -341,8 +343,12 @@ def calc_network_performance_metrics(groups, group_map, debug_print = False):
             print ' '
             group.debug_print()
     
+    reducible_native_network_flow_table_size = native_network_flow_table_size - non_reducible_flow_table_entries
+    reducible_aggregated_network_flow_table_size = aggregated_network_flow_table_size - non_reducible_flow_table_entries
+    
     bandwidth_overhead_ratio = float(aggregated_bandwidth_Mbps) / float(native_bandwidth_Mbps)
-    flow_table_reduction_ratio = float(aggregated_network_flow_table_size) / float(native_network_flow_table_size)
+    flow_table_reduction_ratio = 1 - float(aggregated_network_flow_table_size) / float(native_network_flow_table_size)
+    reducible_flow_table_reduction_ratio = 1 - float(reducible_aggregated_network_flow_table_size) / float(reducible_native_network_flow_table_size)
     
     if debug_print:
         print ' '
@@ -353,8 +359,12 @@ def calc_network_performance_metrics(groups, group_map, debug_print = False):
         print 'Native Network Flow Table Size: ' + str(native_network_flow_table_size)
         print 'Aggregated Network Flow Table Size: ' + str(aggregated_network_flow_table_size)
         print 'Flow Table Reduction Ratio: ' + str(flow_table_reduction_ratio)
+        print ' '
+        print 'Reducible Native Network Flow Table Size: ' + str(reducible_native_network_flow_table_size)
+        print 'Reducible Aggregated Network Flow Table Size: ' + str(reducible_aggregated_network_flow_table_size)
+        print 'Reducible Flow Table Reduction Ratio: ' + str(reducible_flow_table_reduction_ratio)
     
-    return bandwidth_overhead_ratio, flow_table_reduction_ratio, len(group_map)
+    return bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, len(group_map)
     
     
 class ForwardingElement(object):
@@ -620,9 +630,9 @@ def run_multicast_aggregation_test(topo, num_groups, min_group_size, max_group_s
     run_time = time() - run_time_start
     
     # Calculate network performance metrics
-    bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees = calc_network_performance_metrics(groups, group_map)
+    bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees = calc_network_performance_metrics(groups, group_map)
     
-    return bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees, run_time
+    return bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees, run_time
     
 
 if __name__ == '__main__':
@@ -651,6 +661,7 @@ if __name__ == '__main__':
     
     bandwidth_overhead_list = []
     flow_table_reduction_list = []
+    reducible_flow_table_reduction_list = []
     num_trees_list = []
     run_time_list = []
     
@@ -670,9 +681,12 @@ if __name__ == '__main__':
     for i in range(0, num_trials):
         #if i % 20 == 0:
         #    print 'Running trial #' + str(i)
-        bandwidth_overhead_ratio, flow_table_reduction_ratio, num_trees, run_time = run_multicast_aggregation_test(topo, int(sys.argv[3]), min_group_size, max_group_size, sys.argv[5], float(sys.argv[6]), False, False)
+        bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees, run_time = \
+                run_multicast_aggregation_test(topo, int(sys.argv[3]), min_group_size, max_group_size, sys.argv[5], float(sys.argv[6]), False, False)
+                
         bandwidth_overhead_list.append(bandwidth_overhead_ratio)
         flow_table_reduction_list.append(flow_table_reduction_ratio)
+        reducible_flow_table_reduction_list.append(reducible_flow_table_reduction_ratio)
         num_trees_list.append(num_trees)
         run_time_list.append(run_time)
         
@@ -683,6 +697,7 @@ if __name__ == '__main__':
     print 'Similarity Threshold: ' + sys.argv[6]
     print 'Average Bandwidth Overhead: ' + str(sum(bandwidth_overhead_list) / len(bandwidth_overhead_list))
     print 'Average Flow Table Reduction: ' + str(sum(flow_table_reduction_list) / len(flow_table_reduction_list))
+    print 'Average Reducible Flow Table Reduction: ' + str(sum(reducible_flow_table_reduction_list) / len(reducible_flow_table_reduction_list))
     print 'Average # Aggregated Trees: ' + str(float(sum(num_trees_list)) / len(num_trees_list))
     print 'Average Tree Agg. Run-Time: ' + str(float(sum(run_time_list)) / len(run_time_list))
     print 'Expected Sim Run-Time: ' + str((float(sum(run_time_list)) / len(run_time_list)) * num_trials)
