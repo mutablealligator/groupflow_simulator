@@ -56,16 +56,20 @@ def calc_best_rendevouz_point(topology, mcast_groups):
         
     min_sum_tree_length = sys.maxint
     rv_node_id = None
+    sp_tree = None
+    
     for forwarding_element in topology.forwarding_elements:
         no_rendevouz_path = False
         potential_rv_node_id = forwarding_element.node_id
-        sum_tree_length = len(topology.get_shortest_path_tree(potential_rv_node_id, aggregated_group_nodes))
+        potential_tree = topology.get_shortest_path_tree(potential_rv_node_id, aggregated_group_nodes)
+        sum_tree_length = len(potential_tree)
             
         if sum_tree_length <= min_sum_tree_length:
             min_sum_tree_length = sum_tree_length
             rv_node_id = potential_rv_node_id
+            sp_tree = potential_tree
     
-    return rv_node_id, aggregated_group_nodes
+    return rv_node_id, aggregated_group_nodes, sp_tree
 
 def aggregate_groups_via_tree_sim(topology, mcast_groups, bandwidth_overhead_threshold):
     group_map = defaultdict(lambda : None)
@@ -96,8 +100,7 @@ def aggregate_groups_via_tree_sim(topology, mcast_groups, bandwidth_overhead_thr
             for group_index in group_map[agg_tree_index]:
                 test_aggregated_groups.append(mcast_groups[group_index])
                 
-            rv_node_id, aggregated_group_nodes = calc_best_rendevouz_point(topology, test_aggregated_groups)
-            aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, aggregated_group_nodes)
+            rv_node_id, aggregated_group_nodes, aggregated_mcast_tree = calc_best_rendevouz_point(topology, test_aggregated_groups)
             
             # Got a rendevouz node for this potential aggregation, now calculate the bandwidth overhead of this potential aggregation
             native_bandwidth_Mbps = 0
@@ -152,13 +155,13 @@ def generate_cluster_aggregated_mcast_trees(topology, mcast_groups, group_map):
             cluster_groups.append(mcast_groups[mcast_group_id])
         
         min_sum_path_length = sys.maxint
-        rv_node_id, aggregated_group_nodes = calc_best_rendevouz_point(topology, cluster_groups)
+        rv_node_id, aggregated_group_nodes, aggregated_mcast_tree = calc_best_rendevouz_point(topology, cluster_groups)
         
         for mcast_group_id in group_map[group_aggregation]:
             src_node_id = mcast_groups[mcast_group_id].src_node_id
             mcast_groups[mcast_group_id].rendevouz_point_node_id = rv_node_id
             mcast_groups[mcast_group_id].rendevouz_point_shortest_path = []
-            mcast_groups[mcast_group_id].aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, aggregated_group_nodes)
+            mcast_groups[mcast_group_id].aggregated_mcast_tree = aggregated_mcast_tree
             mcast_groups[mcast_group_id].aggregated_bandwidth_Mbps = len(mcast_groups[mcast_group_id].aggregated_mcast_tree) * mcast_groups[mcast_group_id].bandwidth_Mbps
     
     return mcast_groups, group_map
@@ -618,9 +621,13 @@ if __name__ == '__main__':
     
     # Import the topology from BRITE format
     topo = SimTopo()
-    topo.load_from_brite_topo(sys.argv[1])
-    #print topo
-    
+    if 'abilene' in sys.argv[1]:
+        print 'Using hardcoded Abilene topology'
+        topo.load_from_edge_list([[0,1], [0,2], [1,0], [1,2], [1,3], [2,0], [2,1], [2,5], [3,1], [3,4], [4,3], [4,5], [4,10],
+            [5,2], [5,4], [5,6], [6,5], [6,10], [6,7], [7,6], [7,8], [8,7], [8,9], [9,8], [9,10], [10,6], [10,9], [10,4]])
+    else:
+        topo.load_from_brite_topo(sys.argv[1])
+
     #topo.load_from_edge_list([[0,2],[1,2],[2,0],[2,1],[2,3],[3,2],[3,4],[4,3],[4,5],[5,6],[5,7], [8,0]])
     #similarity_threshold = 0.5
     #bandwidth_overhead_ratio, flow_table_reduction_ratio, num_clusters = run_multicast_aggregation_test(topo, similarity_threshold, 'single', True)
