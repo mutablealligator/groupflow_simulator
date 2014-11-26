@@ -14,6 +14,8 @@ import signal
 import numpy as np
 import matplotlib.pyplot as plt
 
+ONE_FORWARDING_ENTRY_PER_SWITCH = True
+
 def get_cluster_group_aggregation(group_indexes, linkage_array, difference_threshold):
     group_map = {}
     for group_index in group_indexes:
@@ -150,19 +152,33 @@ def generate_cluster_aggregated_mcast_trees(topology, mcast_groups, group_map):
             cluster_groups.append(mcast_groups[mcast_group_id])
         
         min_sum_path_length = sys.maxint
-        rv_node_id, aggregated_group_receivers = calc_best_rendevouz_point(topology, cluster_groups)
+        rv_node_id, aggregated_group_nodes = calc_best_rendevouz_point(topology, cluster_groups)
         
         for mcast_group_id in group_map[group_aggregation]:
             src_node_id = mcast_groups[mcast_group_id].src_node_id
-            shortest_path = topology.get_shortest_path_tree(src_node_id, [rv_node_id])
             mcast_groups[mcast_group_id].rendevouz_point_node_id = rv_node_id
-            mcast_groups[mcast_group_id].rendevouz_point_shortest_path = shortest_path
-            mcast_groups[mcast_group_id].aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, aggregated_group_receivers)
-            mcast_groups[mcast_group_id].aggregated_bandwidth_Mbps = ((len(mcast_groups[mcast_group_id].aggregated_mcast_tree) 
-                    + len(mcast_groups[mcast_group_id].rendevouz_point_shortest_path)) * mcast_groups[mcast_group_id].bandwidth_Mbps)
+            mcast_groups[mcast_group_id].rendevouz_point_shortest_path = []
+            mcast_groups[mcast_group_id].aggregated_mcast_tree = topology.get_shortest_path_tree(rv_node_id, aggregated_group_nodes)
+            mcast_groups[mcast_group_id].aggregated_bandwidth_Mbps = len(mcast_groups[mcast_group_id].aggregated_mcast_tree) * mcast_groups[mcast_group_id].bandwidth_Mbps
     
     return mcast_groups, group_map
 
+def get_vertex_set(edge_list):
+    vertex_set = Set()
+    for edge in edge_list:
+        vertex_set.add(edge[0])
+        vertex_set.add(edge[1])
+    return vertex_set
+
+def get_num_connected_edges(edge_list, node_id):
+    num_edges = 0
+    for edge in edge_list:
+        if edge[0] == node_id:
+            num_edges += 1
+        if edge[1] == node_id:
+            num_edges += 1
+    return num_edges
+    
 def get_terminal_vertices(edge_list):
     tail_set = Set()
     head_set = Set()
@@ -278,7 +294,12 @@ def calc_network_performance_metrics(groups, group_map, debug_print = False):
             seen_aggregated_tree_indexes.append(group.aggregated_mcast_tree_index)
             tree_terminal_vertices = get_terminal_vertices(group.aggregated_mcast_tree)
             #print str(tree_terminal_vertices)
-            aggregated_network_flow_table_size += len(group.aggregated_mcast_tree) + 1 - len(get_terminal_vertices(group.aggregated_mcast_tree))
+            if ONE_FORWARDING_ENTRY_PER_SWITCH:
+                aggregated_network_flow_table_size += len(group.aggregated_mcast_tree) + 1 - len(get_terminal_vertices(group.aggregated_mcast_tree))
+            else:
+                non_terminal_vertices = get_vertex_set(group.aggregated_mcast_tree) - tree_terminal_vertices
+                for vertex in non_terminal_vertices:
+                    aggregated_network_flow_table_size += get_num_connected_edges(group.aggregated_mcast_tree, vertex)
             #print 'Aggregated reducible state: ' + str(len(group.aggregated_mcast_tree) + 1)
             
         
@@ -576,7 +597,7 @@ def run_multicast_aggregation_test(topo, num_groups, min_group_size, max_group_s
     run_time = time() - run_time_start
     
     # Calculate network performance metrics
-    bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees = calc_network_performance_metrics(groups, group_map, True)
+    bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees = calc_network_performance_metrics(groups, group_map, False)
     
     return bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees, run_time
     
