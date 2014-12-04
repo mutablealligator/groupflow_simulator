@@ -13,7 +13,7 @@ def list_to_matlab_str(list):
     matlab_str = matlab_str + '];'
     return matlab_str
 
-def write_log_stats_to_file(prefix, bw_overhead_list, ft_reduction_list, runtime_list, num_trees_list, output_filepath):
+def write_log_stats_to_file(prefix, bw_overhead_list, ft_reduction_list, rft_reduction_list, runtime_list, num_trees_list, output_filepath):
     if len(bw_overhead_list) == 0:
         # Log set is empty
         return
@@ -21,6 +21,7 @@ def write_log_stats_to_file(prefix, bw_overhead_list, ft_reduction_list, runtime
     output_file = open(output_filepath, 'a')
     output_file.write(prefix + 'bw_overhead = ' + list_to_matlab_str(bw_overhead_list) + '\n')
     output_file.write(prefix + 'ft_reduction = ' + list_to_matlab_str(ft_reduction_list) + '\n')
+    output_file.write(prefix + 'rft_reduction = ' + list_to_matlab_str(rft_reduction_list) + '\n')
     output_file.write(prefix + 'runtime = ' + list_to_matlab_str(runtime_list) + '\n')
     output_file.write(prefix + 'num_trees = ' + list_to_matlab_str(num_trees_list) + '\n')
     output_file.close()
@@ -30,6 +31,7 @@ def read_tree_agg_log_set(log_filepath, output_filepath):
     
     bw_overhead_list = []
     ft_reduction_list = []
+    rft_reduction_list = []
     runtime_list = []
     num_trees_list = []
     
@@ -40,11 +42,12 @@ def read_tree_agg_log_set(log_filepath, output_filepath):
         if line.startswith('Log Set: '):
             # Start of new log set
             # Write any currently stored stats to file
-            write_log_stats_to_file(cur_log_set_prefix, bw_overhead_list, ft_reduction_list, runtime_list, num_trees_list, output_filepath)
+            write_log_stats_to_file(cur_log_set_prefix, bw_overhead_list, ft_reduction_list, rft_reduction_list, runtime_list, num_trees_list, output_filepath)
             
             # Clear all stored data
             bw_overhead_list = []
             ft_reduction_list = []
+            rft_reduction_list = []
             runtime_list = []
             num_trees_list = []
             
@@ -57,6 +60,9 @@ def read_tree_agg_log_set(log_filepath, output_filepath):
         if line.startswith('Average Flow Table Reduction: '):
             ft_reduction_list.append(float(line[len('Average Flow Table Reduction: '):]))
         
+        if line.startswith('Average Reducible Flow Table Reduction: '):
+            rft_reduction_list.append(float(line[len('Average Reducible Flow Table Reduction: '):]))
+        
         if line.startswith('Average # Aggregated Trees: '):
             num_trees_list.append(float(line[len('Average # Aggregated Trees: '):]))
             
@@ -64,7 +70,7 @@ def read_tree_agg_log_set(log_filepath, output_filepath):
             runtime_list.append(float(line[len('Average Tree Agg. Run-Time: '):]))
     
     # Write out stats for the final log set
-    write_log_stats_to_file(cur_log_set_prefix, bw_overhead_list, ft_reduction_list, runtime_list, num_trees_list, output_filepath)
+    write_log_stats_to_file(cur_log_set_prefix, bw_overhead_list, ft_reduction_list, rft_reduction_list, runtime_list, num_trees_list, output_filepath)
     log_file.close()
 
     
