@@ -204,6 +204,13 @@ def generate_cluster_aggregated_mcast_trees(topology, mcast_groups, group_map):
     
     return mcast_groups, group_map
 
+def get_outgoing_edges(edge_list, node_id):
+    outgoing_edges = []
+    for edge in edge_list:
+        if edge[0] == node_id:
+            outgoing_edges.append(edge)
+    return outgoing_edges
+        
 def get_terminal_vertices(edge_list):
     tail_set = Set()
     head_set = Set()
@@ -291,6 +298,46 @@ def aggregate_groups_via_clustering(groups, linkage_method, similarity_threshold
     generate_cluster_aggregated_mcast_trees(topo, groups, group_map)
     
     return groups, group_map
+
+def calc_bloom_filter_flow_table_reduction(topo, groups, debug_print = False):
+    native_network_flow_table_size = 0
+    bloom_filter_network_flow_table_size = 0
+    non_reducible_flow_table_entries = 0
+    
+    # First - Calculate the number of flow entries required for bloom filter matching
+    # (i.e. one flow table entry for each outgoing interface on each node in the network)
+    topo_edge_list = []
+    for link in topo.links:
+        topo_edge_list.append([link.tail_node_id, link.head_node_id])
+    
+    for node in topo.forwarding_elements:
+        bloom_filter_network_flow_table_size += len(get_outgoing_edges(topo_edge_list, node.node_id))
+    
+    # Second - Consider flow table entries required at egress and ingress nodes, as well as all flow
+    # entries for the native routing case
+    for group in groups:
+        native_network_flow_table_size += len(group.native_mcast_tree) + 1
+        bloom_filter_network_flow_table_size += len(group.receiver_ids) + 1
+        non_reducible_flow_table_entries += len(group.receiver_ids) + 1
+    
+    reducible_native_network_flow_table_size = native_network_flow_table_size - non_reducible_flow_table_entries
+    reducible_bloom_filter_network_flow_table_size = bloom_filter_network_flow_table_size - non_reducible_flow_table_entries
+    
+    flow_table_reduction_ratio = 1 - float(bloom_filter_network_flow_table_size) / float(native_network_flow_table_size)
+    reducible_flow_table_reduction_ratio = 1 - float(reducible_bloom_filter_network_flow_table_size) / float(reducible_native_network_flow_table_size)
+    
+    if debug_print:
+        print ' '
+        print 'Native Network Flow Table Size: ' + str(native_network_flow_table_size)
+        print 'Bloom Filter Network Flow Table Size: ' + str(bloom_filter_network_flow_table_size)
+        print 'Flow Table Reduction Ratio: ' + str(flow_table_reduction_ratio)
+        print ' '
+        print 'Reducible Native Network Flow Table Size: ' + str(reducible_native_network_flow_table_size)
+        print 'Reducible Bloom Filter Network Flow Table Size: ' + str(reducible_bloom_filter_network_flow_table_size)
+        print 'Reducible Flow Table Reduction Ratio: ' + str(reducible_flow_table_reduction_ratio)
+    
+    return flow_table_reduction_ratio, reducible_flow_table_reduction_ratio
+
     
 def calc_network_performance_metrics(groups, group_map, debug_print = False):
     native_network_flow_table_size = 0
@@ -339,9 +386,9 @@ def calc_network_performance_metrics(groups, group_map, debug_print = False):
                 aggregated_network_flow_table_size = aggregated_network_flow_table_size + len(agg_tree_edges) + 1 - len(origin_nodes) - len(terminal_nodes)
                 
         
-        if debug_print:
-            print ' '
-            group.debug_print()
+        #if debug_print:
+        #    print ' '
+        #    group.debug_print()
     
     reducible_native_network_flow_table_size = native_network_flow_table_size - non_reducible_flow_table_entries
     reducible_aggregated_network_flow_table_size = aggregated_network_flow_table_size - non_reducible_flow_table_entries
@@ -585,8 +632,11 @@ class McastGroup(object):
         # KLUDGE: Receiver IDs will always be generated until there is at least one receiver which is not colocated with the source
         # This prevents divide by 0 errors when calculating performance metrics
         # TODO - AC: Find a better way to handle this situation
-        while len(self.receiver_ids) < num_receivers or (len(self.receiver_ids) == 1 and self.src_node_id in self.receiver_ids):
-            self.receiver_ids.add(randint(0, len(topo.forwarding_elements)))
+        while len(self.receiver_ids) < num_receivers:
+            new_node_id = randint(0, len(topo.forwarding_elements))
+            if new_node_id != self.src_node_id and new_node_id not in self.receiver_ids:
+                self.receiver_ids.add(new_node_id)
+                
         self.native_mcast_tree = self.topology.get_shortest_path_tree(self.src_node_id, list(self.receiver_ids))
         self.native_bandwidth_Mbps = len(self.native_mcast_tree) * self.bandwidth_Mbps
 
@@ -618,6 +668,10 @@ def run_multicast_aggregation_test(topo, num_groups, min_group_size, max_group_s
     #groups[1].set_receiver_ids([6,7])
     #groups.append(McastGroup(topo, 8, 10, 2))
     #groups[2].set_receiver_ids([6,7])
+    
+    if 'bloom_filter' in similarity_type:
+        flow_table_reduction_ratio, reducible_flow_table_reduction_ratio = calc_bloom_filter_flow_table_reduction(topo, groups);
+        return 0, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, 0, 0
     
     run_time_start = time()
     if 'single' in similarity_type or 'complete' in similarity_type or 'average' in similarity_type:

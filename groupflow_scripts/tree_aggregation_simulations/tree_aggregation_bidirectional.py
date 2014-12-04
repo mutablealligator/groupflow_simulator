@@ -600,7 +600,7 @@ def run_multicast_aggregation_test(topo, num_groups, min_group_size, max_group_s
     run_time = time() - run_time_start
     
     # Calculate network performance metrics
-    bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees = calc_network_performance_metrics(groups, group_map, False)
+    bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees = calc_network_performance_metrics(groups, group_map)
     
     return bandwidth_overhead_ratio, flow_table_reduction_ratio, reducible_flow_table_reduction_ratio, num_trees, run_time
     
