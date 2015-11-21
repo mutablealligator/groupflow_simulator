@@ -17,7 +17,7 @@ echo_port = 5008
 PACKET_SIZE = 512
 
 def main():
-    global multicast_group, multicast_port, packets_to_receive, echo_port, i, n 
+    global multicast_group, multicast_port, packets_to_receive, echo_port
     
     if len(sys.argv) > 1:
         multicast_group = sys.argv[1]
@@ -40,12 +40,13 @@ def main():
     
     # Setup the socket for sending echo response
     echo_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
+    
     recv_packets = 0
-    while True:
+    i = 0
+    n = 10
+    while i < n:
         try:
             data, addr = multicast_socket.recvfrom(PACKET_SIZE)
-	    print 'Received packet of data ' + str(int(data)) + ' from sender ' + str(addr[0]) + ':' + str(echo_port)
             echo_socket.sendto(data, (addr[0], echo_port))
             print 'Echo packet ' + str(int(data)) + ' to ' + str(addr[0]) + ':' + str(echo_port)
             recv_packets += 1
@@ -54,6 +55,7 @@ def main():
         
         if packets_to_receive != 0 and recv_packets > packets_to_receive:
             break
+	i = i + 1
     
     multicast_socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)
     

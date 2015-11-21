@@ -1,0 +1,87 @@
+INFO:openflow.flow_tracker:Set QueryInterval:1.0 LinkMaxBw:19.0Mbps LinkCongThreshold:13.0Mbps AvgSmoothFactor:0.5 LogPeakUsage:1.0
+INFO:openflow.flow_tracker:Writing flow tracker info to file: flowtracker_14-24-00_November-20_2015.txt
+INFO:misc.groupflow_event_tracer:Writing event trace info to file: eventtrace_14-24-00_November-20_2015.txt
+INFO:misc.benchmark_terminator:Module initialized.
+INFO:openflow.groupflow:Set link weight type: 1
+INFO:openflow.groupflow:Set StaticLinkWeight:1.0 UtilLinkWeight:10.0
+INFO:openflow.groupflow:Set FlowReplacementMode:0 FlowReplacementInterval:15.0 seconds
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448058243.6
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448058244.27
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448058244.27
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448058244.94
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448058244.94
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448058245.63
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448058245.63
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448058246.32
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448058246.32
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000240341284624 Time:1448058247.0
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 4.00161622134e-05 Time:1448058247.0
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000240341284624 Time:1448058247.71
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 4.00161622134e-05 Time:1448058247.71
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000422665534482 Time:1448058248.38
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000195127791762 Time:1448058248.38
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000422814458731 Time:1448058249.05
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000292239583794 Time:1448058249.05
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000422814458731 Time:1448058249.73
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000292239583794 Time:1448058249.73
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000407762636685 Time:1448058250.42
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000192098700028 Time:1448058250.42
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00028604565933 Time:1448058251.11
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000154741208737 Time:1448058251.11
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00028604565933 Time:1448058251.79
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000154741208737 Time:1448058251.79
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000440457535517 Time:1448058252.46
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000236368649245 Time:1448058252.46
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000443308005948 Time:1448058253.16
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000297280888233 Time:1448058253.16
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000443308005948 Time:1448058253.83
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000297280888233 Time:1448058253.83
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000389057918204 Time:1448058254.54
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000211928480179 Time:1448058254.54
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000249698650712 Time:1448058255.21
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00015789291388 Time:1448058255.21
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000249698650712 Time:1448058255.9
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00015789291388 Time:1448058255.9
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000201656293848 Time:1448058256.59
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104920496988 Time:1448058256.59
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000190383933068 Time:1448058257.27
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.05850641759e-05 Time:1448058257.27
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000190383933068 Time:1448058257.94
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.05850641759e-05 Time:1448058257.94
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000259905769462 Time:1448058258.63
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110101530669 Time:1448058258.63
+INFO:openflow.flow_tracker:Termination signalled, closed log file: flowtracker_14-24-00_November-20_2015.txt
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-01
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-01
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-01 -> 00-00-00-00-00-02
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-01 -> 00-00-00-00-00-03
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-01
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-0a
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 6e-2d-0a-0f-b2-4c
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-04
+WARNING:openflow.igmp_manager:Link down: 6e-2d-0a-0f-b2-4c -> 00-00-00-00-00-02
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-02
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-05 -> 00-00-00-00-00-03
+WARNING:openflow.igmp_manager:Link down: 6e-2d-0a-0f-b2-4c -> 00-00-00-00-00-03
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 6e-2d-0a-0f-b2-4c
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-0b
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-05
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-03
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-04
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-04
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-09 -> 00-00-00-00-00-05
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-05 -> 00-00-00-00-00-09
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-05
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-09 -> 00-00-00-00-00-06
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-06
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-06
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-09 -> 00-00-00-00-00-07
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-07
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-07
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-0a
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-08
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-09 -> 00-00-00-00-00-0b
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-09
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-0a
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-0b
+WARNING:openflow.igmp_manager:Router down: 6e-2d-0a-0f-b2-4c

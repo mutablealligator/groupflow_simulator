@@ -1,0 +1,561 @@
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.00762891769 IntervalEndTime:1448065254.35 ResponseTime:0.000852108001709 NetworkTime:0.000808954238892 ProcessingTime:4.31537628174e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.00763106346 IntervalEndTime:1448065254.35 ResponseTime:0.00102305412292 NetworkTime:0.000990152359009 ProcessingTime:3.2901763916e-05 AvgSwitchLoad:0
+PSPort:3 BytesThisInterval:369 InstBandwidth:0 AvgBandwidth:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.00761890411 IntervalEndTime:1448065254.35 ResponseTime:0.00203013420105 NetworkTime:0.00199699401855 ProcessingTime:3.31401824951e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.00764584541 IntervalEndTime:1448065254.35 ResponseTime:0.00207495689392 NetworkTime:0.00205683708191 ProcessingTime:1.81198120117e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.00293087959 IntervalEndTime:1448065254.36 ResponseTime:0.00224494934082 NetworkTime:0.00219392776489 ProcessingTime:5.10215759277e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.00303888321 IntervalEndTime:1448065254.36 ResponseTime:0.00233697891235 NetworkTime:0.00230693817139 ProcessingTime:3.00407409668e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.00314617157 IntervalEndTime:1448065254.36 ResponseTime:0.00245714187622 NetworkTime:0.00243616104126 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.00315594673 IntervalEndTime:1448065254.36 ResponseTime:0.00251698493958 NetworkTime:0.00250101089478 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00319194794 IntervalEndTime:1448065254.36 ResponseTime:0.00250792503357 NetworkTime:0.00248694419861 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00322318077 IntervalEndTime:1448065254.36 ResponseTime:0.00255918502808 NetworkTime:0.00252914428711 ProcessingTime:3.00407409668e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00549697876 IntervalEndTime:1448065254.36 ResponseTime:0.00344514846802 NetworkTime:0.00342702865601 ProcessingTime:1.81198120117e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00540208817 IntervalEndTime:1448065254.36 ResponseTime:0.00349307060242 NetworkTime:0.00347208976746 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.00220822478362
+PSPort:1 BytesThisInterval:291 InstBandwidth:0.00220822478362 AvgBandwidth:0.00220822478362
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00001096725 IntervalEndTime:1448065254.36 ResponseTime:0.00136089324951 NetworkTime:0.00133991241455 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00001192093 IntervalEndTime:1448065254.36 ResponseTime:0.00142097473145 NetworkTime:0.00140500068665 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.00066304207 IntervalEndTime:1448065254.37 ResponseTime:0.00129914283752 NetworkTime:0.0012800693512 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.00064611435 IntervalEndTime:1448065254.37 ResponseTime:0.00136518478394 NetworkTime:0.00134921073914 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00178694725 IntervalEndTime:1448065254.38 ResponseTime:0.00142788887024 NetworkTime:0.00139784812927 ProcessingTime:3.00407409668e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00180387497 IntervalEndTime:1448065254.38 ResponseTime:0.00149512290955 NetworkTime:0.00147604942322 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00271201134 IntervalEndTime:1448065254.38 ResponseTime:0.00182318687439 NetworkTime:0.00180006027222 ProcessingTime:2.31266021729e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00268292427 IntervalEndTime:1448065254.38 ResponseTime:0.00193095207214 NetworkTime:0.00191402435303 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00147891045 IntervalEndTime:1448065254.38 ResponseTime:0.00192189216614 NetworkTime:0.00189995765686 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00148892403 IntervalEndTime:1448065254.38 ResponseTime:0.00197505950928 NetworkTime:0.00195693969727 ProcessingTime:1.81198120117e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00212287903 IntervalEndTime:1448065254.38 ResponseTime:0.00141096115112 NetworkTime:0.00138783454895 ProcessingTime:2.31266021729e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00210809708 IntervalEndTime:1448065254.38 ResponseTime:0.00146198272705 NetworkTime:0.00144505500793 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.02928209305 IntervalEndTime:1448065255.38 ResponseTime:0.00232315063477 NetworkTime:0.00227904319763 ProcessingTime:4.41074371338e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.02935695648 IntervalEndTime:1448065255.38 ResponseTime:0.00245904922485 NetworkTime:0.00243496894836 ProcessingTime:2.40802764893e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.01880407333 IntervalEndTime:1448065255.38 ResponseTime:0.00259685516357 NetworkTime:0.00256896018982 ProcessingTime:2.78949737549e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.01886701584 IntervalEndTime:1448065255.38 ResponseTime:0.00266194343567 NetworkTime:0.00263094902039 ProcessingTime:3.09944152832e-05 AvgSwitchLoad:0.00110411239181
+PSPort:1 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.00110411239181
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.03180503845 IntervalEndTime:1448065255.38 ResponseTime:0.00360107421875 NetworkTime:0.00357103347778 ProcessingTime:3.00407409668e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.03170394897 IntervalEndTime:1448065255.38 ResponseTime:0.00368309020996 NetworkTime:0.00365710258484 ProcessingTime:2.59876251221e-05 AvgSwitchLoad:0.0
+PSPort:1 BytesThisInterval:313 InstBandwidth:0 AvgBandwidth:0
+PSPort:2 BytesThisInterval:459 InstBandwidth:0 AvgBandwidth:0
+PSPort:3 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.0
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.01710700989 IntervalEndTime:1448065255.38 ResponseTime:0.00274991989136 NetworkTime:0.00271987915039 ProcessingTime:3.00407409668e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.01717710495 IntervalEndTime:1448065255.38 ResponseTime:0.00284600257874 NetworkTime:0.00282502174377 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.02162098885 IntervalEndTime:1448065255.38 ResponseTime:0.00390100479126 NetworkTime:0.00387787818909 ProcessingTime:2.31266021729e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.02152705193 IntervalEndTime:1448065255.38 ResponseTime:0.00394201278687 NetworkTime:0.00392508506775 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.0214869976 IntervalEndTime:1448065255.38 ResponseTime:0.00395107269287 NetworkTime:0.00392413139343 ProcessingTime:2.69412994385e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.02153682709 IntervalEndTime:1448065255.38 ResponseTime:0.00406098365784 NetworkTime:0.0040397644043 ProcessingTime:2.121925354e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00630402565 IntervalEndTime:1448065255.38 ResponseTime:0.00343108177185 NetworkTime:0.00341105461121 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00632190704 IntervalEndTime:1448065255.38 ResponseTime:0.00348901748657 NetworkTime:0.00347185134888 ProcessingTime:1.71661376953e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.02187418938 IntervalEndTime:1448065255.38 ResponseTime:0.00434303283691 NetworkTime:0.00431823730469 ProcessingTime:2.47955322266e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.02187800407 IntervalEndTime:1448065255.38 ResponseTime:0.00440716743469 NetworkTime:0.00438714027405 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+PSPort:2 BytesThisInterval:291 InstBandwidth:0 AvgBandwidth:0
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.01621603966 IntervalEndTime:1448065255.38 ResponseTime:0.00423979759216 NetworkTime:0.00422096252441 ProcessingTime:1.8835067749e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.01621794701 IntervalEndTime:1448065255.38 ResponseTime:0.00428795814514 NetworkTime:0.00427198410034 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00228714943 IntervalEndTime:1448065255.38 ResponseTime:0.00302600860596 NetworkTime:0.00299715995789 ProcessingTime:2.88486480713e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.0022790432 IntervalEndTime:1448065255.38 ResponseTime:0.00311493873596 NetworkTime:0.003093957901 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00239896774 IntervalEndTime:1448065255.38 ResponseTime:0.00316882133484 NetworkTime:0.00313282012939 ProcessingTime:3.60012054443e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00247097015 IntervalEndTime:1448065255.38 ResponseTime:0.00327610969543 NetworkTime:0.0032479763031 ProcessingTime:2.8133392334e-05 AvgSwitchLoad:0
+PSPort:3 BytesThisInterval:291 InstBandwidth:0 AvgBandwidth:0
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00228404999 IntervalEndTime:1448065255.39 ResponseTime:0.00233101844788 NetworkTime:0.0023090839386 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00227999687 IntervalEndTime:1448065255.39 ResponseTime:0.00236797332764 NetworkTime:0.00235199928284 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:0.999317169189 IntervalEndTime:1448065256.38 ResponseTime:0.00218796730042 NetworkTime:0.00214195251465 ProcessingTime:4.60147857666e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:0.999462127686 IntervalEndTime:1448065256.38 ResponseTime:0.00238490104675 NetworkTime:0.00236201286316 ProcessingTime:2.28881835938e-05 AvgSwitchLoad:0
+PSPort:4 BytesThisInterval:459 InstBandwidth:0 AvgBandwidth:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.00202798843 IntervalEndTime:1448065256.38 ResponseTime:0.00312685966492 NetworkTime:0.00310587882996 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.00193810463 IntervalEndTime:1448065256.38 ResponseTime:0.00318694114685 NetworkTime:0.00317001342773 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00181603432 IntervalEndTime:1448065256.38 ResponseTime:0.00313901901245 NetworkTime:0.00312113761902 ProcessingTime:1.78813934326e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00175285339 IntervalEndTime:1448065256.38 ResponseTime:0.00319814682007 NetworkTime:0.00317597389221 ProcessingTime:2.21729278564e-05 AvgSwitchLoad:0.000708185112695
+PSPort:1 BytesThisInterval:41 InstBandwidth:0.000312257833578 AvgBandwidth:0.000708185112695
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.00165891647 IntervalEndTime:1448065256.38 ResponseTime:0.00409388542175 NetworkTime:0.00406789779663 ProcessingTime:2.59876251221e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.0016810894 IntervalEndTime:1448065256.38 ResponseTime:0.00417613983154 NetworkTime:0.0041491985321 ProcessingTime:2.69412994385e-05 AvgSwitchLoad:0.0
+PSPort:1 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.0
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.0
+PSPort:3 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.0
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00225305557 IntervalEndTime:1448065256.38 ResponseTime:0.00346708297729 NetworkTime:0.00344610214233 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00219798088 IntervalEndTime:1448065256.38 ResponseTime:0.00354814529419 NetworkTime:0.00353217124939 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.00180792809 IntervalEndTime:1448065256.38 ResponseTime:0.00428700447083 NetworkTime:0.00426912307739 ProcessingTime:1.78813934326e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.00175213814 IntervalEndTime:1448065256.38 ResponseTime:0.00432705879211 NetworkTime:0.00431203842163 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00173902512 IntervalEndTime:1448065256.38 ResponseTime:0.00357294082642 NetworkTime:0.00355505943298 ProcessingTime:1.78813934326e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00168919563 IntervalEndTime:1448065256.38 ResponseTime:0.00362920761108 NetworkTime:0.0036141872406 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00167989731 IntervalEndTime:1448065256.38 ResponseTime:0.00453090667725 NetworkTime:0.00450897216797 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00168299675 IntervalEndTime:1448065256.39 ResponseTime:0.00461506843567 NetworkTime:0.00459504127502 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0.000156139805106
+PSPort:2 BytesThisInterval:41 InstBandwidth:0.000312279610212 AvgBandwidth:0.000156139805106
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.00166988373 IntervalEndTime:1448065256.39 ResponseTime:0.00436496734619 NetworkTime:0.00434899330139 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.00167393684 IntervalEndTime:1448065256.39 ResponseTime:0.00441098213196 NetworkTime:0.00439596176147 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.0018248558 IntervalEndTime:1448065256.39 ResponseTime:0.00301599502563 NetworkTime:0.00299501419067 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00178098679 IntervalEndTime:1448065256.39 ResponseTime:0.0030529499054 NetworkTime:0.0030369758606 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00167012215 IntervalEndTime:1448065256.39 ResponseTime:0.00301289558411 NetworkTime:0.0029890537262 ProcessingTime:2.38418579102e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00162100792 IntervalEndTime:1448065256.39 ResponseTime:0.00306582450867 NetworkTime:0.00304388999939 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0.000156149468366
+PSPort:3 BytesThisInterval:41 InstBandwidth:0.000312298936732 AvgBandwidth:0.000156149468366
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00157904625 IntervalEndTime:1448065256.39 ResponseTime:0.00218391418457 NetworkTime:0.00215792655945 ProcessingTime:2.59876251221e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00162386894 IntervalEndTime:1448065256.39 ResponseTime:0.00223684310913 NetworkTime:0.00221586227417 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+PSPort:2 BytesThisInterval:381 InstBandwidth:0 AvgBandwidth:0
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:0.997003078461 IntervalEndTime:1448065257.38 ResponseTime:0.000906944274902 NetworkTime:0.000833988189697 ProcessingTime:7.29560852051e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:0.997288942337 IntervalEndTime:1448065257.38 ResponseTime:0.00130796432495 NetworkTime:0.00122904777527 ProcessingTime:7.89165496826e-05 AvgSwitchLoad:0.000424582464027
+PSPort:1 BytesThisInterval:70 InstBandwidth:0.000535509414088 AvgBandwidth:0.000267754707044
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.0
+PSPort:3 BytesThisInterval:41 InstBandwidth:0.000313655513966 AvgBandwidth:0.000156827756983
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:0.999930143356 IntervalEndTime:1448065257.38 ResponseTime:0.00287508964539 NetworkTime:0.00282120704651 ProcessingTime:5.3882598877e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.00015592575 IntervalEndTime:1448065257.38 ResponseTime:0.00311303138733 NetworkTime:0.00306487083435 ProcessingTime:4.81605529785e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.00213003159 IntervalEndTime:1448065257.38 ResponseTime:0.00279402732849 NetworkTime:0.00275921821594 ProcessingTime:3.48091125488e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.00207090378 IntervalEndTime:1448065257.38 ResponseTime:0.00292110443115 NetworkTime:0.00288605690002 ProcessingTime:3.50475311279e-05 AvgSwitchLoad:0.0
+PSPort:4 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.0
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:0.999784946442 IntervalEndTime:1448065257.38 ResponseTime:0.00286602973938 NetworkTime:0.00283908843994 ProcessingTime:2.69412994385e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:0.999837875366 IntervalEndTime:1448065257.38 ResponseTime:0.00295996665955 NetworkTime:0.0029399394989 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.0022919178 IntervalEndTime:1448065257.38 ResponseTime:0.00404620170593 NetworkTime:0.00402307510376 ProcessingTime:2.31266021729e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00233101845 IntervalEndTime:1448065257.38 ResponseTime:0.00410509109497 NetworkTime:0.00407695770264 ProcessingTime:2.8133392334e-05 AvgSwitchLoad:0.000620500363428
+PSPort:1 BytesThisInterval:70 InstBandwidth:0.000532815614162 AvgBandwidth:0.000620500363428
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.0015130043 IntervalEndTime:1448065257.39 ResponseTime:0.00300192832947 NetworkTime:0.00296092033386 ProcessingTime:4.10079956055e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00160598755 IntervalEndTime:1448065257.39 ResponseTime:0.00311303138733 NetworkTime:0.00308299064636 ProcessingTime:3.00407409668e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00151395798 IntervalEndTime:1448065257.39 ResponseTime:0.00285291671753 NetworkTime:0.00281691551208 ProcessingTime:3.60012054443e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00162482262 IntervalEndTime:1448065257.39 ResponseTime:0.00301194190979 NetworkTime:0.00298380851746 ProcessingTime:2.8133392334e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00187802315 IntervalEndTime:1448065257.39 ResponseTime:0.00391292572021 NetworkTime:0.00387096405029 ProcessingTime:4.19616699219e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00199890137 IntervalEndTime:1448065257.39 ResponseTime:0.00412392616272 NetworkTime:0.00407385826111 ProcessingTime:5.00679016113e-05 AvgSwitchLoad:0.00034456601171
+PSPort:2 BytesThisInterval:70 InstBandwidth:0.000532992218314 AvgBandwidth:0.00034456601171
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.002202034 IntervalEndTime:1448065257.39 ResponseTime:0.0043249130249 NetworkTime:0.00429797172546 ProcessingTime:2.69412994385e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.0022881031 IntervalEndTime:1448065257.39 ResponseTime:0.0044629573822 NetworkTime:0.00443911552429 ProcessingTime:2.38418579102e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00332212448 IntervalEndTime:1448065257.39 ResponseTime:0.00443196296692 NetworkTime:0.00441002845764 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00332689285 IntervalEndTime:1448065257.39 ResponseTime:0.00446701049805 NetworkTime:0.00444984436035 ProcessingTime:1.71661376953e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00331997871 IntervalEndTime:1448065257.39 ResponseTime:0.0044629573822 NetworkTime:0.00443005561829 ProcessingTime:3.2901763916e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00331902504 IntervalEndTime:1448065257.39 ResponseTime:0.00453996658325 NetworkTime:0.00451707839966 ProcessingTime:2.28881835938e-05 AvgSwitchLoad:0.000344220199314
+PSPort:3 BytesThisInterval:70 InstBandwidth:0.000532290930262 AvgBandwidth:0.000344220199314
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00217485428 IntervalEndTime:1448065257.39 ResponseTime:0.00206685066223 NetworkTime:0.00204277038574 ProcessingTime:2.40802764893e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00214910507 IntervalEndTime:1448065257.39 ResponseTime:0.0021231174469 NetworkTime:0.00210309028625 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0.000266456166295
+PSPort:2 BytesThisInterval:70 InstBandwidth:0.000532912332591 AvgBandwidth:0.000266456166295
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.03007912636 IntervalEndTime:1448065258.41 ResponseTime:0.00346684455872 NetworkTime:0.00342202186584 ProcessingTime:4.48226928711e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.02987194061 IntervalEndTime:1448065258.41 ResponseTime:0.00367403030396 NetworkTime:0.00361895561218 ProcessingTime:5.50746917725e-05 AvgSwitchLoad:0.00111607945665
+PSPort:1 BytesThisInterval:63 InstBandwidth:0.000466710312724 AvgBandwidth:0.000367232509884
+PSPort:2 BytesThisInterval:111 InstBandwidth:0.000822299122418 AvgBandwidth:0.000411149561209
+PSPort:3 BytesThisInterval:70 InstBandwidth:0.000518567014137 AvgBandwidth:0.00033769738556
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.02565002441 IntervalEndTime:1448065258.41 ResponseTime:0.00374102592468 NetworkTime:0.00372099876404 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.02553987503 IntervalEndTime:1448065258.41 ResponseTime:0.00377702713013 NetworkTime:0.00376200675964 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.02782082558 IntervalEndTime:1448065258.41 ResponseTime:0.00447702407837 NetworkTime:0.0044538974762 ProcessingTime:2.31266021729e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.02773809433 IntervalEndTime:1448065258.41 ResponseTime:0.00454711914062 NetworkTime:0.00452613830566 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000259821845728
+PSPort:4 BytesThisInterval:70 InstBandwidth:0.000519643691456 AvgBandwidth:0.000259821845728
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.0276529789 IntervalEndTime:1448065258.41 ResponseTime:0.0045690536499 NetworkTime:0.00454902648926 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.02761220932 IntervalEndTime:1448065258.41 ResponseTime:0.00461101531982 NetworkTime:0.00459504127502 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.0301527977 IntervalEndTime:1448065258.41 ResponseTime:0.00552797317505 NetworkTime:0.0055079460144 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.02993416786 IntervalEndTime:1448065258.41 ResponseTime:0.00558805465698 NetworkTime:0.00557208061218 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.02305388451 IntervalEndTime:1448065258.41 ResponseTime:0.00391697883606 NetworkTime:0.00389885902405 ProcessingTime:1.81198120117e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.02304005623 IntervalEndTime:1448065258.41 ResponseTime:0.00396704673767 NetworkTime:0.00395202636719 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.0264351368 IntervalEndTime:1448065258.41 ResponseTime:0.00438594818115 NetworkTime:0.00436902046204 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.02631902695 IntervalEndTime:1448065258.41 ResponseTime:0.00441694259644 NetworkTime:0.00440287590027 ProcessingTime:1.4066696167e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.02325987816 IntervalEndTime:1448065258.41 ResponseTime:0.00421118736267 NetworkTime:0.00418901443481 ProcessingTime:2.21729278564e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.02324104309 IntervalEndTime:1448065258.41 ResponseTime:0.0042781829834 NetworkTime:0.00425815582275 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0.000172110099657
+PSPort:3 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000172110099657
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.02635884285 IntervalEndTime:1448065258.41 ResponseTime:0.00536513328552 NetworkTime:0.00534296035767 ProcessingTime:2.21729278564e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.02622413635 IntervalEndTime:1448065258.41 ResponseTime:0.00540590286255 NetworkTime:0.00538611412048 ProcessingTime:1.97887420654e-05 AvgSwitchLoad:0.000172283005855
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000172283005855
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.02603507042 IntervalEndTime:1448065258.41 ResponseTime:0.00543308258057 NetworkTime:0.00541615486145 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.02593898773 IntervalEndTime:1448065258.41 ResponseTime:0.0054829120636 NetworkTime:0.00546908378601 ProcessingTime:1.38282775879e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.02376317978 IntervalEndTime:1448065258.41 ResponseTime:0.00484204292297 NetworkTime:0.00482201576233 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.02374386787 IntervalEndTime:1448065258.41 ResponseTime:0.0048930644989 NetworkTime:0.00487399101257 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0.000286003198876
+PSPort:2 BytesThisInterval:41 InstBandwidth:0.000305550231457 AvgBandwidth:0.000286003198876
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.02938008308 IntervalEndTime:1448065258.41 ResponseTime:0.00712990760803 NetworkTime:0.00709795951843 ProcessingTime:3.19480895996e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.02935314178 IntervalEndTime:1448065258.41 ResponseTime:0.00716400146484 NetworkTime:0.0071439743042 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0.000310250181714
+PSPort:1 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000310250181714
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.04337787628 IntervalEndTime:1448065259.45 ResponseTime:0.00303816795349 NetworkTime:0.0029890537262 ProcessingTime:4.91142272949e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.0433781147 IntervalEndTime:1448065259.45 ResponseTime:0.00320601463318 NetworkTime:0.00316500663757 ProcessingTime:4.10079956055e-05 AvgSwitchLoad:0.000558039728327
+PSPort:1 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000183616254942
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000205574780604
+PSPort:3 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.00016884869278
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.04339790344 IntervalEndTime:1448065259.45 ResponseTime:0.00342202186584 NetworkTime:0.0034019947052 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.04340195656 IntervalEndTime:1448065259.45 ResponseTime:0.00346708297729 NetworkTime:0.0034499168396 ProcessingTime:1.71661376953e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.04343700409 IntervalEndTime:1448065259.46 ResponseTime:0.00413203239441 NetworkTime:0.00410604476929 ProcessingTime:2.59876251221e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.04344296455 IntervalEndTime:1448065259.46 ResponseTime:0.00420308113098 NetworkTime:0.0041720867157 ProcessingTime:3.09944152832e-05 AvgSwitchLoad:0.000279801806414
+PSPort:4 BytesThisInterval:41 InstBandwidth:0.000299781767099 AvgBandwidth:0.000279801806414
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.04344296455 IntervalEndTime:1448065259.46 ResponseTime:0.00425910949707 NetworkTime:0.00424003601074 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.04344391823 IntervalEndTime:1448065259.46 ResponseTime:0.00433397293091 NetworkTime:0.00431895256042 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.04344201088 IntervalEndTime:1448065259.46 ResponseTime:0.00522899627686 NetworkTime:0.00520801544189 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.04343080521 IntervalEndTime:1448065259.46 ResponseTime:0.00527310371399 NetworkTime:0.00525689125061 ProcessingTime:1.62124633789e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.04343891144 IntervalEndTime:1448065259.46 ResponseTime:0.00375485420227 NetworkTime:0.00373482704163 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.04345607758 IntervalEndTime:1448065259.46 ResponseTime:0.00381398200989 NetworkTime:0.00379800796509 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.04346489906 IntervalEndTime:1448065259.46 ResponseTime:0.00421214103699 NetworkTime:0.00419306755066 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.04347014427 IntervalEndTime:1448065259.46 ResponseTime:0.00423502922058 NetworkTime:0.0042200088501 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.04350209236 IntervalEndTime:1448065259.46 ResponseTime:0.00406694412231 NetworkTime:0.00404191017151 ProcessingTime:2.50339508057e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.04354596138 IntervalEndTime:1448065259.46 ResponseTime:0.00415396690369 NetworkTime:0.0041298866272 ProcessingTime:2.40802764893e-05 AvgSwitchLoad:8.60550498284e-05
+PSPort:3 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:8.60550498284e-05
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.04366707802 IntervalEndTime:1448065259.46 ResponseTime:0.00537514686584 NetworkTime:0.00535106658936 ProcessingTime:2.40802764893e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.04367399216 IntervalEndTime:1448065259.46 ResponseTime:0.00544404983521 NetworkTime:0.00542211532593 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:8.61415029275e-05
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:8.61415029275e-05
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.04367494583 IntervalEndTime:1448065259.46 ResponseTime:0.00542998313904 NetworkTime:0.00541090965271 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.04367995262 IntervalEndTime:1448065259.46 ResponseTime:0.00549101829529 NetworkTime:0.00547003746033 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.04371404648 IntervalEndTime:1448065259.46 ResponseTime:0.0048770904541 NetworkTime:0.00485515594482 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.04372000694 IntervalEndTime:1448065259.46 ResponseTime:0.00493788719177 NetworkTime:0.00491690635681 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000143001599438
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000143001599438
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.04374790192 IntervalEndTime:1448065259.46 ResponseTime:0.00707697868347 NetworkTime:0.00705790519714 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.04373788834 IntervalEndTime:1448065259.46 ResponseTime:0.00712609291077 NetworkTime:0.00710606575012 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0.000304973620491
+PSPort:1 BytesThisInterval:41 InstBandwidth:0.000299697059268 AvgBandwidth:0.000304973620491
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.01495194435 IntervalEndTime:1448065260.47 ResponseTime:0.00343704223633 NetworkTime:0.00340390205383 ProcessingTime:3.31401824951e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.0148859024 IntervalEndTime:1448065260.47 ResponseTime:0.00356101989746 NetworkTime:0.00352907180786 ProcessingTime:3.19480895996e-05 AvgSwitchLoad:0.000433128407321
+PSPort:1 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:9.1808127471e-05
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000102787390302
+PSPort:3 BytesThisInterval:41 InstBandwidth:0.000308217086315 AvgBandwidth:0.000238532889547
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.01479911804 IntervalEndTime:1448065260.47 ResponseTime:0.00351095199585 NetworkTime:0.0034921169281 ProcessingTime:1.8835067749e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.01479411125 IntervalEndTime:1448065260.47 ResponseTime:0.00355195999146 NetworkTime:0.00353693962097 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.01477503777 IntervalEndTime:1448065260.47 ResponseTime:0.00435304641724 NetworkTime:0.00432896614075 ProcessingTime:2.40802764893e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.01478695869 IntervalEndTime:1448065260.47 ResponseTime:0.00442600250244 NetworkTime:0.00440311431885 ProcessingTime:2.28881835938e-05 AvgSwitchLoad:0.000139900903207
+PSPort:4 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000139900903207
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.01477313042 IntervalEndTime:1448065260.47 ResponseTime:0.00436305999756 NetworkTime:0.00434303283691 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.01476287842 IntervalEndTime:1448065260.47 ResponseTime:0.00443005561829 NetworkTime:0.00440096855164 ProcessingTime:2.90870666504e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.01478099823 IntervalEndTime:1448065260.47 ResponseTime:0.00548982620239 NetworkTime:0.00546979904175 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.01478004456 IntervalEndTime:1448065260.47 ResponseTime:0.0054919719696 NetworkTime:0.0054759979248 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.01476311684 IntervalEndTime:1448065260.47 ResponseTime:0.00382709503174 NetworkTime:0.00380802154541 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.0147600174 IntervalEndTime:1448065260.47 ResponseTime:0.00386714935303 NetworkTime:0.00385212898254 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.01477193832 IntervalEndTime:1448065260.47 ResponseTime:0.00432109832764 NetworkTime:0.00430393218994 ProcessingTime:1.71661376953e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.01479697227 IntervalEndTime:1448065260.47 ResponseTime:0.00436806678772 NetworkTime:0.00435304641724 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.01477003098 IntervalEndTime:1448065260.47 ResponseTime:0.00415396690369 NetworkTime:0.00413107872009 ProcessingTime:2.28881835938e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.01472997665 IntervalEndTime:1448065260.47 ResponseTime:0.00423383712769 NetworkTime:0.00421190261841 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0.000197159748746
+PSPort:3 BytesThisInterval:41 InstBandwidth:0.000308264447664 AvgBandwidth:0.000197159748746
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.01458597183 IntervalEndTime:1448065260.47 ResponseTime:0.00530600547791 NetworkTime:0.00528287887573 ProcessingTime:2.31266021729e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.01458001137 IntervalEndTime:1448065260.47 ResponseTime:0.00537014007568 NetworkTime:0.00534915924072 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000197225757612
+PSPort:2 BytesThisInterval:41 InstBandwidth:0.000308310012297 AvgBandwidth:0.000197225757612
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.0145919323 IntervalEndTime:1448065260.47 ResponseTime:0.00536584854126 NetworkTime:0.00533890724182 ProcessingTime:2.69412994385e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.01462006569 IntervalEndTime:1448065260.47 ResponseTime:0.00542497634888 NetworkTime:0.00540709495544 ProcessingTime:1.78813934326e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.01461100578 IntervalEndTime:1448065260.47 ResponseTime:0.0048520565033 NetworkTime:0.00483012199402 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.0146150589 IntervalEndTime:1448065260.47 ResponseTime:0.00490999221802 NetworkTime:0.00487589836121 ProcessingTime:3.40938568115e-05 AvgSwitchLoad:7.1500799719e-05
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:7.1500799719e-05
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.01471805573 IntervalEndTime:1448065260.47 ResponseTime:0.00728487968445 NetworkTime:0.00725698471069 ProcessingTime:2.78949737549e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.01476311684 IntervalEndTime:1448065260.47 ResponseTime:0.00738215446472 NetworkTime:0.00735211372375 ProcessingTime:3.00407409668e-05 AvgSwitchLoad:0.000152486810246
+PSPort:1 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000152486810246
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.00476312637 IntervalEndTime:1448065261.47 ResponseTime:0.00430607795715 NetworkTime:0.00423502922058 ProcessingTime:7.10487365723e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.00493788719 IntervalEndTime:1448065261.47 ResponseTime:0.00459003448486 NetworkTime:0.00453186035156 ProcessingTime:5.81741333008e-05 AvgSwitchLoad:0.00048228093302
+PSPort:1 BytesThisInterval:70 InstBandwidth:0.000531433458718 AvgBandwidth:0.000311620793095
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:5.13936951511e-05
+PSPort:3 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000119266444774
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00512599945 IntervalEndTime:1448065261.47 ResponseTime:0.00437593460083 NetworkTime:0.00435495376587 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00513195992 IntervalEndTime:1448065261.47 ResponseTime:0.00441479682922 NetworkTime:0.00439786911011 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.00512504578 IntervalEndTime:1448065261.47 ResponseTime:0.00523614883423 NetworkTime:0.00521111488342 ProcessingTime:2.50339508057e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.00515198708 IntervalEndTime:1448065261.48 ResponseTime:0.00533413887024 NetworkTime:0.00531005859375 ProcessingTime:2.40802764893e-05 AvgSwitchLoad:6.99504516034e-05
+PSPort:4 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:6.99504516034e-05
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.00515198708 IntervalEndTime:1448065261.48 ResponseTime:0.00529813766479 NetworkTime:0.00527906417847 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.0051510334 IntervalEndTime:1448065261.48 ResponseTime:0.00533890724182 NetworkTime:0.00532293319702 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.00513911247 IntervalEndTime:1448065261.48 ResponseTime:0.0065279006958 NetworkTime:0.00650691986084 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.0051419735 IntervalEndTime:1448065261.48 ResponseTime:0.0065598487854 NetworkTime:0.0065438747406 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00513005257 IntervalEndTime:1448065261.48 ResponseTime:0.00421285629272 NetworkTime:0.00419497489929 ProcessingTime:1.78813934326e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00514101982 IntervalEndTime:1448065261.48 ResponseTime:0.00427985191345 NetworkTime:0.0042610168457 ProcessingTime:1.8835067749e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00514912605 IntervalEndTime:1448065261.48 ResponseTime:0.00486588478088 NetworkTime:0.00484704971313 ProcessingTime:1.8835067749e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00512599945 IntervalEndTime:1448065261.48 ResponseTime:0.00489592552185 NetworkTime:0.00487995147705 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00513005257 IntervalEndTime:1448065261.48 ResponseTime:0.0045120716095 NetworkTime:0.00448608398438 ProcessingTime:2.59876251221e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00513601303 IntervalEndTime:1448065261.48 ResponseTime:0.00453090667725 NetworkTime:0.00450897216797 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0.000364244227388
+PSPort:3 BytesThisInterval:70 InstBandwidth:0.00053132870603 AvgBandwidth:0.000364244227388
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00514101982 IntervalEndTime:1448065261.48 ResponseTime:0.00605607032776 NetworkTime:0.00603199005127 ProcessingTime:2.40802764893e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00514483452 IntervalEndTime:1448065261.48 ResponseTime:0.00608992576599 NetworkTime:0.00606894493103 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000364274900262
+PSPort:2 BytesThisInterval:70 InstBandwidth:0.000531324042911 AvgBandwidth:0.000364274900262
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.00513005257 IntervalEndTime:1448065261.48 ResponseTime:0.00595211982727 NetworkTime:0.00593304634094 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.0051009655 IntervalEndTime:1448065261.48 ResponseTime:0.00600409507751 NetworkTime:0.00598812103271 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00508594513 IntervalEndTime:1448065261.48 ResponseTime:0.00499296188354 NetworkTime:0.00497102737427 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.00508308411 IntervalEndTime:1448065261.48 ResponseTime:0.0050060749054 NetworkTime:0.00498509407043 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000457040344124
+PSPort:2 BytesThisInterval:111 InstBandwidth:0.000842579888529 AvgBandwidth:0.000457040344124
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00495290756 IntervalEndTime:1448065261.48 ResponseTime:0.00804090499878 NetworkTime:0.00802087783813 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00493597984 IntervalEndTime:1448065261.48 ResponseTime:0.0081090927124 NetworkTime:0.00808811187744 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000341960638807
+PSPort:1 BytesThisInterval:70 InstBandwidth:0.000531434467369 AvgBandwidth:0.000341960638807
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.00919604301 IntervalEndTime:1448065262.48 ResponseTime:0.0043318271637 NetworkTime:0.00427103042603 ProcessingTime:6.07967376709e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.00920414925 IntervalEndTime:1448065262.48 ResponseTime:0.00464415550232 NetworkTime:0.00458812713623 ProcessingTime:5.60283660889e-05 AvgSwitchLoad:0.0011634376385
+PSPort:1 BytesThisInterval:63 InstBandwidth:0.000476268211766 AvgBandwidth:0.000393944502431
+PSPort:2 BytesThisInterval:111 InstBandwidth:0.000839139230255 AvgBandwidth:0.000445266462703
+PSPort:3 BytesThisInterval:70 InstBandwidth:0.000529186901963 AvgBandwidth:0.000324226673368
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00914001465 IntervalEndTime:1448065262.48 ResponseTime:0.00427913665771 NetworkTime:0.00425815582275 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.00918102264 IntervalEndTime:1448065262.48 ResponseTime:0.00433707237244 NetworkTime:0.00431108474731 ProcessingTime:2.59876251221e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.00931787491 IntervalEndTime:1448065262.48 ResponseTime:0.00542211532593 NetworkTime:0.00538396835327 ProcessingTime:3.81469726562e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.00935602188 IntervalEndTime:1448065262.48 ResponseTime:0.00555801391602 NetworkTime:0.00551605224609 ProcessingTime:4.19616699219e-05 AvgSwitchLoad:0.000299528864761
+PSPort:4 BytesThisInterval:70 InstBandwidth:0.000529107277918 AvgBandwidth:0.000299528864761
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.00938987732 IntervalEndTime:1448065262.48 ResponseTime:0.0054669380188 NetworkTime:0.00543880462646 ProcessingTime:2.8133392334e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.00943017006 IntervalEndTime:1448065262.48 ResponseTime:0.00554203987122 NetworkTime:0.0055251121521 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.00944304466 IntervalEndTime:1448065262.48 ResponseTime:0.00689101219177 NetworkTime:0.00687098503113 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.00943803787 IntervalEndTime:1448065262.49 ResponseTime:0.00692582130432 NetworkTime:0.00690984725952 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00944685936 IntervalEndTime:1448065262.49 ResponseTime:0.00449895858765 NetworkTime:0.00448083877563 ProcessingTime:1.81198120117e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.00943899155 IntervalEndTime:1448065262.49 ResponseTime:0.00454115867615 NetworkTime:0.00452613830566 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00941801071 IntervalEndTime:1448065262.49 ResponseTime:0.00507187843323 NetworkTime:0.00505304336548 ProcessingTime:1.8835067749e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.00941586494 IntervalEndTime:1448065262.49 ResponseTime:0.00510883331299 NetworkTime:0.0050938129425 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.0094268322 IntervalEndTime:1448065262.49 ResponseTime:0.00473403930664 NetworkTime:0.00471091270447 ProcessingTime:2.31266021729e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.00941991806 IntervalEndTime:1448065262.49 ResponseTime:0.00471091270447 NetworkTime:0.00468993186951 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000182122113694
+PSPort:3 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000182122113694
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.0094499588 IntervalEndTime:1448065262.49 ResponseTime:0.00623416900635 NetworkTime:0.00621199607849 ProcessingTime:2.21729278564e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.00944709778 IntervalEndTime:1448065262.49 ResponseTime:0.00629091262817 NetworkTime:0.00626993179321 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000182137450131
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000182137450131
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.0094408989 IntervalEndTime:1448065262.49 ResponseTime:0.0062370300293 NetworkTime:0.00621891021729 ProcessingTime:1.81198120117e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.00943899155 IntervalEndTime:1448065262.49 ResponseTime:0.00627517700195 NetworkTime:0.00626015663147 ProcessingTime:1.50203704834e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00916218758 IntervalEndTime:1448065262.49 ResponseTime:0.00813102722168 NetworkTime:0.00811314582825 ProcessingTime:1.78813934326e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00913000107 IntervalEndTime:1448065262.49 ResponseTime:0.00809192657471 NetworkTime:0.00807309150696 ProcessingTime:1.8835067749e-05 AvgSwitchLoad:0.000170980319404
+PSPort:1 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000170980319404
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.01081204414 IntervalEndTime:1448065262.49 ResponseTime:0.00661683082581 NetworkTime:0.0065929889679 ProcessingTime:2.38418579102e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.01081204414 IntervalEndTime:1448065262.49 ResponseTime:0.00663995742798 NetworkTime:0.00661897659302 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000228520172062
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000228520172062
+
+FlowStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.01060819626 IntervalEndTime:1448065263.49 ResponseTime:0.00315403938293 NetworkTime:0.0030951499939 ProcessingTime:5.88893890381e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-09 NumFlows:0 IntervalLen:1.01072001457 IntervalEndTime:1448065263.5 ResponseTime:0.00339913368225 NetworkTime:0.00335311889648 ProcessingTime:4.60147857666e-05 AvgSwitchLoad:0.0003045081652
+PSPort:4 BytesThisInterval:41 InstBandwidth:0.00030948746564 AvgBandwidth:0.0003045081652
+
+FlowStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.00889182091 IntervalEndTime:1448065263.5 ResponseTime:0.00406503677368 NetworkTime:0.00404286384583 ProcessingTime:2.21729278564e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-04 NumFlows:0 IntervalLen:1.0089058876 IntervalEndTime:1448065263.5 ResponseTime:0.00411510467529 NetworkTime:0.00409293174744 ProcessingTime:2.21729278564e-05 AvgSwitchLoad:0.000240512139266
+PSPort:1 BytesThisInterval:41 InstBandwidth:0.000310043959129 AvgBandwidth:0.000240512139266
+
+FlowStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.01380991936 IntervalEndTime:1448065263.5 ResponseTime:0.0049991607666 NetworkTime:0.00496912002563 ProcessingTime:3.00407409668e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-02 NumFlows:0 IntervalLen:1.01364088058 IntervalEndTime:1448065263.5 ResponseTime:0.00513601303101 NetworkTime:0.00510692596436 ProcessingTime:2.90870666504e-05 AvgSwitchLoad:0.000581718819251
+PSPort:1 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000196972251215
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000222633231352
+PSPort:3 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000162113336684
+
+FlowStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.01354694366 IntervalEndTime:1448065263.5 ResponseTime:0.00486612319946 NetworkTime:0.0048451423645 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-06 NumFlows:0 IntervalLen:1.01355195045 IntervalEndTime:1448065263.5 ResponseTime:0.00494599342346 NetworkTime:0.00492882728577 ProcessingTime:1.71661376953e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.01300311089 IntervalEndTime:1448065263.5 ResponseTime:0.00547409057617 NetworkTime:0.00545501708984 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-03 NumFlows:0 IntervalLen:1.01296401024 IntervalEndTime:1448065263.5 ResponseTime:0.00551700592041 NetworkTime:0.00550103187561 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.01297688484 IntervalEndTime:1448065263.5 ResponseTime:0.00682187080383 NetworkTime:0.00680184364319 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-08 NumFlows:0 IntervalLen:1.01297712326 IntervalEndTime:1448065263.5 ResponseTime:0.00686407089233 NetworkTime:0.00684809684753 ProcessingTime:1.59740447998e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.01295900345 IntervalEndTime:1448065263.5 ResponseTime:0.00453495979309 NetworkTime:0.00451683998108 ProcessingTime:1.81198120117e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0b NumFlows:0 IntervalLen:1.01294183731 IntervalEndTime:1448065263.5 ResponseTime:0.00456690788269 NetworkTime:0.00455284118652 ProcessingTime:1.4066696167e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.01293301582 IntervalEndTime:1448065263.5 ResponseTime:0.00502705574036 NetworkTime:0.00500917434692 ProcessingTime:1.78813934326e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-0a NumFlows:0 IntervalLen:1.01292920113 IntervalEndTime:1448065263.5 ResponseTime:0.00507283210754 NetworkTime:0.00505900382996 ProcessingTime:1.38282775879e-05 AvgSwitchLoad:0
+
+FlowStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.01290798187 IntervalEndTime:1448065263.5 ResponseTime:0.00470805168152 NetworkTime:0.00468397140503 ProcessingTime:2.40802764893e-05 AvgSwitchLoad:0
+
+PortStats Switch:1a-64-c0-65-f4-42 NumFlows:0 IntervalLen:1.01290607452 IntervalEndTime:1448065263.5 ResponseTime:0.00475788116455 NetworkTime:0.00473690032959 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0.000245470820817
+PSPort:3 BytesThisInterval:41 InstBandwidth:0.000308819527939 AvgBandwidth:0.000245470820817
+
+FlowStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.01286816597 IntervalEndTime:1448065263.5 ResponseTime:0.00617909431458 NetworkTime:0.00615811347961 ProcessingTime:2.09808349609e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-01 NumFlows:0 IntervalLen:1.01286387444 IntervalEndTime:1448065263.5 ResponseTime:0.00622701644897 NetworkTime:0.00620698928833 ProcessingTime:2.00271606445e-05 AvgSwitchLoad:0.000245484922383
+PSPort:2 BytesThisInterval:41 InstBandwidth:0.000308832394635 AvgBandwidth:0.000245484922383
+
+FlowStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.01286411285 IntervalEndTime:1448065263.5 ResponseTime:0.00617003440857 NetworkTime:0.00615310668945 ProcessingTime:1.69277191162e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-07 NumFlows:0 IntervalLen:1.01286196709 IntervalEndTime:1448065263.5 ResponseTime:0.00618004798889 NetworkTime:0.00616598129272 ProcessingTime:1.4066696167e-05 AvgSwitchLoad:0
+
+FlowStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.01147794724 IntervalEndTime:1448065263.5 ResponseTime:0.00514602661133 NetworkTime:0.00512409210205 ProcessingTime:2.19345092773e-05 AvgSwitchLoad:0
+
+PortStats Switch:00-00-00-00-00-05 NumFlows:0 IntervalLen:1.01147294044 IntervalEndTime:1448065263.5 ResponseTime:0.00515198707581 NetworkTime:0.00513291358948 ProcessingTime:1.90734863281e-05 AvgSwitchLoad:0.000114260086031
+PSPort:2 BytesThisInterval:0 InstBandwidth:0.0 AvgBandwidth:0.000114260086031
+
+Final Network Topology:
+4 P:1 -> 2 P:3 U:8.53228087811e-06 NF:0
+1 P:2 -> 2 P:2 U:1.17175384922e-05 NF:0
+2 P:2 -> 1 P:2 U:1.29202590728e-05 NF:0
+2 P:1 -> 29020026958914 P:3 U:1.29195168851e-05 NF:0
+5 P:2 -> 9 P:4 U:1.60267455369e-05 NF:0
+9 P:4 -> 5 P:2 U:6.01368873847e-06 NF:0
+2 P:3 -> 4 P:1 U:1.26585336456e-05 NF:0
+29020026958914 P:3 -> 2 P:1 U:1.03669605903e-05 NF:0

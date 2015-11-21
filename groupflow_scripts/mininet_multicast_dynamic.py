@@ -264,10 +264,10 @@ if __name__ == '__main__':
     setLogLevel( 'info' )
     
     # Uncomment for easy debug testing
-    # topo = ManhattanGridTopo(5, 4, 20, 1, False)
-    # hosts = topo.get_host_list()
-    # mcastTestDynamic(topo, hosts, 'test.log', 10, 'linear', 'none')
-    # sys.exit()
+    #topo = ManhattanGridTopo(5, 4, 20, 1, False)
+    #hosts = topo.get_host_list()
+    #mcastTestDynamic(topo, hosts, 'test.log', 10, 'linear', 'none')
+    #sys.exit()
     
     if len(sys.argv) >= 2:
         if '-h' in str(sys.argv[1]) or 'help' in str(sys.argv[1]):

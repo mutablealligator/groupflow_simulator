@@ -26,36 +26,77 @@ class FlowTrackerTestTopo( Topo ):
         # Add hosts and switches
         h0 = self.addHost('h0', ip='10.0.0.1')
         h1 = self.addHost('h1', ip='10.0.0.2')
+	h2 = self.addHost('h2', ip='10.0.0.3')
+	h3 = self.addHost('h3', ip='10.0.0.4')
+	h4 = self.addHost('h4', ip='10.0.0.5')
+	h5 = self.addHost('h5', ip='10.0.0.6')
         
         s0 = self.addSwitch('s0')
         s1 = self.addSwitch('s1')
-        
+	s2 = self.addSwitch('s2')
+	s3 = self.addSwitch('s3')
+	s4 = self.addSwitch('s4')
+	s5 = self.addSwitch('s5')
+        s6 = self.addSwitch('s6')
+	s7 = self.addSwitch('s7')
+	s8 = self.addSwitch('s8')
+	s9 = self.addSwitch('s9')
+	s10 = self.addSwitch('s10')
+	s11 = self.addSwitch('s11')
+
         # Add links        
         self.addLink(s0, h0, bw = 1000, use_htb = True)
-        self.addLink(s1, h1, bw = 1000, use_htb = True)
-        
-        self.addLink(s0, s1, bw = 5, use_htb = True)
+        self.addLink(s0, h1, bw = 1000, use_htb = True)
+	self.addLink(s1, h2, bw = 1000, use_htb = True)
+
+        self.addLink(s0, s2, bw = 1000, use_htb = True)
+	self.addLink(s0, s3, bw = 1000, use_htb = True)
+	self.addLink(s1, s2, bw = 1000, use_htb = True)
+	self.addLink(s1, s3, bw = 1000, use_htb = True)
+	self.addLink(s3, s5, bw = 1000, use_htb = True)
+	self.addLink(s2, s4, bw = 1000, use_htb = True)
+	
+	self.addLink(s6, h3, bw = 1000, use_htb = True)
+	self.addLink(s7, h4, bw = 1000, use_htb = True)
+	self.addLink(s7, h5, bw = 1000, use_htb = True)
+
+	self.addLink(s6, s8, bw = 1000, use_htb = True)
+	self.addLink(s6, s9, bw = 1000, use_htb = True)
+	self.addLink(s7, s8, bw = 1000, use_htb = True)
+	self.addLink(s7, s9, bw = 1000, use_htb = True)
+	self.addLink(s8, s10, bw = 1000, use_htb = True)
+	self.addLink(s9, s11, bw = 1000, use_htb = True)
+
+	self.addLink(s4, s8, bw = 1000, use_htb = True)
+	self.addLink(s5, s9, bw = 1000, use_htb = True)
+	self.addLink(s10, s2, bw = 1000, use_htb = True)
+	self.addLink(s11, s3, bw = 1000, use_htb = True)
 
     def mcastConfig(self, net):
         # Configure hosts for multicast support
         net.get('h0').cmd('route add -net 224.0.0.0/4 h0-eth0')
         net.get('h1').cmd('route add -net 224.0.0.0/4 h1-eth0')
+	net.get('h2').cmd('route add -net 224.0.0.0/4 h2-eth0')
+	net.get('h3').cmd('route add -net 224.0.0.0/4 h3-eth0')
+	net.get('h4').cmd('route add -net 224.0.0.0/4 h4-eth0')
+	net.get('h5').cmd('route add -net 224.0.0.0/4 h5-eth0')
     
     def get_host_list(self):
-        return ['h0', 'h1']
+        return ['h0', 'h1', 'h2', 'h3', 'h4', 'h5']
     
     def get_switch_list(self):
-        return ['s0', 's1']
+        return ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11']
 
 def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10, link_weight_type = 'linear'):
     # Launch the external controller
-    pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', 'forwarding.l2_learning']
+    pox_arguments = ['/usr/local/home/cse222a05/pox/pox.py', 'log', '--file=/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/pox.log,w', 'openflow.discovery', 'forwarding.l2_learning', 'misc.benchmark_terminator', 
+			'openflow.igmp_manager', 'misc.groupflow_event_tracer', 'openflow.groupflow']
     print 'Launching external controller: ' + str(pox_arguments[0])
     print 'Launch arguments:'
     print ' '.join(pox_arguments)
     
     with open(os.devnull, "w") as fnull:
-        pox_process = Popen(pox_arguments, stdout=fnull, stderr=fnull, shell=True, close_fds=True)
+        pox_process = Popen(pox_arguments, stdout=fnull, stderr=fnull, shell=False, close_fds=True)
         # Allow time for the log file to be generated
         sleep(1)
     
@@ -73,10 +114,9 @@ def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10
     topo.mcastConfig(net)
     
     print 'Network configuration:'
-    print net.get('h0').cmd('ifconfig')
-    print net.get('h0').cmd('route')
-    print net.get('h1').cmd('ifconfig')
-    print net.get('h1').cmd('route')
+    for host in hosts:
+    	print net.get(host).cmd('ifconfig')
+    	print net.get(host).cmd('route')
     
     sleep_time = 2
     print 'Waiting ' + str(sleep_time) + ' seconds to allow for controller topology discovery'
@@ -95,8 +135,10 @@ def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10
         # Launch multicast sender and receiver
         sender_command = ['python', 'multicast_sender.py']
         receiver_command = ['python', 'multicast_receiver.py']
-        receiver_proc = net.get('h1').popen(' '.join(receiver_command), stdout=receiver_log, stderr=receiver_log, close_fds=True, shell=True)
-        sender_proc = net.get('h0').popen(' '.join(sender_command), stdout=sender_log, stderr=sender_log, close_fds=True, shell=True)
+        receiver_proc = net.get('h1').popen(' '.join(receiver_command), stdout=receiver_log, stderr=receiver_log, close_fds=True, shell=False)
+        sender_proc = net.get('h3').popen(' '.join(sender_command), stdout=sender_log, stderr=sender_log, close_fds=True, shell=False)
+
+	
         
         print 'Launched test applications'
         
@@ -124,7 +166,7 @@ def flowtrackerTest(topo, hosts = [], interactive = False, util_link_weight = 10
     pox_process = None
     net.stop()
 
-    # write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
+    #write_final_stats_log(log_file_name, flow_log_path, event_log_path, membership_mean, membership_std_dev, membership_avg_bound, test_groups, test_group_launch_times, topo)
 
 topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
 
@@ -135,6 +177,6 @@ if __name__ == '__main__':
     print 'Launching default multicast test topology'
     topo = FlowTrackerTestTopo()
     hosts = topo.get_host_list()
-    flowtrackerTest(topo, hosts, False)
+    flowtrackerTest(topo, hosts, True)
     # Make extra sure the network terminated cleanly
-    call(['python', 'kill_running_test.py'])
+    #call(['python', 'kill_running_test.py'])

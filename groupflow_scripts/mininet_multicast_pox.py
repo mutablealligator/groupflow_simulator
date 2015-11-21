@@ -31,14 +31,14 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     # Launch the external controller
     pox_arguments = []
     if 'periodic' in replacement_mode:
-        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
+        pox_arguments = ['/usr/local/home/cse222a05/pox/pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
                 'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
                 '--flow_replacement_interval=15',
                 'log.level', '--WARNING', '--openflow.flow_tracker=INFO']
     else:
-        pox_arguments = ['pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
+        pox_arguments = ['/usr/local/home/cse222a05/pox/pox.py', 'log', '--file=pox.log,w', 'openflow.discovery', '--link_timeout=30', 'openflow.keepalive',
                 'openflow.flow_tracker', '--query_interval=1', '--link_max_bw=19', '--link_cong_threshold=13', '--avg_smooth_factor=0.5', '--log_peak_usage=True',
                 'misc.benchmark_terminator', 'openflow.igmp_manager', 'misc.groupflow_event_tracer',
                 'openflow.groupflow', '--util_link_weight=' + str(util_link_weight), '--link_weight_type=' + link_weight_type, '--flow_replacement_mode=' + replacement_mode,
@@ -52,7 +52,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
         pox_process = Popen(pox_arguments, stdout=fnull, stderr=fnull, shell=False, close_fds=True)
         # Allow time for the log file to be generated
         sleep(1)
-    
+ 
     # Determine the flow tracker log file
     pox_log_file = open('./pox.log', 'r')
     flow_log_path = None
@@ -81,7 +81,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     
     # External controller
     net = Mininet(topo, controller=RemoteController, switch=OVSSwitch, link=TCLink, build=False, autoSetMacs=True)
-    # pox = RemoteController('pox', '127.0.0.1', 6633)
+    pox = RemoteController('pox', '127.0.0.1', 6633)
     net.addController('pox', RemoteController, ip = '127.0.0.1', port = 6633)
     net.start()
     for switch_name in topo.get_switch_list():
@@ -118,8 +118,9 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             print 'Predicted average group size: ' + str(host_join_sum)
             i = 1
             congested_switch_num_links = 0
+	    n = 2
             
-            while True:                
+            while i < n:                
                 print 'Generating multicast group #' + str(i)
                 # Choose a sending host using a uniform random distribution
                 sender_index = randint(0,len(hosts))
@@ -151,11 +152,11 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
                 print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
                 print 'Sender: ' + str(sender_host)
                 print 'Receivers: ' + str(receivers)
-                test_groups[-1].launch_mcast_applications(net)
+                test_groups[-1].launch_normal_mcast_applications(net)
                 mcast_group_last_octet = mcast_group_last_octet + 1
                 mcast_port = mcast_port + 2
                 i += 1
-                wait_time = 5 + uniform(0, 5)
+                wait_time = 2 + uniform(0, 1)
                 
                 # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
                 print 'Check for congested link...'
@@ -230,7 +231,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
         pipe.send(test_success)
         pipe.close()
 
-topos = { 'mcast_test': ( lambda: MulticastTestTopo() ) }
+topos = { 'mcast_test': ( lambda: FattreeTopo() ) }
 
 def print_usage_text():
     print 'GroupFlow Multicast Testing with Mininet'
@@ -317,6 +318,6 @@ if __name__ == '__main__':
     else:
         # Interactive mode with barebones topology
         print 'Launching default multicast test topology'
-        topo = MulticastTestTopo()
+        topo = FattreeTopo()
         hosts = topo.get_host_list()
-        mcastTest(topo, True, hosts)
+        mcastTest(topo, False, hosts)
