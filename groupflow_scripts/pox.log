@@ -1,287 +1,329 @@
 INFO:openflow.flow_tracker:Set QueryInterval:1.0 LinkMaxBw:19.0Mbps LinkCongThreshold:13.0Mbps AvgSmoothFactor:0.5 LogPeakUsage:1.0
-INFO:openflow.flow_tracker:Writing flow tracker info to file: flowtracker_16-39-00_November-20_2015.txt
-INFO:misc.groupflow_event_tracer:Writing event trace info to file: eventtrace_16-39-00_November-20_2015.txt
+INFO:openflow.flow_tracker:Writing flow tracker info to file: flowtracker_17-50-56_November-21_2015.txt
+INFO:misc.groupflow_event_tracer:Writing event trace info to file: eventtrace_17-50-56_November-21_2015.txt
 INFO:misc.benchmark_terminator:Module initialized.
 INFO:openflow.groupflow:Set link weight type: 1
 INFO:openflow.groupflow:Set StaticLinkWeight:1.0 UtilLinkWeight:10.0
 INFO:openflow.groupflow:Set FlowReplacementMode:0 FlowReplacementInterval:15.0 seconds
-WARNING:openflow.of_01:<class 'pox.openflow.PacketIn'> raised on dummy OpenFlow nexus
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448066343.4
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448066344.09
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448066344.09
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448066344.78
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448066344.78
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000933874233289 Time:1448066345.46
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 8.92404079766e-05 Time:1448066345.46
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000466937116645 Time:1448066346.15
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 3.08909104535e-05 Time:1448066346.15
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000238880195141 Time:1448066346.83
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 3.39017737347e-05 Time:1448066346.83
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000238880195141 Time:1448066347.54
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 3.39017737347e-05 Time:1448066347.54
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000507527287939 Time:1448066348.21
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000255278781394 Time:1448066348.21
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000415811708471 Time:1448066348.88
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000245994299364 Time:1448066348.88
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000415811708471 Time:1448066349.59
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000245994299364 Time:1448066349.59
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000287723323735 Time:1448066350.29
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000162092807591 Time:1448066350.29
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000293697283646 Time:1448066350.99
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011884605718 Time:1448066350.99
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000293697283646 Time:1448066351.66
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011884605718 Time:1448066351.66
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000466302978346 Time:1448066352.32
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000323276309262 Time:1448066352.32
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000448392432069 Time:1448066352.99
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00025385990877 Time:1448066352.99
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000448392432069 Time:1448066353.66
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00025385990877 Time:1448066353.66
-INFO:openflow.flow_tracker:Termination signalled, closed log file: flowtracker_16-39-00_November-20_2015.txt
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448157059.32
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448157059.99
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448157060.66
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448157060.66
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448157061.34
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448157061.34
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448157062.05
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448157062.05
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448157062.75
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448157062.75
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000149993083398 Time:1448157063.44
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 1.40594568962e-05 Time:1448157063.44
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000421039056114 Time:1448157064.12
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000234415021918 Time:1448157064.12
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000421039056114 Time:1448157064.8
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000234415021918 Time:1448157064.8
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000405061535826 Time:1448157065.49
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000251497686242 Time:1448157065.49
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000297300652744 Time:1448157066.19
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000158985976458 Time:1448157066.19
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000228268800415 Time:1448157066.85
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118261447671 Time:1448157066.85
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000228268800415 Time:1448157067.54
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118261447671 Time:1448157067.54
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000439876176481 Time:1448157068.24
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000294275982422 Time:1448157068.24
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000450805832433 Time:1448157068.91
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00026880903493 Time:1448157068.91
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000450805832433 Time:1448157069.57
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00026880903493 Time:1448157069.57
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.561351451022 Time:1448157070.26
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.157383008741 Time:1448157070.26
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.926752198782 Time:1448157070.93
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.260212842088 Time:1448157070.93
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.926752198782 Time:1448157071.64
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.260212842088 Time:1448157071.64
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 1.10583564687 Time:1448157072.31
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.310873288172 Time:1448157072.31
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 1.19530144169 Time:1448157072.99
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.3361177682 Time:1448157072.99
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 1.19530144169 Time:1448157073.65
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.3361177682 Time:1448157073.65
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 1.24081210359 Time:1448157074.33
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.348806898025 Time:1448157074.33
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 1.2660195267 Time:1448157075.01
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.355813574529 Time:1448157075.01
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 1.2660195267 Time:1448157075.7
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.355813574529 Time:1448157075.7
+INFO:openflow.flow_tracker:Termination signalled, closed log file: flowtracker_17-50-56_November-21_2015.txt
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-01
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-01
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-01 -> 00-00-00-00-00-02
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-01 -> 00-00-00-00-00-03
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> f6-7d-b7-52-f8-4f
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-04 -> 00-00-00-00-00-02
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-0a
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 1a-d9-04-64-cd-4e
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
+WARNING:openflow.igmp_manager:Link down: f6-7d-b7-52-f8-4f -> 00-00-00-00-00-02
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.igmp_manager:Link down: 1a-d9-04-64-cd-4e -> 00-00-00-00-00-02
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-04
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-0a -> 00-00-00-00-00-02
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-02
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 1a-d9-04-64-cd-4e
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> f6-7d-b7-52-f8-4f
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-03
-WARNING:openflow.igmp_manager:Link down: 1a-d9-04-64-cd-4e -> 00-00-00-00-00-03
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-03
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-05 -> 00-00-00-00-00-03
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-03
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-0b
+WARNING:openflow.igmp_manager:Link down: f6-7d-b7-52-f8-4f -> 00-00-00-00-00-03
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-03
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-05
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-03
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-0b
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-03
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-0b -> 00-00-00-00-00-03
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-03
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-03
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-04
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-04 -> 00-00-00-00-00-08
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-04
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-09 -> 00-00-00-00-00-05
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-05
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-05 -> 00-00-00-00-00-09
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-05
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-05
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-06 -> 00-00-00-00-00-09
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-06 -> 00-00-00-00-00-08
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-09 -> 00-00-00-00-00-06
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-06
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-09 -> 00-00-00-00-00-07
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-07 -> 00-00-00-00-00-09
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-07
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-07 -> 00-00-00-00-00-08
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-07
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-0a
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-0a -> 00-00-00-00-00-08
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-08
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-09 -> 00-00-00-00-00-0b
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-09
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-0b -> 00-00-00-00-00-09
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-09
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-09
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-0a
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-0b
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
-WARNING:openflow.igmp_manager:Router down: 1a-d9-04-64-cd-4e
+WARNING:openflow.igmp_manager:Router down: f6-7d-b7-52-f8-4f
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 1a-d9-04-64-cd-4e (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver f6-7d-b7-52-f8-4f (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.groupflow:Could not get connection for router: f6-7d-b7-52-f8-4f
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 1a-d9-04-64-cd-4e
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07

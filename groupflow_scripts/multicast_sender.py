@@ -2,7 +2,9 @@ import socket
 import struct
 import sys
 import threading
+import os
 import time
+from time import sleep
 
 # To work in Mininet routes must be configured for hosts similar to the following:
 # route add -net 224.0.0.0/4 h1-eth0
@@ -23,11 +25,12 @@ PACKET_SIZE = 512
 def send_multicast_packet():
     global send_packet_index, send_packet_times
     send_string = str(send_packet_index).zfill(PACKET_SIZE)
-    print 'Send String: ' + str(send_string)
+    print 'Send String: ' + str(int(send_string))
     send_packet_times[send_packet_index] = time.time()
     try:
         bytes = send_socket.sendto(send_string, (multicast_group, multicast_port))
-        print 'Sent multicast packet ' + str(send_packet_index) + ' at: ' + str(send_packet_times[send_packet_index]) + ' (' + str(bytes) + ' bytes)'
+	str_time = '\t Time: ' + "{:0.6f}".format(send_packet_times[send_packet_index] * 1000) + ' ms'
+        print 'Sent multicast packet ' + str(send_packet_index) + ' at: ' + str_time + ' (' + str(bytes) + ' bytes)'
     except:
         print 'Socket error occurred, skipped sending packet: ' + str(send_packet_index)
     send_packet_index += 1
@@ -65,6 +68,7 @@ def main():
         if echo_index != last_echo_index:
             print '=================='
         print 'Echo P#: ' + echo_index + '\tHost: ' + str(addr[0]) + '\t Time: ' + "{:0.6f}".format(echo_time * 1000) + ' ms'
+	print '\n'
         last_echo_index = echo_index
 
 if __name__ == '__main__':

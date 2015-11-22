@@ -15,9 +15,11 @@ packets_to_receive = 0  # 0 specifies no limit to packet reception
 echo_port = 5008
 
 PACKET_SIZE = 512
+receive_packet_times = {}
+receive_packet_index = 0
 
 def main():
-    global multicast_group, multicast_port, packets_to_receive, echo_port, i, n 
+    global multicast_group, multicast_port, packets_to_receive, echo_port, receive_packet_times, receive_packet_index
     
     if len(sys.argv) > 1:
         multicast_group = sys.argv[1]
@@ -44,11 +46,15 @@ def main():
     recv_packets = 0
     while True:
         try:
+	    print "=" * 200
             data, addr = multicast_socket.recvfrom(PACKET_SIZE)
-	    print 'Received packet of data ' + str(int(data)) + ' from sender ' + str(addr[0]) + ':' + str(echo_port)
+	    receive_packet_times[receive_packet_index] = time.time()	
+	    str_time = '\t Time: ' + "{:0.6f}".format(receive_packet_times[receive_packet_index] * 1000) + ' ms'
+	    print 'Received packet of data ' + str(int(data)) + ' from sender ' + str(addr[0]) + ':' + str(echo_port) + ' at ' + str_time
             echo_socket.sendto(data, (addr[0], echo_port))
-            print 'Echo packet ' + str(int(data)) + ' to ' + str(addr[0]) + ':' + str(echo_port)
+            print 'ACK Sending : Echo packet ' + str(int(data)) + ' to ' + str(addr[0]) + ':' + str(echo_port) + ' at ' + str_time
             recv_packets += 1
+	    receive_packet_index += 1
         except socket.error, e:
             print 'Exception'
         

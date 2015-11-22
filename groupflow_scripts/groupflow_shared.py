@@ -450,6 +450,7 @@ class StaticMulticastGroupDefinition(object):
     ''' 
     def launch_normal_mcast_applications(self, net):
         print 'Initializing multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
+
 	send_log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(self.src_host) + '.log'
         with open(send_log_filename, "w") as fnull:
             self.src_process = net.get(self.src_host).popen(['python', './multicast_sender.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True)
