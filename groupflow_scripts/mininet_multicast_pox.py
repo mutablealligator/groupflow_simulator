@@ -120,31 +120,37 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
             print 'Predicted average group size: ' + str(host_join_sum)
             i = 0
             congested_switch_num_links = 0
-	    n = 1
+	    n = 5
             #run(hosts, host_join_probabilities, mcast_group_last_octet, test_groups, i, mcast_port, test_group_launch_times, net)
+	    global_seqnum = 0
 
-            while True:                
+            while i < n:                
                 print 'Generating multicast group #' + str(i)
 		message = parser.recvMsg()
                 sender_host = message.getSender()
 		receivers = message.getReceivers()
+		length = message.getPacketSize()
+		msg = message.getMessage()
+		seq_num = message.getSeqNum()
+		mtag = message.getMtag()
                 
                 # Initialize the group
                 # Note - This method of group IP generation will need to be modified slightly to support more than
                 # 255 groups
-                #mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
-		mcast_ip = '224.1.1.1'
+                mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
+		#mcast_ip = '224.1.1.1'
                 test_groups.append(StaticMulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
                 launch_time = time()
                 test_group_launch_times.append(launch_time)
                 print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
                 print 'Sender: ' + str(sender_host)
                 print 'Receivers: ' + str(receivers)
-                test_groups[-1].launch_normal_mcast_applications(net, i, message.getMessage(), message.getPacketSize())
+                test_groups[-1].launch_normal_mcast_applications(net, mtag, global_seqnum, msg, length)
+		global_seqnum += message.getNoOfReceivers()
                 mcast_group_last_octet = mcast_group_last_octet + 1
                 mcast_port = mcast_port + 2
                 i += 1
-                wait_time = 8 + uniform(0, 1)
+                wait_time = 3 + uniform(0, 1)
                 
                 # Read from the log file to determine if a link has become overloaded, and cease generating new groups if so
                 print 'Check for congested link...'

@@ -2,16 +2,18 @@ import sys
 import os
 import time
 from time import sleep
+import re
 
 hashMap = []
 
 class Message(object):
-	def __init__(self, msg, length, mtag, sender, receivers = []):
-		self.msg = msg
+	def __init__(self, msg, length, mtag, seqnum, sender, receivers = [], asender = 0):
+		self.msg = "src:" + asender + ":mtag:" + mtag + ":" + msg
 		self.length = length
 		self.mtag = mtag
 		self.sender = sender
 		self.receivers = receivers
+		self.seqnum = seqnum
 	
 	def debug_print(self):
 		print "Sending Message of length " + str(self.length) + " from " + self.sender + " to " + ",".join(self.receivers)
@@ -29,16 +31,25 @@ class Message(object):
 	def getPacketSize(self):
 		return self.length
 
-	def getNofReceivers(self):
+	def getNoOfReceivers(self):
 		return len(self.receivers)
+	
+	def getMtag(self):
+		return self.mtag
+
+	def getSeqNum(self):
+		return self.seqnum
 
 def parseFile(filename):
 	text_file = open(filename, "r")
+	matchObj = re.match( r'.*message(\d+)', filename, re.M|re.I)
+	seqnum = matchObj.group(1)
 	lines = text_file.readlines()
 	text_file.close()
 	for i in range(0,len(lines)):
 		lines[i] = lines[i].strip('\r\n')
 	sender = 'h' + lines[0]
+	asender = lines[0]
 	mtag = lines[1]
 	nr = lines[2]
 	nr = int(nr)
@@ -50,7 +61,7 @@ def parseFile(filename):
 	msg = ""
 	for m in content:
 		msg += m
-	return Message(msg, length, mtag, sender, recvs)
+	return Message(msg, length, mtag, seqnum, sender, recvs, asender)
 
 def getPath():
 	return "/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/"

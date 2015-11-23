@@ -1,1081 +1,203 @@
 INFO:openflow.flow_tracker:Set QueryInterval:1.0 LinkMaxBw:19.0Mbps LinkCongThreshold:13.0Mbps AvgSmoothFactor:0.5 LogPeakUsage:1.0
-INFO:openflow.flow_tracker:Writing flow tracker info to file: flowtracker_18-33-59_November-22_2015.txt
-INFO:misc.groupflow_event_tracer:Writing event trace info to file: eventtrace_18-33-59_November-22_2015.txt
+INFO:openflow.flow_tracker:Writing flow tracker info to file: flowtracker_15-15-23_November-23_2015.txt
+INFO:misc.groupflow_event_tracer:Writing event trace info to file: eventtrace_15-15-23_November-23_2015.txt
 INFO:misc.benchmark_terminator:Module initialized.
 INFO:openflow.groupflow:Set link weight type: 1
 INFO:openflow.groupflow:Set StaticLinkWeight:1.0 UtilLinkWeight:10.0
 INFO:openflow.groupflow:Set FlowReplacementMode:0 FlowReplacementInterval:15.0 seconds
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448246042.53
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448246043.19
-WARNING:openflow.igmp_manager:1 not found in ports of router: 00-00-00-00-00-03
+WARNING:openflow.of_01:<class 'pox.openflow.PacketIn'> raised on dummy OpenFlow nexus
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448320526.09
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448320526.76
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448320527.42
 WARNING:openflow.igmp_manager:1 not found in ports of router: 00-00-00-00-00-04
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448246043.86
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448246043.86
-WARNING:openflow.igmp_manager:3 not found in ports of router: 00-00-00-00-00-03
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00306718335007 Time:1448246044.53
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000659641733828 Time:1448246044.53
-WARNING:openflow.igmp_manager:2 not found in ports of router: 00-00-00-00-00-0b
-WARNING:openflow.igmp_manager:4 not found in ports of router: 00-00-00-00-00-03
-WARNING:openflow.igmp_manager:1 not found in ports of router: 00-00-00-00-00-0a
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00349688808387 Time:1448246045.21
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00112130828159 Time:1448246045.21
-WARNING:openflow.igmp_manager:2 not found in ports of router: 00-00-00-00-00-0a
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00349688808387 Time:1448246045.88
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000961121384224 Time:1448246045.88
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00349310000973 Time:1448246046.55
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000952939140362 Time:1448246046.55
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00174655000486 Time:1448246047.22
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000671477400493 Time:1448246047.22
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00174655000486 Time:1448246047.89
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000682360717651 Time:1448246047.89
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00129484815392 Time:1448246048.56
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000530403061612 Time:1448246048.56
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000677262625882 Time:1448246049.26
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000309118502925 Time:1448246049.26
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000677262625882 Time:1448246049.93
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000241907319209 Time:1448246049.93
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000338631312941 Time:1448246050.62
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00018803616676 Time:1448246050.62
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000576936970149 Time:1448246051.3
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000283853884163 Time:1448246051.3
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000468594553019 Time:1448246051.97
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000288589650444 Time:1448246051.97
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-03 Port: None
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0 Time:1448320528.12
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0 Time:1448320528.12
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00216967805025 Time:1448320528.81
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000542419512563 Time:1448320528.81
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00108483902513 Time:1448320529.48
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000271209756282 Time:1448320529.48
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00108483902513 Time:1448320530.14
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000331198972506 Time:1448320530.14
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000806802664181 Time:1448320530.82
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000430508893823 Time:1448320530.82
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000806802664181 Time:1448320531.51
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000430508893823 Time:1448320531.51
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000555614408122 Time:1448320532.17
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000291413868041 Time:1448320532.17
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000336388648923 Time:1448320532.84
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000244866762045 Time:1448320532.84
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000336388648923 Time:1448320533.51
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000217033984345 Time:1448320533.51
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000168194324461 Time:1448320534.18
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000122433381023 Time:1448320534.18
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000459180577827 Time:1448320534.85
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000367207418241 Time:1448320534.85
+INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000459180577827 Time:1448320535.56
+INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000367207418241 Time:1448320535.56
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: fe-e9-eb-5e-90-45 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 527, in _handle_PacketIn
-    path_setup.install_openflow_rules(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 330, in install_openflow_rules
-    connection.send(outgoing_rules[router_dpid])
-  File "/usr/local/home/cse222a05/pox/pox/openflow/of_01.py", line 692, in send
-    data = data.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 2322, in pack
-    packed += i.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 1560, in pack
-    self.max_len)
-error: cannot convert argument to integer
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00048583606061 Time:1448246052.63
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000323923195636 Time:1448246052.63
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000332168567607 Time:1448246053.3
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000195825720271 Time:1448246053.3
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00031188967987 Time:1448246053.97
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00016562381634 Time:1448246053.97
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00031188967987 Time:1448246054.64
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00016562381634 Time:1448246054.64
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000217019413917 Time:1448246055.31
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000138609979217 Time:1448246055.31
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000197720621591 Time:1448246055.98
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113928272073 Time:1448246055.98
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000197720621591 Time:1448246056.65
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113928272073 Time:1448246056.65
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027756355058 Time:1448246057.31
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000124365834054 Time:1448246057.31
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000182784850377 Time:1448246057.98
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106655931099 Time:1448246057.98
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000182784850377 Time:1448246058.65
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106655931099 Time:1448246058.65
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000180601390001 Time:1448246059.32
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109051550046 Time:1448246059.32
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274403171614 Time:1448246059.98
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101398745788 Time:1448246059.98
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274403171614 Time:1448246060.65
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000122157189165 Time:1448246060.65
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179173393691 Time:1448246061.32
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105705308099 Time:1448246061.32
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178790756016 Time:1448246061.99
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000100872243287 Time:1448246061.99
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178951190612 Time:1448246062.65
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.75325192211e-05 Time:1448246062.65
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274614292174 Time:1448246063.33
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127646858739 Time:1448246063.33
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178644067538 Time:1448246064.0
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108445658415 Time:1448246064.0
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178644067538 Time:1448246064.66
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108445658415 Time:1448246064.66
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178239209975 Time:1448246065.33
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.86821998353e-05 Time:1448246065.33
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274620058739 Time:1448246066.0
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000128281785642 Time:1448246066.0
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274620058739 Time:1448246066.67
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000128281785642 Time:1448246066.67
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179394147896 Time:1448246067.34
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108842477178 Time:1448246067.34
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178283729999 Time:1448246068.01
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.8930010042e-05 Time:1448246068.01
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178283729999 Time:1448246068.67
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.8930010042e-05 Time:1448246068.67
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273606965069 Time:1448246069.34
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000111068278908 Time:1448246069.34
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-03 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 527, in _handle_PacketIn
-    path_setup.install_openflow_rules(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 330, in install_openflow_rules
-    connection.send(outgoing_rules[router_dpid])
-  File "/usr/local/home/cse222a05/pox/pox/openflow/of_01.py", line 692, in send
-    data = data.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 2322, in pack
-    packed += i.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 1560, in pack
-    self.max_len)
-error: cannot convert argument to integer
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000257777950052 Time:1448246070.01
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117457665598 Time:1448246070.01
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000257777950052 Time:1448246070.68
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117457665598 Time:1448246070.68
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178345136013 Time:1448246071.35
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103151404078 Time:1448246071.35
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027455344497 Time:1448246072.02
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113434926779 Time:1448246072.02
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027455344497 Time:1448246072.69
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113434926779 Time:1448246072.69
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000272414397479 Time:1448246073.36
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118501854885 Time:1448246073.36
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178572548616 Time:1448246074.03
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103882697172 Time:1448246074.03
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178572548616 Time:1448246074.7
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103882697172 Time:1448246074.7
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274375479539 Time:1448246075.37
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011374599774 Time:1448246075.37
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273144499815 Time:1448246076.05
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011848388466 Time:1448246076.05
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273144499815 Time:1448246076.71
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011848388466 Time:1448246076.71
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178705258501 Time:1448246077.38
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103799710145 Time:1448246077.38
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273373473351 Time:1448246078.05
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011354404208 Time:1448246078.05
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273373473351 Time:1448246078.72
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011354404208 Time:1448246078.72
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273980886424 Time:1448246079.39
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118543299074 Time:1448246079.39
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179184018244 Time:1448246080.06
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104061095676 Time:1448246080.06
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179184018244 Time:1448246080.73
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104061095676 Time:1448246080.73
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273540605107 Time:1448246081.4
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0001136084827 Time:1448246081.4
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274346851823 Time:1448246082.06
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107357629483 Time:1448246082.06
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274346851823 Time:1448246082.73
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107357629483 Time:1448246082.73
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179242745113 Time:1448246083.4
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109495293246 Time:1448246083.4
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178462551934 Time:1448246084.07
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.92983527288e-05 Time:1448246084.07
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178462551934 Time:1448246084.73
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.92983527288e-05 Time:1448246084.73
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274107272299 Time:1448246085.4
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117393615209 Time:1448246085.4
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178632391226 Time:1448246086.07
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114394623883 Time:1448246086.07
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178632391226 Time:1448246086.75
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114394623883 Time:1448246086.75
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178574791832 Time:1448246087.42
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101768295377 Time:1448246087.42
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273528182569 Time:1448246088.09
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010726409492 Time:1448246088.09
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273528182569 Time:1448246088.75
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010726409492 Time:1448246088.75
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178445493043 Time:1448246089.42
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00012042506251 Time:1448246089.42
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179220768443 Time:1448246090.09
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104908484686 Time:1448246090.09
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179220768443 Time:1448246090.76
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104908484686 Time:1448246090.76
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274651848818 Time:1448246091.42
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109093870408 Time:1448246091.42
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178355580707 Time:1448246092.09
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110238660318 Time:1448246092.09
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178355580707 Time:1448246092.76
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110238660318 Time:1448246092.76
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017852365835 Time:1448246093.43
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.96818654604e-05 Time:1448246093.43
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274795908047 Time:1448246094.1
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117663510031 Time:1448246094.1
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274795908047 Time:1448246094.76
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117663510031 Time:1448246094.76
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178716869106 Time:1448246095.43
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114635043388 Time:1448246095.43
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178749001415 Time:1448246096.1
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101957432509 Time:1448246096.1
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178749001415 Time:1448246096.77
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101957432509 Time:1448246096.77
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273945882675 Time:1448246097.44
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118486507884 Time:1448246097.44
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178987047681 Time:1448246098.11
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000115095199322 Time:1448246098.11
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178987047681 Time:1448246098.78
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000115095199322 Time:1448246098.78
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178281841934 Time:1448246099.45
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.096540764e-05 Time:1448246099.45
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273908960897 Time:1448246100.11
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000124095233269 Time:1448246100.11
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273908960897 Time:1448246100.78
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000124095233269 Time:1448246100.78
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178924625251 Time:1448246101.45
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106713004807 Time:1448246101.45
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178744928871 Time:1448246102.12
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.79901627589e-05 Time:1448246102.12
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178744928871 Time:1448246102.79
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.79901627589e-05 Time:1448246102.79
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273600379079 Time:1448246103.46
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127668702325 Time:1448246103.46
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000177607222447 Time:1448246104.13
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108156663196 Time:1448246104.13
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000177607222447 Time:1448246104.79
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108156663196 Time:1448246104.79
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178087052185 Time:1448246105.46
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.85550754294e-05 Time:1448246105.46
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273778731157 Time:1448246106.13
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000116886069062 Time:1448246106.13
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273778731157 Time:1448246106.8
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000116886069062 Time:1448246106.8
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178500248855 Time:1448246107.47
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114242770082 Time:1448246107.47
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178800932141 Time:1448246108.14
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.06662045369e-05 Time:1448246108.14
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178800932141 Time:1448246108.81
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.06662045369e-05 Time:1448246108.81
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027438047203 Time:1448246109.48
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000124163016539 Time:1448246109.48
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178069335851 Time:1448246110.15
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106491806133 Time:1448246110.15
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178069335851 Time:1448246110.82
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106491806133 Time:1448246110.82
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178234095114 Time:1448246111.48
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.77805403485e-05 Time:1448246111.48
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000272223404299 Time:1448246112.15
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000126916343496 Time:1448246112.15
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000272223404299 Time:1448246112.82
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000126916343496 Time:1448246112.82
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178630551079 Time:1448246113.49
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108030543263 Time:1448246113.49
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178342397992 Time:1448246114.15
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.86028287775e-05 Time:1448246114.15
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178342397992 Time:1448246114.82
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.86028287775e-05 Time:1448246114.82
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000277242762415 Time:1448246115.49
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011722675074 Time:1448246115.49
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178666364037 Time:1448246116.16
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114402805698 Time:1448246116.16
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178666364037 Time:1448246116.83
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114402805698 Time:1448246116.83
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178314354194 Time:1448246117.51
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101747183471 Time:1448246117.51
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274922614035 Time:1448246118.17
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118531374346 Time:1448246118.17
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274922614035 Time:1448246118.84
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118531374346 Time:1448246118.84
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178234349365 Time:1448246119.51
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103796717299 Time:1448246119.51
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178570934755 Time:1448246120.18
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107667600112 Time:1448246120.18
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178570934755 Time:1448246120.85
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107667600112 Time:1448246120.85
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273819144 Time:1448246121.52
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000121478354694 Time:1448246121.52
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178772506023 Time:1448246122.19
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105383039897 Time:1448246122.19
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178772506023 Time:1448246122.86
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105383039897 Time:1448246122.86
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178818698915 Time:1448246123.53
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108493639019 Time:1448246123.53
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274303645791 Time:1448246124.2
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000122063290615 Time:1448246124.2
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274303645791 Time:1448246124.87
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000122063290615 Time:1448246124.87
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178772369986 Time:1448246125.54
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105653552159 Time:1448246125.54
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000177824224563 Time:1448246126.21
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.71022205599e-05 Time:1448246126.21
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000177824224563 Time:1448246126.87
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.71022205599e-05 Time:1448246126.87
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273774352897 Time:1448246127.54
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127255738608 Time:1448246127.54
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178495242749 Time:1448246128.21
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108117806278 Time:1448246128.21
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178495242749 Time:1448246128.88
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108117806278 Time:1448246128.88
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179053323157 Time:1448246129.54
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.87438856591e-05 Time:1448246129.54
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273264031548 Time:1448246130.21
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110951434856 Time:1448246130.21
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273264031548 Time:1448246130.88
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110951434856 Time:1448246130.88
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000256573523696 Time:1448246131.55
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117112030053 Time:1448246131.55
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178979982091 Time:1448246132.22
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103199965915 Time:1448246132.22
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178979982091 Time:1448246132.88
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103199965915 Time:1448246132.88
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000272320467129 Time:1448246133.55
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000112803087623 Time:1448246133.55
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000270697885368 Time:1448246134.22
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117977588844 Time:1448246134.22
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000270697885368 Time:1448246134.89
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117977588844 Time:1448246134.89
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178759910387 Time:1448246135.56
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103641499236 Time:1448246135.56
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000272989873952 Time:1448246136.23
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113334455113 Time:1448246136.23
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000272989873952 Time:1448246136.9
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113334455113 Time:1448246136.9
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027303677151 Time:1448246137.56
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118297295522 Time:1448246137.56
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178425230108 Time:1448246138.23
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103707137402 Time:1448246138.23
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178425230108 Time:1448246138.9
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103707137402 Time:1448246138.9
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274185578748 Time:1448246139.57
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113610922548 Time:1448246139.57
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273900215879 Time:1448246140.24
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118511707467 Time:1448246140.24
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273900215879 Time:1448246140.91
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118511707467 Time:1448246140.91
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178741099886 Time:1448246141.57
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103912031983 Time:1448246141.57
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273790740578 Time:1448246142.24
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011363926277 Time:1448246142.24
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273790740578 Time:1448246142.91
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011363926277 Time:1448246142.91
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027346351699 Time:1448246143.58
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118452670955 Time:1448246143.58
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178658360092 Time:1448246144.24
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103859179254 Time:1448246144.24
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178658360092 Time:1448246144.91
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103859179254 Time:1448246144.91
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274228185508 Time:1448246145.58
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113639909891 Time:1448246145.58
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274167626315 Time:1448246146.24
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118624945316 Time:1448246146.24
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274167626315 Time:1448246146.91
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118624945316 Time:1448246146.91
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178408445509 Time:1448246147.58
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103881704441 Time:1448246147.58
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027432407469 Time:1448246148.25
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113659310862 Time:1448246148.25
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027432407469 Time:1448246148.93
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113659310862 Time:1448246148.93
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273440976364 Time:1448246149.6
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107233194995 Time:1448246149.6
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178761351384 Time:1448246150.27
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010936586018 Time:1448246150.27
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178761351384 Time:1448246150.94
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010936586018 Time:1448246150.94
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027415373019 Time:1448246151.6
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000116333214753 Time:1448246151.6
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274273186691 Time:1448246152.27
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108866726877 Time:1448246152.27
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274273186691 Time:1448246152.94
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108866726877 Time:1448246152.94
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017870723779 Time:1448246153.61
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110068625754 Time:1448246153.61
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178452322614 Time:1448246154.28
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.95327149967e-05 Time:1448246154.28
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178452322614 Time:1448246154.95
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.95327149967e-05 Time:1448246154.95
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273807212293 Time:1448246155.61
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011754005214 Time:1448246155.61
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017862391739 Time:1448246156.28
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011446558399 Time:1448246156.28
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017862391739 Time:1448246156.95
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011446558399 Time:1448246156.95
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178928864644 Time:1448246157.62
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101921551608 Time:1448246157.62
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273784486325 Time:1448246158.29
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107508488761 Time:1448246158.29
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273784486325 Time:1448246158.96
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107508488761 Time:1448246158.96
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178763225659 Time:1448246159.62
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0001207882299 Time:1448246159.62
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178663474615 Time:1448246160.29
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104955418022 Time:1448246160.29
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178663474615 Time:1448246160.96
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104955418022 Time:1448246160.96
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273943957176 Time:1448246161.63
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109009186569 Time:1448246161.63
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178763611105 Time:1448246162.3
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000121211785528 Time:1448246162.3
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178763611105 Time:1448246162.97
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000121211785528 Time:1448246162.97
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178548367793 Time:1448246163.64
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.40668015035e-05 Time:1448246163.64
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274350185357 Time:1448246164.3
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114785502743 Time:1448246164.3
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274350185357 Time:1448246164.97
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114785502743 Time:1448246164.97
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179304315963 Time:1448246165.64
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113287539142 Time:1448246165.64
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178635574555 Time:1448246166.31
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101203324969 Time:1448246166.31
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178635574555 Time:1448246166.98
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101203324969 Time:1448246166.98
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274574560189 Time:1448246167.65
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118478502908 Time:1448246167.65
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178638155431 Time:1448246168.31
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011502891054 Time:1448246168.31
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178638155431 Time:1448246168.98
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011502891054 Time:1448246168.98
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178354425086 Time:1448246169.65
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.09599329888e-05 Time:1448246169.65
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274566068343 Time:1448246170.32
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00012430700221 Time:1448246170.32
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274566068343 Time:1448246170.99
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00012430700221 Time:1448246170.99
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178711480368 Time:1448246171.66
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117923431605 Time:1448246171.66
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178594673372 Time:1448246172.33
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.24279537327e-05 Time:1448246172.33
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178594673372 Time:1448246173.0
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.24279537327e-05 Time:1448246173.0
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274797704486 Time:1448246173.67
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000125078821452 Time:1448246173.67
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178877731156 Time:1448246174.33
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118388936431 Time:1448246174.33
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178877731156 Time:1448246175.0
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118388936431 Time:1448246175.0
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178829092157 Time:1448246175.67
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.26093218364e-05 Time:1448246175.67
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027453534224 Time:1448246176.34
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113950943942 Time:1448246176.34
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027453534224 Time:1448246177.01
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113950943942 Time:1448246177.01
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179204121724 Time:1448246177.67
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000112796884607 Time:1448246177.67
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178792366075 Time:1448246178.34
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010106319009 Time:1448246178.34
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178792366075 Time:1448246179.01
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010106319009 Time:1448246179.01
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274386652322 Time:1448246179.68
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118285028966 Time:1448246179.68
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178442505474 Time:1448246180.34
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114803779097 Time:1448246180.34
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178442505474 Time:1448246181.01
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114803779097 Time:1448246181.01
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179171928895 Time:1448246181.68
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.09267232151e-05 Time:1448246181.68
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273159362524 Time:1448246182.35
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0001242198817 Time:1448246182.35
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273159362524 Time:1448246183.02
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.0001242198817 Time:1448246183.02
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178955478193 Time:1448246183.69
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106788046996 Time:1448246183.69
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178412786253 Time:1448246184.36
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.79982408689e-05 Time:1448246184.36
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178412786253 Time:1448246185.03
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.79982408689e-05 Time:1448246185.03
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274634144108 Time:1448246185.69
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127888874061 Time:1448246185.69
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178650293395 Time:1448246186.36
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108524903958 Time:1448246186.36
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178650293395 Time:1448246187.03
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108524903958 Time:1448246187.03
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179195256908 Time:1448246187.7
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.89737340076e-05 Time:1448246187.7
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274471121709 Time:1448246188.37
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117242674009 Time:1448246188.37
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274471121709 Time:1448246189.03
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117242674009 Time:1448246189.03
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178905817822 Time:1448246189.7
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114449159773 Time:1448246189.7
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178652685547 Time:1448246190.37
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101814888864 Time:1448246190.37
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178652685547 Time:1448246191.04
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101814888864 Time:1448246191.04
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000280973352888 Time:1448246191.71
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000119068049945 Time:1448246191.71
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178795876057 Time:1448246192.38
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000115308549651 Time:1448246192.38
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178795876057 Time:1448246193.04
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000115308549651 Time:1448246193.04
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017888301134 Time:1448246193.71
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000102232632125 Time:1448246193.71
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274514410365 Time:1448246194.38
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118608687596 Time:1448246194.38
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274514410365 Time:1448246195.05
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118608687596 Time:1448246195.05
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178795581444 Time:1448246195.72
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103988584756 Time:1448246195.72
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178706230607 Time:1448246196.39
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107859782346 Time:1448246196.39
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178706230607 Time:1448246197.06
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107859782346 Time:1448246197.06
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274599967886 Time:1448246197.73
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000121621631499 Time:1448246197.73
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178842071433 Time:1448246198.39
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105424814213 Time:1448246198.39
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178842071433 Time:1448246199.06
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105424814213 Time:1448246199.06
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017859415166 Time:1448246199.73
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.72401954992e-05 Time:1448246199.73
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274563289493 Time:1448246200.41
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127600776251 Time:1448246200.41
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274563289493 Time:1448246201.08
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127600776251 Time:1448246201.08
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179000640768 Time:1448246201.74
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108446818651 Time:1448246201.74
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178492738316 Time:1448246202.41
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.87251406456e-05 Time:1448246202.41
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178492738316 Time:1448246203.08
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.87251406456e-05 Time:1448246203.08
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275226977179 Time:1448246203.75
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000128332861345 Time:1448246203.75
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017881350096 Time:1448246204.42
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010882326338 Time:1448246204.42
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017881350096 Time:1448246205.09
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010882326338 Time:1448246205.09
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178583553145 Time:1448246205.76
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.89529261909e-05 Time:1448246205.76
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274595067996 Time:1448246206.43
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000111200416431 Time:1448246206.43
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274595067996 Time:1448246207.09
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000111200416431 Time:1448246207.09
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00025714797291 Time:1448246207.76
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117428050715 Time:1448246207.76
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178783600039 Time:1448246208.43
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103378669396 Time:1448246208.43
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178783600039 Time:1448246209.1
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103378669396 Time:1448246209.1
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274487980655 Time:1448246209.77
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113490914745 Time:1448246209.77
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000272266302277 Time:1448246210.44
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118546283142 Time:1448246210.44
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000272266302277 Time:1448246211.1
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118546283142 Time:1448246211.1
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178430547953 Time:1448246211.77
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103846658947 Time:1448246211.77
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274439065885 Time:1448246212.44
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113640774077 Time:1448246212.44
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274439065885 Time:1448246213.11
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113640774077 Time:1448246213.11
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274648690321 Time:1448246213.77
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118722813707 Time:1448246213.77
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178755449801 Time:1448246214.44
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010403887462 Time:1448246214.44
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178755449801 Time:1448246215.11
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010403887462 Time:1448246215.11
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027432482775 Time:1448246215.78
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113733919823 Time:1448246215.78
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274278811964 Time:1448246216.45
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118541005558 Time:1448246216.45
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274278811964 Time:1448246217.12
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118541005558 Time:1448246217.12
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178707304827 Time:1448246217.78
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010383421981 Time:1448246217.78
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275040482019 Time:1448246218.45
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113832986448 Time:1448246218.45
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275040482019 Time:1448246219.12
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113832986448 Time:1448246219.12
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273461060296 Time:1448246219.79
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107407086249 Time:1448246219.79
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178653372522 Time:1448246220.46
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109430290525 Time:1448246220.46
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178653372522 Time:1448246221.13
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109430290525 Time:1448246221.13
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274293120329 Time:1448246221.8
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000116434146232 Time:1448246221.8
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273818215283 Time:1448246222.47
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108760456461 Time:1448246222.47
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273818215283 Time:1448246223.13
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108760456461 Time:1448246223.13
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178748937342 Time:1448246223.8
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110216022626 Time:1448246223.8
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178385099068 Time:1448246224.47
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.95930405987e-05 Time:1448246224.47
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178385099068 Time:1448246225.14
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.95930405987e-05 Time:1448246225.14
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274253908437 Time:1448246225.81
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117530361537 Time:1448246225.81
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178941732832 Time:1448246226.48
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114478105618 Time:1448246226.48
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178941732832 Time:1448246227.14
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114478105618 Time:1448246227.14
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178517774573 Time:1448246227.81
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101844515615 Time:1448246227.81
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273889580387 Time:1448246228.48
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118531030291 Time:1448246228.48
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273889580387 Time:1448246229.15
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118531030291 Time:1448246229.15
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178583480785 Time:1448246229.82
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114907593262 Time:1448246229.82
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178928778939 Time:1448246230.49
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010211071098 Time:1448246230.49
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178928778939 Time:1448246231.15
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010211071098 Time:1448246231.15
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273777362151 Time:1448246231.82
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107528750491 Time:1448246231.82
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178364169879 Time:1448246232.49
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000120352357429 Time:1448246232.49
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178364169879 Time:1448246233.16
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000120352357429 Time:1448246233.16
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178773688379 Time:1448246233.83
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.36705258009e-05 Time:1448246233.83
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273822608015 Time:1448246234.49
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114359263652 Time:1448246234.49
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273822608015 Time:1448246235.16
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114359263652 Time:1448246235.16
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178613359245 Time:1448246235.83
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000112997330266 Time:1448246235.83
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178699651002 Time:1448246236.5
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101103915094 Time:1448246236.5
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178699651002 Time:1448246237.17
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101103915094 Time:1448246237.17
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027447350581 Time:1448246237.84
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118220465425 Time:1448246237.84
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178809321231 Time:1448246238.51
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011486436924 Time:1448246238.51
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178809321231 Time:1448246239.17
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011486436924 Time:1448246239.17
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178773718165 Time:1448246239.84
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000102074403929 Time:1448246239.84
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274476097801 Time:1448246240.51
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118716979864 Time:1448246240.51
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274476097801 Time:1448246241.18
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118716979864 Time:1448246241.18
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178606773923 Time:1448246241.85
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000115105215197 Time:1448246241.85
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179171652711 Time:1448246242.52
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.11035320608e-05 Time:1448246242.52
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179171652711 Time:1448246243.18
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.11035320608e-05 Time:1448246243.18
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273969651323 Time:1448246243.86
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000124434748525 Time:1448246243.86
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178628593436 Time:1448246244.53
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106767179227 Time:1448246244.53
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178628593436 Time:1448246245.2
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106767179227 Time:1448246245.2
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178581749266 Time:1448246245.86
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.78732268761e-05 Time:1448246245.86
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275051815848 Time:1448246246.53
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127993509301 Time:1448246246.53
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275051815848 Time:1448246247.2
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127993509301 Time:1448246247.2
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178431608159 Time:1448246247.87
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108519582669 Time:1448246247.87
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178377742819 Time:1448246248.53
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.88181755977e-05 Time:1448246248.53
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178377742819 Time:1448246249.2
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.88181755977e-05 Time:1448246249.2
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275386352548 Time:1448246249.87
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117327976524 Time:1448246249.87
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178870485114 Time:1448246250.54
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114450382745 Time:1448246250.54
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178870485114 Time:1448246251.21
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114450382745 Time:1448246251.21
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178652860538 Time:1448246251.87
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.0676119201e-05 Time:1448246251.87
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274344290103 Time:1448246252.54
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000124227274931 Time:1448246252.54
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274344290103 Time:1448246253.21
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000124227274931 Time:1448246253.21
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178298778114 Time:1448246253.88
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000106349663554 Time:1448246253.88
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000184491614042 Time:1448246254.54
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.8275858913e-05 Time:1448246254.54
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000184491614042 Time:1448246255.21
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.8275858913e-05 Time:1448246255.21
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273405246784 Time:1448246255.88
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127743499931 Time:1448246255.88
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000177412629848 Time:1448246256.55
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108174669262 Time:1448246256.55
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000177412629848 Time:1448246257.22
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108174669262 Time:1448246257.22
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017989580766 Time:1448246257.89
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.87700667052e-05 Time:1448246257.89
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274724449742 Time:1448246258.55
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117248085984 Time:1448246258.55
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274724449742 Time:1448246259.22
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117248085984 Time:1448246259.22
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178460201663 Time:1448246259.89
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114384780446 Time:1448246259.89
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178484931337 Time:1448246260.56
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101772495445 Time:1448246260.56
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178484931337 Time:1448246261.23
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101772495445 Time:1448246261.23
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00028053777745 Time:1448246261.9
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000119036889676 Time:1448246261.9
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178613007182 Time:1448246262.57
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000115234525105 Time:1448246262.57
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178613007182 Time:1448246263.24
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000115234525105 Time:1448246263.24
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178730716147 Time:1448246263.9
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010229704418 Time:1448246263.9
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275371550448 Time:1448246264.57
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118993047176 Time:1448246264.57
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275371550448 Time:1448246265.24
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118993047176 Time:1448246265.24
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178648077133 Time:1448246265.91
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104165587244 Time:1448246265.91
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178705990934 Time:1448246266.58
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107789258778 Time:1448246266.58
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178705990934 Time:1448246267.25
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107789258778 Time:1448246267.25
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275205412868 Time:1448246267.92
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000121779652601 Time:1448246267.92
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178555419151 Time:1448246268.59
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105476621094 Time:1448246268.59
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178555419151 Time:1448246269.26
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105476621094 Time:1448246269.26
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179086593367 Time:1448246269.93
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108478698008 Time:1448246269.93
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027446377891 Time:1448246270.59
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000121861120574 Time:1448246270.59
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027446377891 Time:1448246271.26
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000121861120574 Time:1448246271.26
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00017881952091 Time:1448246271.93
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000105612136417 Time:1448246271.93
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178475317208 Time:1448246272.6
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.73840648646e-05 Time:1448246272.6
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178475317208 Time:1448246273.27
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.73840648646e-05 Time:1448246273.27
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274835181956 Time:1448246273.93
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000127526437099 Time:1448246273.93
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179203940604 Time:1448246274.6
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108397758312 Time:1448246274.6
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000179203940604 Time:1448246275.27
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108397758312 Time:1448246275.27
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178623974828 Time:1448246275.94
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.8690090689e-05 Time:1448246275.94
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274528555542 Time:1448246276.61
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000111138522753 Time:1448246276.61
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274528555542 Time:1448246277.28
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000111138522753 Time:1448246277.28
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000257653169526 Time:1448246277.94
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117433007636 Time:1448246277.94
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178881359882 Time:1448246278.61
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103373129753 Time:1448246278.61
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178881359882 Time:1448246279.28
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103373129753 Time:1448246279.28
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273415915451 Time:1448246279.95
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113382666741 Time:1448246279.95
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.0002717471277 Time:1448246280.62
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118279512915 Time:1448246280.62
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.0002717471277 Time:1448246281.29
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118279512915 Time:1448246281.29
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178481998961 Time:1448246281.95
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103677960323 Time:1448246281.95
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274916518337 Time:1448246282.62
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113747235401 Time:1448246282.62
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274916518337 Time:1448246283.29
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113747235401 Time:1448246283.29
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273616336718 Time:1448246283.96
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118447122835 Time:1448246283.96
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178956714533 Time:1448246284.62
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103904821964 Time:1448246284.62
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178956714533 Time:1448246285.29
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103904821964 Time:1448246285.29
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274469582153 Time:1448246285.96
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113749789961 Time:1448246285.96
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274045858081 Time:1448246286.63
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118589234495 Time:1448246286.63
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274045858081 Time:1448246287.3
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000118589234495 Time:1448246287.3
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178252335395 Time:1448246287.97
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103715872896 Time:1448246287.97
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275073067318 Time:1448246288.64
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113878307144 Time:1448246288.64
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000275073067318 Time:1448246289.31
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113878307144 Time:1448246289.31
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274118439415 Time:1448246289.97
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00011867503094 Time:1448246289.97
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178225515248 Time:1448246290.64
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103837255599 Time:1448246290.64
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178225515248 Time:1448246291.31
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000103837255599 Time:1448246291.31
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-ERROR:core:Exception while handling OpenFlowNexus!PacketIn...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1174, in _handle_PacketIn
-    receiving_router.process_igmp_event(event, igmp_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 783, in process_igmp_event
-    elif igmp_pkt.msg_type == MEMBERSHIP_QUERY_V3 and igmp_pkt.self.suppress_router_processing == False \
-AttributeError: 'igmpv3' object has no attribute 'self'
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274105713922 Time:1448246291.98
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113702795804 Time:1448246291.98
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274420677524 Time:1448246292.65
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010742927094 Time:1448246292.65
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274420677524 Time:1448246293.32
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010742927094 Time:1448246293.32
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178618081865 Time:1448246293.99
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109420867729 Time:1448246293.99
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273199039586 Time:1448246294.66
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000116215724741 Time:1448246294.66
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000273199039586 Time:1448246295.32
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000116215724741 Time:1448246295.32
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.00027326520245 Time:1448246295.99
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000108737489356 Time:1448246295.99
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178762408445 Time:1448246296.66
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110224453435 Time:1448246296.66
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178762408445 Time:1448246297.33
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000110224453435 Time:1448246297.33
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178715229602 Time:1448246297.99
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.97507865739e-05 Time:1448246297.99
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274128211184 Time:1448246298.66
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117529878026 Time:1448246298.66
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274128211184 Time:1448246299.33
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000117529878026 Time:1448246299.33
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178638484195 Time:1448246300.0
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114507382228 Time:1448246300.0
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178766233306 Time:1448246300.67
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010192585703 Time:1448246300.67
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178766233306 Time:1448246301.33
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00010192585703 Time:1448246301.33
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274251912942 Time:1448246302.0
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000107571511371 Time:1448246302.0
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178831128141 Time:1448246302.67
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00012055351425 Time:1448246302.67
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178831128141 Time:1448246303.34
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00012055351425 Time:1448246303.34
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178625988563 Time:1448246304.01
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000104880385308 Time:1448246304.01
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274430409277 Time:1448246304.68
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109058279456 Time:1448246304.68
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274430409277 Time:1448246305.35
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000109058279456 Time:1448246305.35
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178311211015 Time:1448246306.02
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.00012137782544 Time:1448246306.02
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178480096367 Time:1448246306.69
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.41401810854e-05 Time:1448246306.69
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178480096367 Time:1448246307.35
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 9.41401810854e-05 Time:1448246307.35
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000274348666269 Time:1448246308.02
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000114809774401 Time:1448246308.02
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178657208706 Time:1448246308.69
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113204694446 Time:1448246308.69
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178657208706 Time:1448246309.36
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000113204694446 Time:1448246309.36
-INFO:openflow.flow_tracker:Network peak link throughput (Mbps): 0.000178383581701 Time:1448246310.03
-INFO:openflow.flow_tracker:Network avg link throughput (Mbps): 0.000101225461647 Time:1448246310.03
-INFO:openflow.flow_tracker:Termination signalled, closed log file: flowtracker_18-33-59_November-22_2015.txt
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
+INFO:openflow.flow_tracker:Termination signalled, closed log file: flowtracker_15-15-23_November-23_2015.txt
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-01
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-03 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: fe-e9-eb-5e-90-45 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-ERROR:core:Exception while handling Discovery!LinkEvent...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
-    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
-    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 376, in update_flow_placement
-    self.install_openflow_rules(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 330, in install_openflow_rules
-    connection.send(outgoing_rules[router_dpid])
-  File "/usr/local/home/cse222a05/pox/pox/openflow/of_01.py", line 692, in send
-    data = data.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 2322, in pack
-    packed += i.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 1560, in pack
-    self.max_len)
-error: cannot convert argument to integer
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-01
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-ERROR:core:Exception while handling Discovery!LinkEvent...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
-    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
-    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 376, in update_flow_placement
-    self.install_openflow_rules(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 330, in install_openflow_rules
-    connection.send(outgoing_rules[router_dpid])
-  File "/usr/local/home/cse222a05/pox/pox/openflow/of_01.py", line 692, in send
-    data = data.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 2322, in pack
-    packed += i.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 1560, in pack
-    self.max_len)
-error: cannot convert argument to integer
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: fe-e9-eb-5e-90-45 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-04 -> 00-00-00-00-00-02
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: fe-e9-eb-5e-90-45 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
+WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
+WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+WARNING:openflow.igmp_manager:Link down: fe-e9-eb-5e-90-45 -> 00-00-00-00-00-02
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-04
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-02 Port: None
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-0a
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: fe-e9-eb-5e-90-45 Port: None
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> fe-e9-eb-5e-90-45
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: fe-e9-eb-5e-90-45 Port: None
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-02
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: fe-e9-eb-5e-90-45 Port: None
 ERROR:core:Exception while handling OpenFlowNexus!ConnectionDown...
 Traceback (most recent call last):
   File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
@@ -1092,540 +214,172 @@ Traceback (most recent call last):
     return handler(self, *args, **kw)
   File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
     self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 376, in update_flow_placement
-    self.install_openflow_rules(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 330, in install_openflow_rules
-    connection.send(outgoing_rules[router_dpid])
-  File "/usr/local/home/cse222a05/pox/pox/openflow/of_01.py", line 692, in send
-    data = data.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 2322, in pack
-    packed += i.pack()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/libopenflow_01.py", line 1560, in pack
-    self.max_len)
-error: cannot convert argument to integer
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 7e-c4-e1-de-c7-4f
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Link down: fe-e9-eb-5e-90-45 -> 00-00-00-00-00-03
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-04 -> 00-00-00-00-00-02
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-04
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-02 -> 00-00-00-00-00-0a
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-0a -> 00-00-00-00-00-02
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.igmp_manager:Link down: 7e-c4-e1-de-c7-4f -> 00-00-00-00-00-02
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-02
-WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-02
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.igmp_manager:Link down: 7e-c4-e1-de-c7-4f -> 00-00-00-00-00-03
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-05
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 00-00-00-00-00-0b
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-0b -> 00-00-00-00-00-03
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-03 -> 7e-c4-e1-de-c7-4f
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-05 -> 00-00-00-00-00-03
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-03
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+ERROR:core:Exception while handling OpenFlowNexus!ConnectionDown...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1119, in _handle_ConnectionDown
+    self.raiseEvent(event)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-04
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-04
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-05 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+ERROR:core:Exception while handling OpenFlowNexus!ConnectionDown...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1119, in _handle_ConnectionDown
+    self.raiseEvent(event)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
 WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-05 -> 00-00-00-00-00-09
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-05
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
 WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-06
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-07
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
-WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-07
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-0a
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-ERROR:core:Exception while handling Discovery!LinkEvent...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
-    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
-    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
-    self.calc_path_tree_dijkstras(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
-    self._calc_link_weights()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
-    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
-ZeroDivisionError: float division by zero
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-0a -> 00-00-00-00-00-08
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
-ERROR:core:Exception while handling Discovery!LinkEvent...
-Traceback (most recent call last):
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
-    return self.raiseEvent(event, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
-    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
-    rv = event._invoke(handler, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
-    return handler(self, *args, **kw)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
-    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
-    self.calc_path_tree_dijkstras(groupflow_trace_event)
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
-    self._calc_link_weights()
-  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
-    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
-ZeroDivisionError: float division by zero
-WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-08
-WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-0b Port: None
 ERROR:core:Exception while handling OpenFlowNexus!ConnectionDown...
 Traceback (most recent call last):
   File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
@@ -1649,7 +403,111 @@ Traceback (most recent call last):
   File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
     sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
 ZeroDivisionError: float division by zero
-WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-0b -> 00-00-00-00-00-09
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-06
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-06
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+ERROR:core:Exception while handling OpenFlowNexus!ConnectionDown...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1119, in _handle_ConnectionDown
+    self.raiseEvent(event)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-07
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+ERROR:core:Exception while handling Discovery!LinkEvent...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1033, in _handle_LinkEvent
+    self.raiseEvent(MulticastTopoEvent(MulticastTopoEvent.LINK_DOWN, link_changes, self.adjacency))
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-07
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
+WARNING:openflow.flow_tracker:PortStats unavailable for Switch: 00-00-00-00-00-08 Port: None
+ERROR:core:Exception while handling OpenFlowNexus!ConnectionDown...
+Traceback (most recent call last):
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 231, in raiseEventNoErrors
+    return self.raiseEvent(event, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/igmp_manager.py", line 1119, in _handle_ConnectionDown
+    self.raiseEvent(event)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 278, in raiseEvent
+    rv = event._invoke(handler, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/lib/revent/revent.py", line 156, in _invoke
+    return handler(self, *args, **kw)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 608, in _handle_MulticastTopoEvent
+    self.multicast_paths[multicast_addr][source].update_flow_placement(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 375, in update_flow_placement
+    self.calc_path_tree_dijkstras(groupflow_trace_event)
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 128, in calc_path_tree_dijkstras
+    self._calc_link_weights()
+  File "/usr/local/home/cse222a05/pox/pox/openflow/groupflow.py", line 200, in _calc_link_weights
+    sys.float_info.max / core.openflow_flow_tracker.get_num_tracked_links())
+ZeroDivisionError: float division by zero
+WARNING:openflow.igmp_manager:Link down: 00-00-00-00-00-08 -> 00-00-00-00-00-0a
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
@@ -1658,6 +516,8 @@ WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
+WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-08
+WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
@@ -1674,22 +534,8 @@ WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.igmp_manager:Router down: 00-00-00-00-00-0a
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
@@ -1706,22 +552,8 @@ WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
 WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
-WARNING:openflow.igmp_manager:Router down: 7e-c4-e1-de-c7-4f
+WARNING:openflow.igmp_manager:Router down: fe-e9-eb-5e-90-45
 WARNING:openflow.groupflow:Multicast topology changed, recalculating all paths.
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-01
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-06
-WARNING:openflow.groupflow:Could not get connection for router: 00-00-00-00-00-07
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-01 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-06 (network is not fully connected)
 WARNING:openflow.groupflow:Path could not be determined for receiver 00-00-00-00-00-07 (network is not fully connected)

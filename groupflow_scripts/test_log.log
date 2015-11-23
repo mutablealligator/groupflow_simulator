@@ -1,8 +1,12 @@
-GroupFlow Performance Simulation: 2015-11-22 16:17:10.989961
-FlowStatsLogFile:flowtracker_16-16-17_November-22_2015.txt
-EventTraceLogFile:eventtrace_16-16-17_November-22_2015.txt
-Membership Mean:0.1 StdDev:0.25 AvgBound:0.75 NumGroups:0 AvgNumReceivers:4.0
-Topology:<groupflow_shared.FattreeTopo object at 0x7f48f414e210> NumSwitches:12 NumLinks:22 NumHosts:6
+GroupFlow Performance Simulation: 2015-11-23 15:14:34.226200
+FlowStatsLogFile:flowtracker_15-14-03_November-23_2015.txt
+EventTraceLogFile:eventtrace_15-14-03_November-23_2015.txt
+Membership Mean:0.1 StdDev:0.25 AvgBound:0.75 NumGroups:4 AvgNumReceivers:4.0
+Topology:<groupflow_shared.FattreeTopo object at 0x7f615ed1e310> NumSwitches:12 NumLinks:22 NumHosts:6
 RecvPackets:0 LostPackets:0 AvgPacketLoss:0
 
-Group:0 NumReceivers:4 TotalNumFlows:0 MaxLinkUsageMbps:0.000178589724869 AvgLinkUsageMbps:0.000110867266083 TrafficConcentration:1.61084268764 LinkUsageStdDev:5.64884201849e-05 ResponseTime:0.00502404380352 NetworkTime:0.0049965166031 ProcessingTime:2.75272004148e-05 SwitchAvgLoadMbps:0.000166300899125
+Group:0 NumReceivers:4 TotalNumFlows:6 MaxLinkUsageMbps:0.0444911802336 AvgLinkUsageMbps:0.00843039810129 TrafficConcentration:5.27747085001 LinkUsageStdDev:0.0175654112158 ResponseTime:0.00558831113757 NetworkTime:0.00555980205536 ProcessingTime:2.85090822162e-05 SwitchAvgLoadMbps:0.0224810616035
+Group:1 NumReceivers:4 TotalNumFlows:0 MaxLinkUsageMbps:0.0543764294024 AvgLinkUsageMbps:0.0113933686417 TrafficConcentration:4.77263846301 LinkUsageStdDev:0.0207427934334 ResponseTime:0.0131969302893 NetworkTime:0.0131632884343 ProcessingTime:3.3641854922e-05 SwitchAvgLoadMbps:0.0303823163778
+Group:2 NumReceivers:4 TotalNumFlows:9 MaxLinkUsageMbps:0.0545388596286 AvgLinkUsageMbps:0.0154298865902 TrafficConcentration:3.53462478871 LinkUsageStdDev:0.0215395904863 ResponseTime:0.00936912828022 NetworkTime:0.00933827294244 ProcessingTime:3.08553377787e-05 SwitchAvgLoadMbps:0.0411463642404
+Group:3 NumReceivers:4 TotalNumFlows:9 MaxLinkUsageMbps:0.0560162202998 AvgLinkUsageMbps:0.0158355039208 TrafficConcentration:3.53738160655 LinkUsageStdDev:0.0197403231686 ResponseTime:0.00997198290295 NetworkTime:0.00993660423491 ProcessingTime:3.53786680434e-05 SwitchAvgLoadMbps:0.0422280104554
+Group:4 NumReceivers:4 TotalNumFlows:9 MaxLinkUsageMbps:0.0642098777432 AvgLinkUsageMbps:0.0178728990967 TrafficConcentration:3.59258323991 LinkUsageStdDev:0.0258424501648 ResponseTime:0.0119528671106 NetworkTime:0.0119225780169 ProcessingTime:3.02890936534e-05 SwitchAvgLoadMbps:0.0476610642577
