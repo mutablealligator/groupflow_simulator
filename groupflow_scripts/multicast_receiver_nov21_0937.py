@@ -29,12 +29,9 @@ def main():
     
     if len(sys.argv) > 3:
         echo_port = int(sys.argv[3])
-
-    if len(sys.argv) > 4:
-	seq_num = int(sys.argv[4])
         
-    if len(sys.argv) > 5:
-        packets_to_receive = int(sys.argv[5])
+    if len(sys.argv) > 4:
+        packets_to_receive = int(sys.argv[4])
     
     # Setup the socket for receive multicast traffic
     multicast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)

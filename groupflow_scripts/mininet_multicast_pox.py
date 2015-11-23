@@ -15,6 +15,7 @@ from time import sleep, time
 from datetime import datetime
 from multiprocessing import Process, Pipe
 import numpy as np
+import parser
 
 ENABLE_FIXED_GROUP_SIZE = True
 FIXED_GROUP_SIZE = 4
@@ -101,7 +102,8 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
     sleep_time = 8 + (float(len(hosts))/8)
     print 'Waiting ' + str(sleep_time) + ' seconds to allow for controller topology discovery'
     sleep(sleep_time)
-    
+    call('touch /usr/local/home/cse222a05/GroupFlow/groupflow_scripts/msglist', shell=True)
+
     try:
         if interactive:
             CLI(net)
@@ -121,39 +123,24 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
 	    n = 1
             #run(hosts, host_join_probabilities, mcast_group_last_octet, test_groups, i, mcast_port, test_group_launch_times, net)
 
-            while i < n:                
+            while True:                
                 print 'Generating multicast group #' + str(i)
-                # Choose a sending host using a uniform random distribution
-                sender_index = randint(0,len(hosts))
-                sender_host = hosts[sender_index]
+		message = parser.recvMsg()
+                sender_host = message.getSender()
+		receivers = message.getReceivers()
                 
-                receivers = []
-                if ENABLE_FIXED_GROUP_SIZE:
-                    while len(receivers) < FIXED_GROUP_SIZE:
-                        receiver_index = randint(0,len(hosts))
-                        if receiver_index == sender_index:
-                            continue
-                        receivers.append(hosts[receiver_index])
-                        receivers = list(set(receivers))
-                else:
-                    # Choose a random number of receivers by comparing a uniform random variable
-                    # against the previously generated group membership probabilities
-                    for host_prob in host_join_probabilities:
-                        p = uniform(0, 1)
-                        if p <= host_prob[1]:
-                            receivers.append(host_prob[0])
-
                 # Initialize the group
                 # Note - This method of group IP generation will need to be modified slightly to support more than
                 # 255 groups
-                mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
+                #mcast_ip = '224.1.1.{last_octet}'.format(last_octet = str(mcast_group_last_octet))
+		mcast_ip = '224.1.1.1'
                 test_groups.append(StaticMulticastGroupDefinition(sender_host, receivers, mcast_ip, mcast_port, mcast_port + 1))
                 launch_time = time()
                 test_group_launch_times.append(launch_time)
                 print 'Launching multicast group #' + str(i) + ' at time: ' + str(launch_time)
                 print 'Sender: ' + str(sender_host)
                 print 'Receivers: ' + str(receivers)
-                test_groups[-1].launch_normal_mcast_applications(net)
+                test_groups[-1].launch_normal_mcast_applications(net, i, message.getMessage(), message.getPacketSize())
                 mcast_group_last_octet = mcast_group_last_octet + 1
                 mcast_port = mcast_port + 2
                 i += 1
@@ -223,6 +210,7 @@ def mcastTest(topo, interactive = False, hosts = [], log_file_name = 'test_log.l
         if not test_success:
             call('rm -rfv ' + str(flow_log_path), shell=True)
         call('rm -rfv ' + str(event_log_path), shell=True)
+	call('rm -rfv ' + str("/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/msglist"), shell=True)
         
     except BaseException as e:
         print str(e)

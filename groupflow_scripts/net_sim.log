@@ -1,0 +1,826 @@
+Launching default multicast test topology
+Launching external controller: /usr/local/home/cse222a05/pox/pox.py
+Launch arguments:
+/usr/local/home/cse222a05/pox/pox.py log --file=pox.log,w openflow.discovery --link_timeout=30 openflow.keepalive openflow.flow_tracker --query_interval=1 --link_max_bw=19 --link_cong_threshold=13 --avg_smooth_factor=0.5 --log_peak_usage=True misc.benchmark_terminator openflow.igmp_manager misc.groupflow_event_tracer openflow.groupflow --util_link_weight=10 --link_weight_type=linear --flow_replacement_mode=none --flow_replacement_interval=15 log.level --WARNING --openflow.flow_tracker=INFO
+Got flow tracker log file: flowtracker_18-33-59_November-22_2015.txt
+Got event trace log file: eventtrace_18-33-59_November-22_2015.txt
+Controller initialized
+Waiting 8.75 seconds to allow for controller topology discovery
+Using random seed: 1448246051
+Host join probabilities: ('h0', 0.070309129028950285), ('h1', 0.07072000816973055), ('h2', 0.11128628390470707), ('h3', 0.0062488030658739745), ('h4', 0.19867429270836801), ('h5', 0.29276148312237016)
+Measured mean join probability: 0.125
+Predicted average group size: 0.75
+Generating multicast group #0
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message11
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #0 at time: 1448246051.35
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5010 Echo port: 5011
+Starting Sender
+Initialized multicast group 224.1.1.1:5010 Echo port: 5011 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246042.53
+Peak Usage (Mbps): Time:1448246043.19
+Peak Usage (Mbps): Time:1448246043.86
+Mean Usage (Mbps): Time:1448246043.86
+Peak Usage (Mbps): Time:1448246044.53
+Mean Usage (Mbps): Time:1448246044.53
+Peak Usage (Mbps): Time:1448246045.21
+Mean Usage (Mbps): Time:1448246045.21
+Peak Usage (Mbps): Time:1448246045.88
+Mean Usage (Mbps): Time:1448246045.88
+Peak Usage (Mbps): Time:1448246046.55
+Mean Usage (Mbps): Time:1448246046.55
+Peak Usage (Mbps): Time:1448246047.22
+Mean Usage (Mbps): Time:1448246047.22
+Peak Usage (Mbps): Time:1448246047.89
+Mean Usage (Mbps): Time:1448246047.89
+Peak Usage (Mbps): Time:1448246048.56
+Mean Usage (Mbps): Time:1448246048.56
+Peak Usage (Mbps): Time:1448246049.26
+Mean Usage (Mbps): Time:1448246049.26
+Peak Usage (Mbps): Time:1448246049.93
+Mean Usage (Mbps): Time:1448246049.93
+Peak Usage (Mbps): Time:1448246050.62
+Mean Usage (Mbps): Time:1448246050.62
+Peak Usage (Mbps): Time:1448246051.3
+Mean Usage (Mbps): Time:1448246051.3
+Peak Usage (Mbps): Time:1448246051.97
+Mean Usage (Mbps): Time:1448246051.97
+Peak Usage (Mbps): Time:1448246052.63
+Mean Usage (Mbps): Time:1448246052.63
+Peak Usage (Mbps): Time:1448246053.3
+Mean Usage (Mbps): Time:1448246053.3
+Peak Usage (Mbps): Time:1448246053.97
+Mean Usage (Mbps): Time:1448246053.97
+Peak Usage (Mbps): Time:1448246054.64
+Mean Usage (Mbps): Time:1448246054.64
+Peak Usage (Mbps): Time:1448246055.31
+Mean Usage (Mbps): Time:1448246055.31
+Peak Usage (Mbps): Time:1448246055.98
+Mean Usage (Mbps): Time:1448246055.98
+Peak Usage (Mbps): Time:1448246056.65
+Mean Usage (Mbps): Time:1448246056.65
+Peak Usage (Mbps): Time:1448246057.31
+Mean Usage (Mbps): Time:1448246057.31
+Peak Usage (Mbps): Time:1448246057.98
+Mean Usage (Mbps): Time:1448246057.98
+Peak Usage (Mbps): Time:1448246058.65
+Mean Usage (Mbps): Time:1448246058.65
+Peak Usage (Mbps): Time:1448246059.32
+Mean Usage (Mbps): Time:1448246059.32
+Peak Usage (Mbps): Time:1448246059.98
+Mean Usage (Mbps): Time:1448246059.98
+No congestion detected.
+Generating multicast group #1
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message9
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #1 at time: 1448246060.33
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5012 Echo port: 5013
+Starting Sender
+Initialized multicast group 224.1.1.1:5012 Echo port: 5013 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246060.65
+Mean Usage (Mbps): Time:1448246060.65
+Peak Usage (Mbps): Time:1448246061.32
+Mean Usage (Mbps): Time:1448246061.32
+Peak Usage (Mbps): Time:1448246061.99
+Mean Usage (Mbps): Time:1448246061.99
+Peak Usage (Mbps): Time:1448246062.65
+Mean Usage (Mbps): Time:1448246062.65
+Peak Usage (Mbps): Time:1448246063.33
+Mean Usage (Mbps): Time:1448246063.33
+Peak Usage (Mbps): Time:1448246064.0
+Mean Usage (Mbps): Time:1448246064.0
+Peak Usage (Mbps): Time:1448246064.66
+Mean Usage (Mbps): Time:1448246064.66
+Peak Usage (Mbps): Time:1448246065.33
+Mean Usage (Mbps): Time:1448246065.33
+Peak Usage (Mbps): Time:1448246066.0
+Mean Usage (Mbps): Time:1448246066.0
+Peak Usage (Mbps): Time:1448246066.67
+Mean Usage (Mbps): Time:1448246066.67
+Peak Usage (Mbps): Time:1448246067.34
+Mean Usage (Mbps): Time:1448246067.34
+Peak Usage (Mbps): Time:1448246068.01
+Mean Usage (Mbps): Time:1448246068.01
+Peak Usage (Mbps): Time:1448246068.67
+Mean Usage (Mbps): Time:1448246068.67
+No congestion detected.
+Generating multicast group #2
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message2
+Got a message. Preparing to send 
+Sending Message of length 100 from h1 to h2,h4,h3,h5
+Message is : 1234123412341234123412341234123412341234123412341234123412341234123412341234123412341234123412341234
+Launching multicast group #2 at time: 1448246068.93
+Sender: h1
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5014 Echo port: 5015
+Starting Sender
+Initialized multicast group 224.1.1.1:5014 Echo port: 5015 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246069.34
+Mean Usage (Mbps): Time:1448246069.34
+Peak Usage (Mbps): Time:1448246070.01
+Mean Usage (Mbps): Time:1448246070.01
+Peak Usage (Mbps): Time:1448246070.68
+Mean Usage (Mbps): Time:1448246070.68
+Peak Usage (Mbps): Time:1448246071.35
+Mean Usage (Mbps): Time:1448246071.35
+Peak Usage (Mbps): Time:1448246072.02
+Mean Usage (Mbps): Time:1448246072.02
+Peak Usage (Mbps): Time:1448246072.69
+Mean Usage (Mbps): Time:1448246072.69
+Peak Usage (Mbps): Time:1448246073.36
+Mean Usage (Mbps): Time:1448246073.36
+Peak Usage (Mbps): Time:1448246074.03
+Mean Usage (Mbps): Time:1448246074.03
+Peak Usage (Mbps): Time:1448246074.7
+Mean Usage (Mbps): Time:1448246074.7
+Peak Usage (Mbps): Time:1448246075.37
+Mean Usage (Mbps): Time:1448246075.37
+Peak Usage (Mbps): Time:1448246076.05
+Mean Usage (Mbps): Time:1448246076.05
+Peak Usage (Mbps): Time:1448246076.71
+Mean Usage (Mbps): Time:1448246076.71
+Peak Usage (Mbps): Time:1448246077.38
+Mean Usage (Mbps): Time:1448246077.38
+No congestion detected.
+Generating multicast group #3
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message8
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #3 at time: 1448246077.93
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5016 Echo port: 5017
+Starting Sender
+Initialized multicast group 224.1.1.1:5016 Echo port: 5017 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246078.05
+Mean Usage (Mbps): Time:1448246078.05
+Peak Usage (Mbps): Time:1448246078.72
+Mean Usage (Mbps): Time:1448246078.72
+Peak Usage (Mbps): Time:1448246079.39
+Mean Usage (Mbps): Time:1448246079.39
+Peak Usage (Mbps): Time:1448246080.06
+Mean Usage (Mbps): Time:1448246080.06
+Peak Usage (Mbps): Time:1448246080.73
+Mean Usage (Mbps): Time:1448246080.73
+Peak Usage (Mbps): Time:1448246081.4
+Mean Usage (Mbps): Time:1448246081.4
+Peak Usage (Mbps): Time:1448246082.06
+Mean Usage (Mbps): Time:1448246082.06
+Peak Usage (Mbps): Time:1448246082.73
+Mean Usage (Mbps): Time:1448246082.73
+Peak Usage (Mbps): Time:1448246083.4
+Mean Usage (Mbps): Time:1448246083.4
+Peak Usage (Mbps): Time:1448246084.07
+Mean Usage (Mbps): Time:1448246084.07
+Peak Usage (Mbps): Time:1448246084.73
+Mean Usage (Mbps): Time:1448246084.73
+Peak Usage (Mbps): Time:1448246085.4
+Mean Usage (Mbps): Time:1448246085.4
+Peak Usage (Mbps): Time:1448246086.07
+Mean Usage (Mbps): Time:1448246086.07
+No congestion detected.
+Generating multicast group #4
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message3
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #4 at time: 1448246086.44
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5018 Echo port: 5019
+Starting Sender
+Initialized multicast group 224.1.1.1:5018 Echo port: 5019 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246086.75
+Mean Usage (Mbps): Time:1448246086.75
+Peak Usage (Mbps): Time:1448246087.42
+Mean Usage (Mbps): Time:1448246087.42
+Peak Usage (Mbps): Time:1448246088.09
+Mean Usage (Mbps): Time:1448246088.09
+Peak Usage (Mbps): Time:1448246088.75
+Mean Usage (Mbps): Time:1448246088.75
+Peak Usage (Mbps): Time:1448246089.42
+Mean Usage (Mbps): Time:1448246089.42
+Peak Usage (Mbps): Time:1448246090.09
+Mean Usage (Mbps): Time:1448246090.09
+Peak Usage (Mbps): Time:1448246090.76
+Mean Usage (Mbps): Time:1448246090.76
+Peak Usage (Mbps): Time:1448246091.42
+Mean Usage (Mbps): Time:1448246091.42
+Peak Usage (Mbps): Time:1448246092.09
+Mean Usage (Mbps): Time:1448246092.09
+Peak Usage (Mbps): Time:1448246092.76
+Mean Usage (Mbps): Time:1448246092.76
+Peak Usage (Mbps): Time:1448246093.43
+Mean Usage (Mbps): Time:1448246093.43
+Peak Usage (Mbps): Time:1448246094.1
+Mean Usage (Mbps): Time:1448246094.1
+Peak Usage (Mbps): Time:1448246094.76
+Mean Usage (Mbps): Time:1448246094.76
+No congestion detected.
+Generating multicast group #5
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message5
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #5 at time: 1448246094.95
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5020 Echo port: 5021
+Starting Sender
+Initialized multicast group 224.1.1.1:5020 Echo port: 5021 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246095.43
+Mean Usage (Mbps): Time:1448246095.43
+Peak Usage (Mbps): Time:1448246096.1
+Mean Usage (Mbps): Time:1448246096.1
+Peak Usage (Mbps): Time:1448246096.77
+Mean Usage (Mbps): Time:1448246096.77
+Peak Usage (Mbps): Time:1448246097.44
+Mean Usage (Mbps): Time:1448246097.44
+Peak Usage (Mbps): Time:1448246098.11
+Mean Usage (Mbps): Time:1448246098.11
+Peak Usage (Mbps): Time:1448246098.78
+Mean Usage (Mbps): Time:1448246098.78
+Peak Usage (Mbps): Time:1448246099.45
+Mean Usage (Mbps): Time:1448246099.45
+Peak Usage (Mbps): Time:1448246100.11
+Mean Usage (Mbps): Time:1448246100.11
+Peak Usage (Mbps): Time:1448246100.78
+Mean Usage (Mbps): Time:1448246100.78
+Peak Usage (Mbps): Time:1448246101.45
+Mean Usage (Mbps): Time:1448246101.45
+Peak Usage (Mbps): Time:1448246102.12
+Mean Usage (Mbps): Time:1448246102.12
+Peak Usage (Mbps): Time:1448246102.79
+Mean Usage (Mbps): Time:1448246102.79
+Peak Usage (Mbps): Time:1448246103.46
+Mean Usage (Mbps): Time:1448246103.46
+No congestion detected.
+Generating multicast group #6
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message4
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #6 at time: 1448246103.48
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5022 Echo port: 5023
+Starting Sender
+Initialized multicast group 224.1.1.1:5022 Echo port: 5023 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246104.13
+Mean Usage (Mbps): Time:1448246104.13
+Peak Usage (Mbps): Time:1448246104.79
+Mean Usage (Mbps): Time:1448246104.79
+Peak Usage (Mbps): Time:1448246105.46
+Mean Usage (Mbps): Time:1448246105.46
+Peak Usage (Mbps): Time:1448246106.13
+Mean Usage (Mbps): Time:1448246106.13
+Peak Usage (Mbps): Time:1448246106.8
+Mean Usage (Mbps): Time:1448246106.8
+Peak Usage (Mbps): Time:1448246107.47
+Mean Usage (Mbps): Time:1448246107.47
+Peak Usage (Mbps): Time:1448246108.14
+Mean Usage (Mbps): Time:1448246108.14
+Peak Usage (Mbps): Time:1448246108.81
+Mean Usage (Mbps): Time Peak Usage (Mbps): Time:1448246109.48
+Mean Usage (Mbps): Time:1448246109.48
+Peak Usage (Mbps): Time:1448246110.15
+Mean Usage (Mbps): Time:1448246110.15
+Peak Usage (Mbps): Time:1448246110.82
+Mean Usage (Mbps): Time:1448246110.82
+Peak Usage (Mbps): Time:1448246111.48
+Mean Usage (Mbps): Time:1448246111.48
+No congestion detected.
+Generating multicast group #7
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message7
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #7 at time: 1448246112.06
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5024 Echo port: 5025
+Starting Sender
+Initialized multicast group 224.1.1.1:5024 Echo port: 5025 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246112.15
+Mean Usage (Mbps): Time:1448246112.15
+Peak Usage (Mbps): Time:1448246112.82
+Mean Usage (Mbps): Time:1448246112.82
+Peak Usage (Mbps): Time:1448246113.49
+Mean Usage (Mbps): Time:1448246113.49
+Peak Usage (Mbps): Time:1448246114.15
+Mean Usage (Mbps): Time:1448246114.15
+Peak Usage (Mbps): Time:1448246114.82
+Mean Usage (Mbps): Time:1448246114.82
+Peak Usage (Mbps): Time:1448246115.49
+Mean Usage (Mbps): Time:1448246115.49
+Peak Usage (Mbps): Time:1448246116.16
+Mean Usage (Mbps): Time:1448246116.16
+Peak Usage (Mbps): Time:1448246116.83
+Mean Usage (Mbps): Time:1448246116.83
+Peak Usage (Mbps): Time:1448246117.51
+Mean Usage (Mbps): Time:1448246117.51
+Peak Usage (Mbps): Time:1448246118.17
+Mean Usage (Mbps): Time:1448246118.17
+Peak Usage (Mbps): Time:1448246118.84
+Mean Usage (Mbps): Time:1448246118.84
+Peak Usage (Mbps): Time:1448246119.51
+Mean Usage (Mbps): Time:1448246119.51
+Peak Usage (Mbps): Time:1448246120.18
+Mean Usage (Mbps): Time:1448246120.18
+Peak Usage (Mbps): Time:1448246120.85
+Mean Usage (Mbps): Time:1448246120.85
+No congestion detected.
+Generating multicast group #8
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message1
+Got a message. Preparing to send 
+Sending Message of length 30 from h0 to h2,h4,h3,h5
+Message is : !!!!!!!!!!@@@@@@@@@@!!!!@@@@!@
+Launching multicast group #8 at time: 1448246121.06
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5026 Echo port: 5027
+Starting Sender
+Initialized multicast group 224.1.1.1:5026 Echo port: 5027 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246121.52
+Mean Usage (Mbps): Time:1448246121.52
+Peak Usage (Mbps): Time:1448246122.19
+Mean Usage (Mbps): Time:1448246122.19
+Peak Usage (Mbps): Time:1448246122.86
+Mean Usage (Mbps): Time:1448246122.86
+Peak Usage (Mbps): Time:1448246123.53
+Mean Usage (Mbps): Time:1448246123.53
+Peak Usage (Mbps): Time:1448246124.2
+Mean Usage (Mbps): Time:1448246124.2
+Peak Usage (Mbps): Time:1448246124.87
+Mean Usage (Mbps): Time:1448246124.87
+Peak Usage (Mbps): Time:1448246125.54
+Mean Usage (Mbps): Time:1448246125.54
+Peak Usage (Mbps): Time:1448246126.21
+Mean Usage (Mbps): Time:1448246126.21
+Peak Usage (Mbps): Time:1448246126.87
+Mean Usage (Mbps): Time:1448246126.87
+Peak Usage (Mbps): Time:1448246127.54
+Mean Usage (Mbps): Time:1448246127.54
+Peak Usage (Mbps): Time:1448246128.21
+Mean Usage (Mbps): Time:1448246128.21
+Peak Usage (Mbps): Time:1448246128.88
+Mean Usage (Mbps): Time:1448246128.88
+Peak Usage (Mbps): Time:1448246129.54
+Mean Usage (Mbps): Time:1448246129.54
+No congestion detected.
+Generating multicast group #9
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message0
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #9 at time: 1448246129.92
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5028 Echo port: 5029
+Starting Sender
+Initialized multicast group 224.1.1.1:5028 Echo port: 5029 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246130.21
+Mean Usage (Mbps): Time:1448246130.21
+Peak Usage (Mbps): Time:1448246130.88
+Mean Usage (Mbps): Time:1448246130.88
+Peak Usage (Mbps): Time:1448246131.55
+Mean Usage (Mbps): Time:1448246131.55
+Peak Usage (Mbps): Time:1448246132.22
+Mean Usage (Mbps): Time:1448246132.22
+Peak Usage (Mbps): Time:1448246132.88
+Mean Usage (Mbps): Time:1448246132.88
+Peak Usage (Mbps): Time:1448246133.55
+Mean Usage (Mbps): Time:1448246133.55
+Peak Usage (Mbps): Time:1448246134.22
+Mean Usage (Mbps): Time:1448246134.22
+Peak Usage (Mbps): Time:1448246134.89
+Mean Usage (Mbps): Time:1448246134.89
+Peak Usage (Mbps): Time:1448246135.56
+Mean Usage (Mbps): Time:1448246135.56
+Peak Usage (Mbps): Time:1448246136.23
+Mean Usage (Mbps): Time:1448246136.23
+Peak Usage (Mbps): Time:1448246136.9
+Mean Usage (Mbps): Time:1448246136.9
+Peak Usage (Mbps): Time:1448246137.56
+Mean Usage (Mbps): Time:1448246137.56
+No congestion detected.
+Generating multicast group #10
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message6
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #10 at time: 1448246138.13
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5030 Echo port: 5031
+Starting Sender
+Initialized multicast group 224.1.1.1:5030 Echo port: 5031 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246138.23
+Mean Usage (Mbps): Time:1448246138.23
+Peak Usage (Mbps): Time:1448246138.9
+Mean Usage (Mbps): Time:1448246138.9
+Peak Usage (Mbps): Time:1448246139.57
+Mean Usage (Mbps): Time:1448246139.57
+Peak Usage (Mbps): Time:1448246140.24
+Mean Usage (Mbps): Time:1448246140.24
+Peak Usage (Mbps): Time:1448246140.91
+Mean Usage (Mbps): Time:1448246140.91
+Peak Usage (Mbps): Time:1448246141.57
+Mean Usage (Mbps): Time:1448246141.57
+Peak Usage (Mbps): Time:1448246142.24
+Mean Usage (Mbps): Time:1448246142.24
+Peak Usage (Mbps): Time:1448246142.91
+Mean Usage (Mbps): Time:1448246142.91
+Peak Usage (Mbps): Time:1448246143.58
+Mean Usage (Mbps): Time:1448246143.58
+Peak Usage (Mbps): Time:1448246144.24
+Mean Usage (Mbps): Time:1448246144.24
+Peak Usage (Mbps): Time:1448246144.91
+Mean Usage (Mbps): Time:1448246144.91
+Peak Usage (Mbps): Time:1448246145.58
+Mean Usage (Mbps): Time:1448246145.58
+Peak Usage (Mbps): Time:1448246146.24
+Mean Usage (Mbps): Time:1448246146.24
+Peak Usage (Mbps): Time:1448246146.91
+Mean Usage (Mbps): Time:1448246146.91
+No congestion detected.
+Generating multicast group #11
+Waiting for message from MPI Application...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message10
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #11 at time: 1448246147.11
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5032 Echo port: 5033
+Starting Sender
+Initialized multicast group 224.1.1.1:5032 Echo port: 5033 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246147.58
+Mean Usage (Mbps): Time:1448246147.58
+Peak Usage (Mbps): Time:1448246148.25
+Mean Usage (Mbps): Time:1448246148.25
+Peak Usage (Mbps): Time:1448246148.93
+Mean Usage (Mbps): Time:1448246148.93
+Peak Usage (Mbps): Time:1448246149.6
+Mean Usage (Mbps): Time:1448246149.6
+Mean Usage (Mbps): Time:1448246150.27
+Peak Usage (Mbps): Time:1448246150.94
+Mean Usage (Mbps): Time:1448246150.94
+Peak Usage (Mbps): Time:1448246151.6
+Mean Usage (Mbps): Time:1448246151.6
+Peak Usage (Mbps): Time:1448246152.27
+Mean Usage (Mbps): Time:1448246152.27
+Peak Usage (Mbps): Time:1448246152.94
+Mean Usage (Mbps): Time:1448246152.94
+Peak Usage (Mbps): Time:1448246153.61
+Mean Usage (Mbps): Time:1448246153.61
+Peak Usage (Mbps): Time:1448246154.28
+Mean Usage (Mbps): Time:1448246154.28
+Peak Usage (Mbps): Time:1448246154.95
+Mean Usage (Mbps): Time:1448246154.95
+No congestion detected.
+Generating multicast group #12
+Waiting for message from MPI Application...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message12
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #12 at time: 1448246180.17
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5034 Echo port: 5035
+Starting Sender
+Initialized multicast group 224.1.1.1:5034 Echo port: 5035 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246155.61
+Mean Usage (Mbps): Time:1448246155.61
+Peak Usage (Mbps): Time:1448246156.28
+Mean Usage (Mbps): Time:1448246156.28
+Peak Usage (Mbps): Time:1448246156.95
+Mean Usage (Mbps): Time:1448246156.95
+Peak Usage (Mbps): Time:1448246157.62
+Mean Usage (Mbps): Time:1448246157.62
+Peak Usage (Mbps): Time:1448246158.29
+Mean Usage (Mbps): Time:1448246158.29
+Peak Usage (Mbps): Time:1448246158.96
+Mean Usage (Mbps): Time:1448246158.96
+Peak Usage (Mbps): Time:1448246159.62
+Mean Usage (Mbps): Time:1448246159.62
+Peak Usage (Mbps): Time:1448246160.29
+Mean Usage (Mbps): Time:1448246160.29
+Peak Usage (Mbps): Time:1448246160.96
+Mean Usage (Mbps): Time:1448246160.96
+Peak Usage (Mbps): Time:1448246161.63
+Mean Usage (Mbps): Time:1448246161.63
+Peak Usage (Mbps): Time:1448246162.3
+Mean Usage (Mbps): Time:1448246162.3
+Peak Usage (Mbps): Time:1448246162.97
+Mean Usage (Mbps): Time:1448246162.97
+Peak Usage (Mbps): Time:1448246163.64
+Mean Usage (Mbps): Time:1448246163.64
+Peak Usage (Mbps): Time:1448246164.3
+Mean Usage (Mbps): Time:1448246164.3
+Peak Usage (Mbps): Time:1448246164.97
+Mean Usage (Mbps): Time:1448246164.97
+Peak Usage (Mbps): Time:1448246165.64
+Mean Usage (Mbps): Time:1448246165.64
+Peak Usage (Mbps): Time:1448246166.31
+Mean Usage (Mbps): Time:1448246166.31
+Peak Usage (Mbps): Time:1448246166.98
+Mean Usage (Mbps): Time:1448246166.98
+Peak Usage (Mbps): Time:1448246167.65
+Mean Usage (Mbps): Time:1448246167.65
+Peak Usage (Mbps): Time:1448246168.31
+Mean Usage (Mbps): Time:1448246168.31
+Peak Usage (Mbps): Time:1448246168.98
+Mean Usage (Mbps): Time:1448246168.98
+Peak Usage (Mbps): Time:1448246169.65
+Mean Usage (Mbps): Time:1448246169.65
+Peak Usage (Mbps): Time:1448246170.32
+Mean Usage (Mbps): Time:1448246170.32
+Peak Usage (Mbps): Time:1448246170.99
+Mean Usage (Mbps): Time:1448246170.99
+Peak Usage (Mbps): Time:1448246171.66
+Mean Usage (Mbps): Time:1448246171.66
+Peak Usage (Mbps): Time:1448246172.33
+Mean Usage (Mbps): Time:1448246172.33
+Peak Usage (Mbps): Time:1448246173.0
+Mean Usage (Mbps): Time:1448246173.0
+Peak Usage (Mbps): Time:1448246173.67
+Mean Usage (Mbps): Time:1448246173.67
+Peak Usage (Mbps): Time:1448246174.33
+Mean Usage (Mbps): Time:1448246174.33
+Peak Usage (Mbps): Time:1448246175.0
+Mean Usage (Mbps): Time:1448246175.0
+Peak Usage (Mbps): Time:1448246175.67
+Mean Usage (Mbps): Time:1448246175.67
+Peak Usage (Mbps): Time:1448246176.34
+Mean Usage (Mbps): Time:1448246176.34
+Peak Usage (Mbps): Time:1448246177.01
+Mean Usage (Mbps): Time:1448246177.01
+Peak Usage (Mbps): Time:1448246177.67
+Mean Usage (Mbps): Time:1448246177.67
+Peak Usage (Mbps): Time:1448246178.34
+Mean Usage (Mbps): Time:1448246178.34
+Peak Usage (Mbps): Time:1448246179.01
+Mean Usage (Mbps): Time:1448246179.01
+Peak Usage (Mbps): Time:1448246179.68
+Mean Usage (Mbps): Time:1448246179.68
+Peak Usage (Mbps): Time:1448246180.34
+Mean Usage (Mbps): Time:1448246180.34
+Peak Usage (Mbps): Time:1448246181.01
+Mean Usage (Mbps): Time:1448246181.01
+Peak Usage (Mbps): Time:1448246181.68
+Mean Usage (Mbps): Time:1448246181.68
+Peak Usage (Mbps): Time:1448246182.35
+Mean Usage (Mbps): Time:1448246182.35
+Peak Usage (Mbps): Time:1448246183.02
+Mean Usage (Mbps): Time:1448246183.02
+Peak Usage (Mbps): Time:1448246183.69
+Mean Usage (Mbps): Time:1448246183.69
+Peak Usage (Mbps): Time:1448246184.36
+Mean Usage (Mbps): Time:1448246184.36
+Peak Usage (Mbps): Time:1448246185.03
+Mean Usage (Mbps): Time:1448246185.03
+Peak Usage (Mbps): Time:1448246185.69
+Mean Usage (Mbps): Time:1448246185.69
+Peak Usage (Mbps): Time:1448246186.36
+Mean Usage (Mbps): Time:1448246186.36
+Peak Usage (Mbps): Time:1448246187.03
+Mean Usage (Mbps): Time:1448246187.03
+Peak Usage (Mbps): Time:1448246187.7
+Mean Usage (Mbps): Time:1448246187.7
+Peak Usage (Mbps): Time:1448246188.37
+Mean Usage (Mbps): Time:1448246188.37
+No congestion detected.
+Generating multicast group #13
+Waiting for message from MPI Application...
+Waiting for new message...
+Waiting for new message...
+/usr/local/home/cse222a05/GroupFlow/groupflow_scripts/input/message13
+Got a message. Preparing to send 
+Sending Message of length 20 from h0 to h2,h4,h3,h5
+Message is : 12341234123412341234
+Launching multicast group #13 at time: 1448246189.53
+Sender: h0
+Receivers: ['h2', 'h4', 'h3', 'h5']
+Initializing multicast group 224.1.1.1:5036 Echo port: 5037
+Starting Sender
+Initialized multicast group 224.1.1.1:5036 Echo port: 5037 # Receivers: 4
+Check for congested link...
+Peak Usage (Mbps): Time:1448246189.03
+Mean Usage (Mbps): Time:1448246189.03
+Peak Usage (Mbps): Time:1448246189.7
+Mean Usage (Mbps): Time:1448246189.7
+Peak Usage (Mbps): Time:1448246190.37
+Mean Usage (Mbps): Time:1448246190.37
+Peak Usage (Mbps): Time:1448246191.04
+Mean Usage (Mbps): Time:1448246191.04
+Peak Usage (Mbps): Time:1448246191.71
+Mean Usage (Mbps): Time:1448246191.71
+Peak Usage (Mbps): Time:1448246192.38
+Mean Usage (Mbps): Time:1448246192.38
+Peak Usage (Mbps): Time:1448246193.04
+Mean Usage (Mbps): Time:1448246193.04
+Peak Usage (Mbps): Time:1448246193.71
+Mean Usage (Mbps): Time:1448246193.71
+Peak Usage (Mbps): Time:1448246194.38
+Mean Usage (Mbps): Time:1448246194.38
+Peak Usage (Mbps): Time:1448246195.05
+Mean Usage (Mbps): Time:1448246195.05
+Peak Usage (Mbps): Time:1448246195.72
+Mean Usage (Mbps): Time:1448246195.72
+Peak Usage (Mbps): Time:1448246196.39
+Mean Usage (Mbps): Time:1448246196.39
+Peak Usage (Mbps): Time:1448246197.06
+Mean Usage (Mbps): Time:1448246197.06
+Peak Usage (Mbps): Time:1448246197.73
+Mean Usage (Mbps): Time:1448246197.73
+No congestion detected.
+Generating multicast group #14
+Waiting for message from MPI Application...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+Waiting for new message...
+

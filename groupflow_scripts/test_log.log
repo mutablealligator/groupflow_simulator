@@ -1,8 +1,8 @@
-GroupFlow Performance Simulation: 2015-11-21 17:51:18.089946
-FlowStatsLogFile:flowtracker_17-50-56_November-21_2015.txt
-EventTraceLogFile:eventtrace_17-50-56_November-21_2015.txt
+GroupFlow Performance Simulation: 2015-11-22 16:17:10.989961
+FlowStatsLogFile:flowtracker_16-16-17_November-22_2015.txt
+EventTraceLogFile:eventtrace_16-16-17_November-22_2015.txt
 Membership Mean:0.1 StdDev:0.25 AvgBound:0.75 NumGroups:0 AvgNumReceivers:4.0
-Topology:<groupflow_shared.FattreeTopo object at 0x7fcf8fb47bd0> NumSwitches:12 NumLinks:22 NumHosts:6
+Topology:<groupflow_shared.FattreeTopo object at 0x7f48f414e210> NumSwitches:12 NumLinks:22 NumHosts:6
 RecvPackets:0 LostPackets:0 AvgPacketLoss:0
 
-Group:0 NumReceivers:4 TotalNumFlows:9 MaxLinkUsageMbps:1.27869907318 AvgLinkUsageMbps:0.359498126364 TrafficConcentration:3.55690052161 LinkUsageStdDev:0.583764466343 ResponseTime:0.00491661081711 NetworkTime:0.00488744924466 ProcessingTime:2.91615724564e-05 SwitchAvgLoadMbps:0.958661670303
+Group:0 NumReceivers:4 TotalNumFlows:0 MaxLinkUsageMbps:0.000178589724869 AvgLinkUsageMbps:0.000110867266083 TrafficConcentration:1.61084268764 LinkUsageStdDev:5.64884201849e-05 ResponseTime:0.00502404380352 NetworkTime:0.0049965166031 ProcessingTime:2.75272004148e-05 SwitchAvgLoadMbps:0.000166300899125

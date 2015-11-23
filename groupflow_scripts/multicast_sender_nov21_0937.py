@@ -19,17 +19,12 @@ send_packet_index = 1
 send_packet_times = {}
 echo_packet_times = {}
 
-PACKET_INTERVAL = 0.01
+PACKET_INTERVAL = 0.003
 PACKET_SIZE = 512
 
-msg = "1234"
-
 def send_multicast_packet():
-    global send_packet_index, send_packet_times, msg
-    #if send_packet_index <= 20:
-    	#send_string = str(send_packet_index).zfill(PACKET_SIZE)
-    #else:
-    send_string = msg
+    global send_packet_index, send_packet_times
+    send_string = str(send_packet_index).zfill(PACKET_SIZE)
     print 'Send String: ' + str(int(send_string))
     send_packet_times[send_packet_index] = time.time()
     try:

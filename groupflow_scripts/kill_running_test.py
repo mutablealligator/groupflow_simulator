@@ -4,6 +4,8 @@ import sys
 import signal
 from subprocess import call
 
+call('rm -rfv /usr/local/home/cse222a05/GroupFlow/groupflow_scripts/msglist', shell=True)
+
 ps_out = os.popen('ps -e | grep python2.7')
 for line in ps_out:
     print line,

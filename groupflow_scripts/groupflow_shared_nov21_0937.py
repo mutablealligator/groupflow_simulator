@@ -448,18 +448,17 @@ class StaticMulticastGroupDefinition(object):
     ''' 
 	My function to mcast from 1 sender to 4 reseivers in fattree topology
     ''' 
-    def launch_normal_mcast_applications(self, net, seq_num, msg, length):
+    def launch_normal_mcast_applications(self, net):
         print 'Initializing multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port) + ' Echo port: ' + str(self.echo_port)
 
 	send_log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(self.src_host) + '.log'
         with open(send_log_filename, "w") as fnull:
-	    print 'Starting Sender'
-            self.src_process = net.get(self.src_host).popen(['python', './multicast_sender.py', self.group_ip, str(self.mcast_port), str(self.echo_port), str(seq_num), str(msg)], stdout=fnull, stderr=fnull, close_fds=True)
+            self.src_process = net.get(self.src_host).popen(['python', './multicast_sender.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True)
 
 	for dst in self.dst_hosts:
             recv_log_filename = 'mcastlog_' + str(self.group_ip.replace('.', '_')) + '_' + str(dst) + '.log'
             with open(recv_log_filename, "w") as fnull:
-                self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver.py', self.group_ip, str(self.mcast_port), str(self.echo_port), str(seq_num)], stdout=fnull, stderr=fnull, close_fds=True))
+                self.dst_processes.append(net.get(dst).popen(['python', './multicast_receiver.py', self.group_ip, str(self.mcast_port), str(self.echo_port)], stdout=fnull, stderr=fnull, close_fds=True))
                 self.receiver_log_files.append(recv_log_filename)
 
         print('Initialized multicast group ' + str(self.group_ip) + ':' + str(self.mcast_port)

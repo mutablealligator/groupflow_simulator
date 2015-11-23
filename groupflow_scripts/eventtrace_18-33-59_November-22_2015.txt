@@ -1,0 +1,32 @@
+0 - 1448246051.41206908
+Router: 00-00-00-00-00-01 IGMP Msg type: 34 Num Records: 1
+IGMP processing time: 0.15401840 ms
+
+1 - 1448246051.42041206
+Router: 00-00-00-00-00-07 IGMP Msg type: 34 Num Records: 1
+IGMP processing time: 0.12397766 ms
+
+2 - 1448246051.42865491
+Router: 00-00-00-00-00-06 IGMP Msg type: 34 Num Records: 1
+IGMP processing time: 0.21886826 ms
+
+3 - 1448246051.44498110
+Router: 00-00-00-00-00-07 IGMP Msg type: 34 Num Records: 1
+IGMP processing time: 0.23794174 ms
+
+4 - 1448246051.99878812
+Router: 00-00-00-00-00-07 IGMP Msg type: 34 Num Records: 1
+IGMP processing time: 0.15187263 ms
+
+5 - 1448246052.11466193
+Router: 00-00-00-00-00-07 IGMP Msg type: 34 Num Records: 1
+IGMP processing time: 0.16093254 ms
+
+6 - 1448246052.11569095
+Router: 00-00-00-00-00-01 IGMP Msg type: 34 Num Records: 1
+IGMP processing time: 0.15902519 ms
+
+7 - 1448246052.31468296
+Router: 00-00-00-00-00-06 IGMP Msg type: 34 Num Records: 1
+IGMP processing time: 0.15211105 ms
+
